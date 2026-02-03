@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
 import DashboardHelper from './pages/DashboardHelper';
+import JobList from './pages/JobList';
+import CreateJob from './pages/CreateJob';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './context/AuthContext';
 
@@ -18,6 +20,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<DashboardHelper />} />
+            <Route path="/jobs" element={<JobList />} />
+            <Route path="/jobs/create" element={<CreateJob />} />
           </Routes>
         </div>
       </Router>
