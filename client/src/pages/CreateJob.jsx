@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import api, { API_ENDPOINTS } from '../config/api';
+import { AuthContext } from '../context/AuthContext.jsx';
 
 const CreateJob = () => {
     const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ const CreateJob = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/jobs', formData);
+            await api.post(API_ENDPOINTS.CREATE_JOB, formData);
             alert('Job posted successfully!');
             navigate('/jobs');
         } catch (err) {

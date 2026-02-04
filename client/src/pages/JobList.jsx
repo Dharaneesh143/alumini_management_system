@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import api, { API_ENDPOINTS } from '../config/api';
+import { AuthContext } from '../context/AuthContext.jsx';
 
 const JobList = () => {
     const [jobs, setJobs] = useState([]);
@@ -14,7 +14,7 @@ const JobList = () => {
 
     const fetchJobs = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/jobs');
+            const res = await api.get(API_ENDPOINTS.GET_JOBS);
             setJobs(res.data);
             setLoading(false);
         } catch (err) {
@@ -25,7 +25,7 @@ const JobList = () => {
 
     const handleApply = async (jobId) => {
         try {
-            await axios.post(`http://localhost:5000/api/jobs/${jobId}/apply`);
+            await api.post(API_ENDPOINTS.APPLY_JOB(jobId));
             alert('Applied successfully!');
             fetchJobs(); // Refresh
         } catch (err) {
