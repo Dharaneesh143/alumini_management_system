@@ -31,36 +31,22 @@ folders.forEach(folder => {
     }
 });
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use((req, res, next) => {
-    logToFile(`📡 ${req.method} ${req.url}`);
-    if (req.method === 'POST') {
-        logToFile(`📦 Body: ${JSON.stringify(req.body)}`);
-    }
-    next();
-});
-
-// Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const PORT = process.env.PORT || 5000;
-
-// CORS Configuration
+// 1. CORS Configuration (Keep it early)
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
     'https://aluminimanagementsystem.vercel.app',
-    process.env.FRONTEND_URL // Useful for production
+    process.env.FRONTEND_URL
 ].filter(Boolean);
 
 const corsOptions = {
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+
+        if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
+            logToFile(`⚠️ CORS Blocked for origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -70,6 +56,24 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
 };
 app.use(cors(corsOptions));
+
+// 2. Logging Middleware
+app.use((req, res, next) => {
+    logToFile(`📡 ${req.method} ${req.url} (Origin: ${req.get('origin') || 'no-origin'})`);
+    if (req.method === 'POST') {
+        logToFile(`📦 Body: ${JSON.stringify(req.body)}`);
+    }
+    next();
+});
+
+
+// 3. Body Parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 4. Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const PORT = process.env.PORT || 5000;
 
 // Database Connection
 const mongoURI = process.env.MONGO_URI;
