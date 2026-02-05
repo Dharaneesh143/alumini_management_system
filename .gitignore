@@ -1,0 +1,19 @@
+# Logs & outputs
+*.log
+*.txt
+
+# Test & debug scripts
+check_*.js
+test_*.js
+verify_*.js
+list_*.js
+dump_*.js
+diagnose_*.js
+debug_*.js
+
+# Uploads
+server/uploads/
+
+# Local scripts
+checkDB.js
+verify_password.js
