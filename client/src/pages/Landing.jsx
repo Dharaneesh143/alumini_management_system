@@ -6,63 +6,109 @@ const Landing = () => {
     return (
         <div className="landing-page">
             {/* Hero Section */}
-            <section style={{
-                background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)',
+            <section className="animated-gradient-bg" style={{
                 color: 'white',
                 padding: '6rem 0',
-                textAlign: 'center'
+                textAlign: 'center',
+                position: 'relative',
+                zIndex: 1
             }}>
-                <div className="container">
-                    <h1 className="text-2xl" style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>
+                <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+                    <h1 className="text-2xl" style={{
+                        fontSize: '3rem',
+                        marginBottom: '1.5rem',
+                        fontWeight: '800',
+                        color: 'white',
+                        textShadow: '0 2px 10px rgba(0,0,0,0.2)'
+                    }}>
                         Welcome to Alumni Portal
                     </h1>
-                    <p className="text-xl" style={{ marginBottom: '3rem', opacity: 0.9 }}>
+                    <p className="text-xl" style={{
+                        marginBottom: '3rem',
+                        opacity: 0.95,
+                        fontSize: '1.25rem',
+                        fontWeight: '400'
+                    }}>
                         Select your role to continue
                     </p>
 
                     <div className="flex gap-8" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
                         {/* Student Option */}
                         <div className="card role-card" style={{
-                            background: 'white',
-                            color: 'var(--text-dark)',
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            backdropFilter: 'blur(20px)',
+                            WebkitBackdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            color: 'white',
                             padding: '2.5rem',
                             minWidth: '280px',
                             cursor: 'pointer',
-                            transition: 'transform 0.3s ease',
-                            border: 'none',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                            borderRadius: '1rem'
                         }}>
-                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: 'var(--primary)' }}>
-                                <GraduationCap size={48} />
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: 'white' }}>
+                                <GraduationCap size={48} strokeWidth={2} />
                             </div>
-                            <h2 className="text-xl" style={{ marginBottom: '1rem' }}>Student</h2>
-                            <p className="text-secondary" style={{ marginBottom: '1.5rem' }}>
+                            <h2 className="text-xl" style={{ marginBottom: '1rem', fontWeight: '700', color: 'white' }}>Student</h2>
+                            <p style={{ marginBottom: '1.5rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.95rem' }}>
                                 Access jobs, internships, and network with seniors.
                             </p>
-                            <Link to="/auth/student" className="btn" style={{ display: 'block' }}>
+                            <Link to="/auth/student" className="btn" style={{
+                                display: 'block',
+                                background: 'rgba(255, 255, 255, 0.25)',
+                                backdropFilter: 'blur(10px)',
+                                WebkitBackdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255, 255, 255, 0.4)',
+                                color: 'white',
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '0.5rem',
+                                fontWeight: '600',
+                                textAlign: 'center'
+                            }}>
                                 Continue as Student
                             </Link>
                         </div>
 
                         {/* Alumni Option */}
                         <div className="card role-card" style={{
-                            background: 'white',
-                            color: 'var(--text-dark)',
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            backdropFilter: 'blur(20px)',
+                            WebkitBackdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            color: 'white',
                             padding: '2.5rem',
                             minWidth: '280px',
                             cursor: 'pointer',
-                            transition: 'transform 0.3s ease',
-                            border: 'none',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                            borderRadius: '1rem'
                         }}>
-                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: 'var(--secondary)' }}>
-                                <Briefcase size={48} />
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                marginBottom: '1rem',
+                                color: 'white',
+                                gap: '0.5rem',
+                                alignItems: 'center'
+                            }}>
+                                <Briefcase size={40} strokeWidth={2} />
+                                <Users size={40} strokeWidth={2} />
                             </div>
-                            <h2 className="text-xl" style={{ marginBottom: '1rem' }}>Alumni</h2>
-                            <p className="text-secondary" style={{ marginBottom: '1.5rem' }}>
+                            <h2 className="text-xl" style={{ marginBottom: '1rem', fontWeight: '700', color: 'white' }}>Alumni</h2>
+                            <p style={{ marginBottom: '1.5rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.95rem' }}>
                                 Share opportunities, mentor students, and stay connected.
                             </p>
-                            <Link to="/auth/alumni" className="btn" style={{ display: 'block' }}>
+                            <Link to="/auth/alumni" className="btn" style={{
+                                display: 'block',
+                                background: 'rgba(255, 255, 255, 0.25)',
+                                backdropFilter: 'blur(10px)',
+                                WebkitBackdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255, 255, 255, 0.4)',
+                                color: 'white',
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '0.5rem',
+                                fontWeight: '600',
+                                textAlign: 'center'
+                            }}>
                                 Continue as Alumni
                             </Link>
                         </div>

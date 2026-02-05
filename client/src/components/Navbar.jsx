@@ -7,7 +7,8 @@ import {
     LogOut,
     LogIn,
     UserPlus,
-    GraduationCap
+    GraduationCap,
+    Users
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
 
@@ -23,7 +24,18 @@ const Navbar = () => {
     return (
         <nav style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '1rem 0' }}>
             <div className="container flex justify-between items-center">
-                <Link to="/" className="text-xl" style={{ color: 'var(--primary)' }}>
+                <Link to="/" className="text-xl flex items-center gap-2" style={{ color: 'var(--primary)', fontWeight: '700' }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                        padding: '0.5rem',
+                        borderRadius: '0.5rem'
+                    }}>
+                        <GraduationCap size={20} color="white" strokeWidth={2.5} />
+                        <Users size={16} color="white" strokeWidth={2.5} />
+                    </div>
                     AlumniPortal
                 </Link>
                 <div className="flex gap-4 items-center">

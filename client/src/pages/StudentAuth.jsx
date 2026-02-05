@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
+import Education3DIcon from '../components/Education3DIcon';
 
 const StudentAuth = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -33,7 +34,6 @@ const StudentAuth = () => {
             } else {
                 await studentSignup(formData);
             }
-            // Redirect to dashboard
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.msg || 'Something went wrong. Please try again.');
@@ -43,130 +43,142 @@ const StudentAuth = () => {
     };
 
     return (
-        <div className="container" style={{ maxWidth: '500px', padding: '4rem 1rem' }}>
-            <div className="card" style={{ padding: '2rem' }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--primary)' }}>
-                    Student {isLogin ? 'Login' : 'Signup'}
-                </h2>
+        <div className="auth-container">
+            {/* Left Panel - Animated Gradient with 3D Icon */}
+            <div className="auth-left-panel">
+                <div className="auth-left-content">
+                    <Education3DIcon size={200} />
+                    <h1 className="auth-left-title">
+                        Welcome to AlumniPortal
+                    </h1>
+                    <p className="auth-left-subtitle">
+                        Connect with alumni, discover opportunities, and build your professional network
+                    </p>
+                </div>
+            </div>
 
-                {error && (
-                    <div style={{
-                        background: '#fee2e2',
-                        color: '#dc2626',
-                        padding: '0.75rem',
-                        borderRadius: '4px',
-                        marginBottom: '1rem',
-                        fontSize: '0.9rem',
-                        border: '1px solid #fecaca'
-                    }}>
-                        {error}
+            {/* Right Panel - Login Form */}
+            <div className="auth-right-panel">
+                <div className="auth-form-container">
+                    <div className="auth-form-header">
+                        <h2 className="auth-form-title">
+                            {isLogin ? 'Student Login' : 'Create Account'}
+                        </h2>
+                        <p className="auth-form-subtitle">
+                            {isLogin ? 'Enter your credentials to access your account' : 'Fill in your details to get started'}
+                        </p>
                     </div>
-                )}
 
-                <form onSubmit={onSubmit}>
-                    {!isLogin && (
-                        <>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Full Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={name}
-                                    onChange={onChange}
-                                    placeholder="Enter your full name"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Register Number</label>
-                                <input
-                                    type="text"
-                                    name="registerNumber"
-                                    value={registerNumber}
-                                    onChange={onChange}
-                                    placeholder="Enter register number"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Department</label>
-                                <select
-                                    name="department"
-                                    value={department}
-                                    onChange={onChange}
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                >
-                                    <option value="">Select Department</option>
-                                    <option value="CSE">CSE</option>
-                                    <option value="ECE">ECE</option>
-                                    <option value="EEE">EEE</option>
-                                    <option value="MECH">MECH</option>
-                                    <option value="CIVIL">CIVIL</option>
-                                    <option value="IT">IT</option>
-                                </select>
-                            </div>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Graduation Year</label>
-                                <input
-                                    type="number"
-                                    name="graduationYear"
-                                    value={graduationYear}
-                                    onChange={onChange}
-                                    placeholder="e.g. 2026"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-                        </>
+                    {error && (
+                        <div className="auth-error">
+                            {error}
+                        </div>
                     )}
-                    <div className="form-group" style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Email Address</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={email}
-                            onChange={onChange}
-                            placeholder="Enter your email"
-                            required
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                        />
-                    </div>
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={password}
-                            onChange={onChange}
-                            placeholder="Min 6 characters"
-                            required
-                            minLength="6"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                        />
-                    </div>
 
-                    <button
-                        type="submit"
-                        className="btn"
-                        disabled={loading}
-                        style={{ width: '100%', padding: '0.8rem', fontSize: '1rem' }}
-                    >
-                        {loading ? 'Processing...' : (isLogin ? 'Login' : 'Signup')}
-                    </button>
-                </form>
+                    <form onSubmit={onSubmit} className="auth-form">
+                        {!isLogin && (
+                            <>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Full Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={name}
+                                        onChange={onChange}
+                                        placeholder="Enter your full name"
+                                        required
+                                        className="auth-input"
+                                    />
+                                </div>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Register Number</label>
+                                    <input
+                                        type="text"
+                                        name="registerNumber"
+                                        value={registerNumber}
+                                        onChange={onChange}
+                                        placeholder="Enter register number"
+                                        required
+                                        className="auth-input"
+                                    />
+                                </div>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Department</label>
+                                    <select
+                                        name="department"
+                                        value={department}
+                                        onChange={onChange}
+                                        required
+                                        className="auth-select"
+                                    >
+                                        <option value="">Select Department</option>
+                                        <option value="CSE">CSE</option>
+                                        <option value="ECE">ECE</option>
+                                        <option value="EEE">EEE</option>
+                                        <option value="MECH">MECH</option>
+                                        <option value="CIVIL">CIVIL</option>
+                                        <option value="IT">IT</option>
+                                    </select>
+                                </div>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Graduation Year</label>
+                                    <input
+                                        type="number"
+                                        name="graduationYear"
+                                        value={graduationYear}
+                                        onChange={onChange}
+                                        placeholder="e.g. 2026"
+                                        required
+                                        className="auth-input"
+                                    />
+                                </div>
+                            </>
+                        )}
+                        <div className="auth-input-group">
+                            <label className="auth-label">Email Address</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={email}
+                                onChange={onChange}
+                                placeholder="Enter your email"
+                                required
+                                className="auth-input"
+                            />
+                        </div>
+                        <div className="auth-input-group">
+                            <label className="auth-label">Password</label>
+                            <input
+                                type="password"
+                                name="password"
+                                value={password}
+                                onChange={onChange}
+                                placeholder="Min 6 characters"
+                                required
+                                minLength="6"
+                                className="auth-input"
+                            />
+                        </div>
 
-                <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-secondary)' }}>
-                    {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-                    <span
-                        onClick={() => setIsLogin(!isLogin)}
-                        style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                        {isLogin ? 'Signup' : 'Login'}
-                    </span>
-                </p>
+                        <button
+                            type="submit"
+                            className="auth-button"
+                            disabled={loading}
+                        >
+                            {loading ? 'Processing...' : (isLogin ? 'Login' : 'Create Account')}
+                        </button>
+                    </form>
+
+                    <p className="auth-toggle-text">
+                        {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
+                        <span
+                            onClick={() => setIsLogin(!isLogin)}
+                            className="auth-toggle-link"
+                        >
+                            {isLogin ? 'Sign up' : 'Login'}
+                        </span>
+                    </p>
+                </div>
             </div>
         </div>
     );

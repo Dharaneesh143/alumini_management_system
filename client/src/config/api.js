@@ -12,10 +12,24 @@ const api = axios.create({
     withCredentials: true
 });
 
+// Helper to get active role from context
+const getActiveRoleKey = () => {
+    const activeRole = sessionStorage.getItem('activeRole');
+    if (activeRole) return `token_${activeRole}`;
+
+    const path = window.location.pathname;
+    if (path.startsWith('/admin')) return 'token_admin';
+    if (path.startsWith('/auth/student') || path.includes('student')) return 'token_student';
+    if (path.startsWith('/auth/alumni') || path.includes('alumni')) return 'token_alumni';
+
+    return 'token_student'; // Default fallback
+};
+
 // Add request interceptor to include auth token
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const tokenKey = getActiveRoleKey();
+        const token = localStorage.getItem(tokenKey);
         if (token) {
             config.headers['x-auth-token'] = token;
         }
@@ -31,9 +45,17 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Token expired or invalid
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+            // Token expired or invalid for this specific role
+            const tokenKey = getActiveRoleKey();
+            localStorage.removeItem(tokenKey);
+            sessionStorage.removeItem('activeRole');
+
+            // Navigate to appropriate login page
+            if (tokenKey === 'token_admin') {
+                window.location.href = '/admin/login';
+            } else {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }

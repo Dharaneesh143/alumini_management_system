@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { AuthContext } from '../context/AuthContext.jsx';
+import Education3DIcon from '../components/Education3DIcon';
 
 const AlumniAuth = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -48,153 +48,175 @@ const AlumniAuth = () => {
     };
 
     return (
-        <div className="container" style={{ maxWidth: '500px', padding: '4rem 1rem' }}>
-            <div className="card" style={{ padding: '2rem' }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--primary)' }}>
-                    Alumni {isLogin ? 'Login' : 'Signup'}
-                </h2>
+        <div className="auth-container">
+            {/* Left Panel - Animated Gradient with 3D Icon */}
+            <div className="auth-left-panel">
+                <div className="auth-left-content">
+                    <Education3DIcon size={200} />
+                    <h1 className="auth-left-title">
+                        Alumni Network
+                    </h1>
+                    <p className="auth-left-subtitle">
+                        Reconnect with your alma mater, mentor students, and share your professional journey
+                    </p>
+                </div>
+            </div>
 
-                {error && (
-                    <div style={{
-                        background: '#fee2e2',
-                        color: '#dc2626',
-                        padding: '0.75rem',
-                        borderRadius: '4px',
-                        marginBottom: '1rem',
-                        fontSize: '0.9rem',
-                        border: '1px solid #fecaca'
-                    }}>
-                        {error}
+            {/* Right Panel - Login Form */}
+            <div className="auth-right-panel">
+                <div className="auth-form-container">
+                    <div className="auth-form-header">
+                        <h2 className="auth-form-title">
+                            {isLogin ? 'Alumni Login' : 'Join Alumni Network'}
+                        </h2>
+                        <p className="auth-form-subtitle">
+                            {isLogin ? 'Welcome back! Enter your credentials' : 'Register to connect with your alma mater'}
+                        </p>
                     </div>
-                )}
 
-                {message && (
-                    <div style={{
-                        background: '#dcfce7',
-                        color: '#166534',
-                        padding: '0.75rem',
-                        borderRadius: '4px',
-                        marginBottom: '1rem',
-                        fontSize: '0.9rem',
-                        border: '1px solid #bbf7d0'
-                    }}>
-                        {message}
-                    </div>
-                )}
-
-                <form onSubmit={onSubmit}>
-                    {!isLogin && (
-                        <>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Full Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={name}
-                                    onChange={onChange}
-                                    placeholder="Enter your full name"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Passed Out Year</label>
-                                <input
-                                    type="number"
-                                    name="passedOutYear"
-                                    value={passedOutYear}
-                                    onChange={onChange}
-                                    placeholder="e.g. 2020"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Current Company</label>
-                                <input
-                                    type="text"
-                                    name="currentCompany"
-                                    value={currentCompany}
-                                    onChange={onChange}
-                                    placeholder="Where do you work now?"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Job Role</label>
-                                <input
-                                    type="text"
-                                    name="jobRole"
-                                    value={jobRole}
-                                    onChange={onChange}
-                                    placeholder="e.g. Software Engineer"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Phone Number</label>
-                                <input
-                                    type="text"
-                                    name="phoneNumber"
-                                    value={phoneNumber}
-                                    onChange={onChange}
-                                    placeholder="Enter phone number"
-                                    required
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-                        </>
+                    {error && (
+                        <div className="auth-error">
+                            {error}
+                        </div>
                     )}
-                    <div className="form-group" style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Email Address</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={email}
-                            onChange={onChange}
-                            placeholder="Enter your email"
-                            required
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                        />
-                    </div>
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={password}
-                            onChange={onChange}
-                            placeholder="Min 6 characters"
-                            required
-                            minLength="6"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                        />
-                    </div>
 
-                    <button
-                        type="submit"
-                        className="btn"
-                        disabled={loading}
-                        style={{ width: '100%', padding: '0.8rem', fontSize: '1rem' }}
-                    >
-                        {loading ? 'Processing...' : (isLogin ? 'Login' : 'Signup')}
-                    </button>
-                </form>
+                    {message && (
+                        <div style={{
+                            background: 'var(--success-light)',
+                            color: 'var(--success)',
+                            padding: '0.875rem 1rem',
+                            borderRadius: 'var(--radius-md)',
+                            marginBottom: '1.5rem',
+                            fontSize: '0.9rem',
+                            border: '1px solid rgba(16, 185, 129, 0.2)'
+                        }}>
+                            {message}
+                        </div>
+                    )}
 
-                <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-secondary)' }}>
-                    {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-                    <span
-                        onClick={() => setIsLogin(!isLogin)}
-                        style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                        {isLogin ? 'Signup' : 'Login'}
-                    </span>
-                </p>
+                    <form onSubmit={onSubmit} className="auth-form">
+                        {!isLogin && (
+                            <>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Full Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={name}
+                                        onChange={onChange}
+                                        placeholder="Enter your full name"
+                                        required
+                                        className="auth-input"
+                                    />
+                                </div>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Passed Out Year</label>
+                                    <input
+                                        type="number"
+                                        name="passedOutYear"
+                                        value={passedOutYear}
+                                        onChange={onChange}
+                                        placeholder="e.g. 2020"
+                                        required
+                                        className="auth-input"
+                                    />
+                                </div>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Current Company</label>
+                                    <input
+                                        type="text"
+                                        name="currentCompany"
+                                        value={currentCompany}
+                                        onChange={onChange}
+                                        placeholder="Where do you work now?"
+                                        required
+                                        className="auth-input"
+                                    />
+                                </div>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Job Role</label>
+                                    <input
+                                        type="text"
+                                        name="jobRole"
+                                        value={jobRole}
+                                        onChange={onChange}
+                                        placeholder="e.g. Software Engineer"
+                                        required
+                                        className="auth-input"
+                                    />
+                                </div>
+                                <div className="auth-input-group">
+                                    <label className="auth-label">Phone Number</label>
+                                    <input
+                                        type="text"
+                                        name="phoneNumber"
+                                        value={phoneNumber}
+                                        onChange={onChange}
+                                        placeholder="Enter phone number"
+                                        required
+                                        className="auth-input"
+                                    />
+                                </div>
+                            </>
+                        )}
+                        <div className="auth-input-group">
+                            <label className="auth-label">Email Address</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={email}
+                                onChange={onChange}
+                                placeholder="Enter your email"
+                                required
+                                className="auth-input"
+                            />
+                        </div>
+                        <div className="auth-input-group">
+                            <label className="auth-label">Password</label>
+                            <input
+                                type="password"
+                                name="password"
+                                value={password}
+                                onChange={onChange}
+                                placeholder="Min 6 characters"
+                                required
+                                minLength="6"
+                                className="auth-input"
+                            />
+                        </div>
 
-                <div style={{ marginTop: '2rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', fontSize: '0.85rem', color: '#64748b' }}>
-                    <p><strong>Note:</strong> Alumni accounts require manual approval by the administrator before you can log in.</p>
+                        <button
+                            type="submit"
+                            className="auth-button"
+                            disabled={loading}
+                        >
+                            {loading ? 'Processing...' : (isLogin ? 'Login' : 'Create Account')}
+                        </button>
+                    </form>
+
+                    <p className="auth-toggle-text">
+                        {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
+                        <span
+                            onClick={() => setIsLogin(!isLogin)}
+                            className="auth-toggle-link"
+                        >
+                            {isLogin ? 'Sign up' : 'Login'}
+                        </span>
+                    </p>
+
+                    {!isLogin && (
+                        <div style={{
+                            marginTop: '1.5rem',
+                            padding: '1rem',
+                            background: 'var(--gray-50)',
+                            borderRadius: 'var(--radius-md)',
+                            fontSize: '0.85rem',
+                            color: 'var(--text-secondary)',
+                            border: '1px solid var(--border-light)'
+                        }}>
+                            <p><strong>Note:</strong> Alumni accounts require manual approval by the administrator before you can log in.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
