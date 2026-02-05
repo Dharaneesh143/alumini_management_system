@@ -14,8 +14,12 @@ const StatCard = ({ icon, label, value, trend, trendValue, color = 'primary' }) 
                     )}
                 </div>
                 {icon && (
-                    <div className={`text-3xl`} style={{ opacity: 0.6 }}>
-                        {icon}
+                    <div className={`p-3 bg-${color}-light rounded-lg text-${color}`}>
+                        {typeof icon === 'string' ? (
+                            <span className="text-2xl">{icon}</span>
+                        ) : (
+                            React.createElement(icon, { size: 24 })
+                        )}
                     </div>
                 )}
             </div>

@@ -33,6 +33,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const adminLogin = async (email, password) => {
+        console.log('Sending Admin Login:', { email, password });
         const res = await api.post(API_ENDPOINTS.ADMIN_LOGIN, { email, password });
         localStorage.setItem('token', res.data.token);
         setUser(res.data.user);
@@ -46,13 +47,51 @@ export const AuthProvider = ({ children }) => {
         return res.data;
     };
 
+    const studentLogin = async (email, password) => {
+        const res = await api.post(API_ENDPOINTS.STUDENT_LOGIN, { email, password, role: 'student' });
+        localStorage.setItem('token', res.data.token);
+        setUser(res.data.user);
+        return res.data;
+    };
+
+    const alumniLogin = async (email, password) => {
+        const res = await api.post(API_ENDPOINTS.ALUMNI_LOGIN, { email, password, role: 'alumni' });
+        localStorage.setItem('token', res.data.token);
+        setUser(res.data.user);
+        return res.data;
+    };
+
+    const studentSignup = async (userData) => {
+        const res = await api.post(API_ENDPOINTS.STUDENT_SIGNUP, { ...userData, role: 'student' });
+        localStorage.setItem('token', res.data.token);
+        setUser(res.data.user);
+        return res.data;
+    };
+
+    const alumniSignup = async (userData) => {
+        const res = await api.post(API_ENDPOINTS.ALUMNI_SIGNUP, { ...userData, role: 'alumni' });
+        // Alumni signup doesn't log them in (pending approval)
+        return res.data;
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, adminLogin, register, logout }}>
+        <AuthContext.Provider value={{
+            user,
+            loading,
+            login,
+            adminLogin,
+            studentLogin,
+            alumniLogin,
+            studentSignup,
+            alumniSignup,
+            register,
+            logout
+        }}>
             {children}
         </AuthContext.Provider>
     );

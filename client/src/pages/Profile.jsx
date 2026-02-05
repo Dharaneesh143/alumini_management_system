@@ -206,6 +206,57 @@ const Profile = () => {
                         </div>
                     </div>
 
+                    {/* Resume Section */}
+                    {user?.role === 'student' && (
+                        <div className="mt-8 pt-8 border-t border-gray-200">
+                            <h3 className="text-xl font-bold mb-4">Resume (PDF)</h3>
+                            <div className="card bg-gray-50 border-dashed">
+                                <div className="flex flex-col items-center justify-center py-4">
+                                    {user.resumeUrl ? (
+                                        <div className="mb-4 text-center">
+                                            <p className="text-success font-medium mb-2">✅ Resume Uploaded</p>
+                                            <a
+                                                href={`${api.defaults.baseURL}${user.resumeUrl}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-primary hover:underline"
+                                            >
+                                                View Current Resume
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <p className="text-secondary mb-4 italic">No resume uploaded yet (PDF only, max 5MB)</p>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept=".pdf"
+                                        onChange={async (e) => {
+                                            const file = e.target.files[0];
+                                            if (!file) return;
+
+                                            const formData = new FormData();
+                                            formData.append('resume', file);
+
+                                            try {
+                                                setLoading(true);
+                                                await api.post('/api/student/resume', formData, {
+                                                    headers: { 'Content-Type': 'multipart/form-data' }
+                                                });
+                                                setMessage('Resume uploaded successfully!');
+                                                setTimeout(() => window.location.reload(), 1000);
+                                            } catch (err) {
+                                                setMessage(err.response?.data?.msg || 'Failed to upload resume');
+                                            } finally {
+                                                setLoading(false);
+                                            }
+                                        }}
+                                        className="text-sm text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-light file:text-primary hover:file:bg-primary hover:file:text-white transition-all"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Actions */}
                     <div className="flex gap-4 mt-6">
                         <button

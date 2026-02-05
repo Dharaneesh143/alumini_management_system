@@ -11,6 +11,16 @@ import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 import Layout from './components/Layout';
 import { AuthProvider } from './context/AuthContext.jsx';
+import StudentAuth from './pages/StudentAuth';
+import AlumniAuth from './pages/AlumniAuth';
+import MentorshipList from './pages/MentorshipList';
+import MentorshipRequests from './pages/MentorshipRequests';
+import StudentManagement from './pages/admin/StudentManagement';
+import StudentDetailView from './pages/admin/StudentDetailView';
+import AlumniDetailView from './pages/admin/AlumniDetailView';
+import MentorshipConversation from './pages/MentorshipConversation';
+import MentorshipChatList from './pages/MentorshipChatList';
+import MenteeDetailView from './pages/MenteeDetailView';
 
 function App() {
   return (
@@ -22,6 +32,18 @@ function App() {
             <>
               <Navbar />
               <Landing />
+            </>
+          } />
+          <Route path="/auth/student" element={
+            <>
+              <Navbar />
+              <StudentAuth />
+            </>
+          } />
+          <Route path="/auth/alumni" element={
+            <>
+              <Navbar />
+              <AlumniAuth />
             </>
           } />
           <Route path="/login" element={
@@ -62,7 +84,17 @@ function App() {
           } />
           <Route path="/admin/students" element={
             <Layout>
-              <DashboardHelper />
+              <StudentManagement />
+            </Layout>
+          } />
+          <Route path="/admin/students/:id" element={
+            <Layout>
+              <StudentDetailView />
+            </Layout>
+          } />
+          <Route path="/admin/alumni/:id" element={
+            <Layout>
+              <AlumniDetailView />
             </Layout>
           } />
           <Route path="/jobs" element={
@@ -78,6 +110,31 @@ function App() {
           <Route path="/profile" element={
             <Layout>
               <Profile />
+            </Layout>
+          } />
+          <Route path="/mentorship" element={
+            <Layout>
+              <MentorshipList />
+            </Layout>
+          } />
+          <Route path="/mentorship/requests" element={
+            <Layout>
+              <MentorshipRequests />
+            </Layout>
+          } />
+          <Route path="/mentorship/chats" element={
+            <Layout>
+              <MentorshipChatList />
+            </Layout>
+          } />
+          <Route path="/mentorship/conversation/:id" element={
+            <Layout>
+              <MentorshipConversation />
+            </Layout>
+          } />
+          <Route path="/mentee/:id" element={
+            <Layout>
+              <MenteeDetailView />
             </Layout>
           } />
         </Routes>

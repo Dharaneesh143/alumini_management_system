@@ -47,6 +47,10 @@ export const API_ENDPOINTS = {
     LOGIN: '/api/auth/login',
     ADMIN_LOGIN: '/api/auth/admin-login',
     REGISTER: '/api/auth/register',
+    STUDENT_LOGIN: '/api/auth/login',
+    STUDENT_SIGNUP: '/api/auth/register',
+    ALUMNI_LOGIN: '/api/auth/login',
+    ALUMNI_SIGNUP: '/api/auth/register',
 
     // Users
     GET_ME: '/api/users/me',
@@ -58,4 +62,9 @@ export const API_ENDPOINTS = {
     CREATE_JOB: '/api/jobs',
     APPLY_JOB: (jobId) => `/api/jobs/${jobId}/apply`,
     GET_JOB: (jobId) => `/api/jobs/${jobId}`,
+
+    // Mentorship
+    REQUEST_MENTORSHIP: '/api/mentorship/request',
+    GET_MENTORSHIP_REQUESTS: '/api/mentorship/requests',
+    RESPOND_MENTORSHIP: '/api/mentorship/respond',
 };

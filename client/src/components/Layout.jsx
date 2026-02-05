@@ -1,12 +1,43 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+    LayoutDashboard,
+    Briefcase,
+    Users,
+    GraduationCap,
+    UserCheck,
+    PlusCircle,
+    LogOut,
+    User,
+    Settings,
+    Bell,
+    Clock
+} from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
+import api, { API_ENDPOINTS } from '../config/api';
 import './Layout.css';
 
 const Layout = ({ children }) => {
     const { user, logout } = useContext(AuthContext);
     const location = useLocation();
     const navigate = useNavigate();
+    const [activeMentorship, setActiveMentorship] = useState(null);
+
+    useEffect(() => {
+        if (user?.role === 'student' || user?.role === 'alumni') {
+            fetchMentorshipStatus();
+        }
+    }, [user]);
+
+    const fetchMentorshipStatus = async () => {
+        try {
+            const res = await api.get(API_ENDPOINTS.GET_MENTORSHIP_REQUESTS);
+            const active = res.data.find(r => r.status === 'accepted');
+            setActiveMentorship(active);
+        } catch (err) {
+            console.error('Error fetching mentorship status:', err);
+        }
+    };
 
     const handleLogout = () => {
         logout();
@@ -16,23 +47,36 @@ const Layout = ({ children }) => {
     // Role-based navigation items
     const getNavItems = () => {
         const commonItems = [
-            { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-            { path: '/jobs', label: 'Jobs', icon: '💼' }
+            { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { path: '/jobs', label: 'Jobs', icon: Briefcase }
         ];
 
         if (user?.role === 'admin') {
             return [
-                { path: '/dashboard', label: 'Overview', icon: '📊' },
-                { path: '/admin/users', label: 'Users', icon: '👥' },
-                { path: '/admin/alumni', label: 'Alumni', icon: '🎓' },
-                { path: '/jobs', label: 'Jobs', icon: '💼' }
+                { path: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+                { path: '/admin/students', label: 'Students', icon: GraduationCap },
+                { path: '/admin/alumni', label: 'Alumni', icon: UserCheck },
+                { path: '/admin/users', label: 'All Users', icon: Users },
+                { path: '/jobs', label: 'Jobs', icon: Briefcase }
             ];
         }
 
         if (user?.role === 'alumni') {
             return [
                 ...commonItems,
-                { path: '/jobs/create', label: 'Post Job', icon: '➕' }
+                { path: '/mentorship/requests', label: 'Mentorship Requests', icon: GraduationCap },
+                { path: '/mentorship/chats', label: 'My Students', icon: Users },
+                { path: '/jobs/create', label: 'Post Job', icon: PlusCircle }
+            ];
+        }
+
+        if (user?.role === 'student') {
+            return [
+                ...commonItems,
+                activeMentorship
+                    ? { path: `/mentorship/conversation/${activeMentorship._id}`, label: 'My Mentor', icon: GraduationCap }
+                    : { path: '/mentorship', label: 'Find Mentors', icon: GraduationCap },
+                { path: '/mentorship/requests', label: 'My Requests', icon: Clock }
             ];
         }
 
@@ -61,7 +105,9 @@ const Layout = ({ children }) => {
                             to={item.path}
                             className={`sidebar-nav-item ${location.pathname === item.path ? 'active' : ''}`}
                         >
-                            <span className="sidebar-nav-icon">{item.icon}</span>
+                            <span className="sidebar-nav-icon">
+                                {React.createElement(item.icon, { size: 20 })}
+                            </span>
                             <span className="sidebar-nav-label">{item.label}</span>
                         </Link>
                     ))}
@@ -77,7 +123,8 @@ const Layout = ({ children }) => {
                             <div className="sidebar-user-email">{user?.email}</div>
                         </div>
                     </div>
-                    <button onClick={handleLogout} className="btn btn-outline w-full btn-sm">
+                    <button onClick={handleLogout} className="btn btn-outline w-full btn-sm flex items-center justify-center gap-2">
+                        <LogOut size={16} />
                         Logout
                     </button>
                 </div>
