@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API Base URL - centralized configuration
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://alumini-management-system.onrender.com';
 
 // Create axios instance with default config
 const api = axios.create({
