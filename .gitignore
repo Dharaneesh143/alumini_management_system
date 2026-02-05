@@ -17,3 +17,10 @@ server/uploads/
 # Local scripts
 checkDB.js
 verify_password.js
+
+# Admin restore / seed / test scripts
+server/audit_db.js
+server/restore_admin.js
+server/seed_all_admins.js
+server/testAdminVerify.js
+server/testAuthFlow.js
