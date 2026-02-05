@@ -2,46 +2,50 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('./models/User');
+const Admin = require('./models/Admin');
 
 const seedUsers = async () => {
     try {
-        // Connect to MongoDB
         await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/alumni_portal');
         console.log('MongoDB Connected');
 
-        // Clear existing users (optional - comment out if you want to keep existing users)
-        // Clear existing users to ensure fresh test data
+        await Admin.deleteMany({});
         await User.deleteMany({});
-        console.log('Cleared existing users');
+        console.log('Cleared existing admins and users');
 
-        // Hash password for all test users
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('password123', salt);
+        const password123 = await bcrypt.hash('password123', salt);
 
-        // Test users for all three roles
+        // Seed Admin
+        const admin = new Admin({
+            name: 'Admin User',
+            email: 'admin@alumni.com',
+            password: password123,
+            role: 'admin'
+        });
+        await admin.save();
+        console.log('Created admin: admin@alumni.com');
+
+        // Seed Users
         const testUsers = [
-            {
-                name: 'Admin User',
-                email: 'admin@alumni.com',
-                password: hashedPassword,
-                role: 'admin',
-                isVerified: true,
-                profile: {
-                    department: 'Administration',
-                    batch: '2020',
-                    company: 'Alumni Portal',
-                    designation: 'System Administrator',
-                    skills: ['Management', 'Administration'],
-                    linkedin: 'https://linkedin.com/in/admin',
-                    github: 'https://github.com/admin'
-                }
-            },
             {
                 name: 'Alumni User',
                 email: 'alumni@alumni.com',
-                password: hashedPassword,
+                password: password123,
                 role: 'alumni',
-                isVerified: true,
+                approvalStatus: 'approved',
+                phoneNumber: '1234567890',
+                department: 'Computer Science', // NEW top level
+                batch: '2018',         // NEW top level
+                passedOutYear: '2018',
+                currentCompany: 'Tech Corp',
+                jobRole: 'Senior Software Engineer',
+                isMentor: true,
+                mentorSettings: {
+                    capacity: 5,
+                    mentorshipAreas: ['React', 'Node.js', 'System Design'],
+                    resumeReview: true
+                },
                 profile: {
                     department: 'Computer Science',
                     batch: '2018',
@@ -55,9 +59,13 @@ const seedUsers = async () => {
             {
                 name: 'Student User',
                 email: 'student@alumni.com',
-                password: hashedPassword,
+                password: password123,
                 role: 'student',
-                isVerified: true,
+                approvalStatus: 'approved',
+                registerNumber: 'STUD001',
+                department: 'Computer Science', // NEW top level
+                batch: '2024',         // NEW top level
+                phoneNumber: '9876543210',  // NEW top level
                 profile: {
                     department: 'Computer Science',
                     batch: '2024',
@@ -70,30 +78,18 @@ const seedUsers = async () => {
             }
         ];
 
-        // Insert test users
         for (const userData of testUsers) {
-            const existingUser = await User.findOne({ email: userData.email });
-            if (existingUser) {
-                console.log(`User ${userData.email} already exists, skipping...`);
-            } else {
-                const user = new User(userData);
-                await user.save();
-                console.log(`Created user: ${userData.email} (${userData.role})`);
-            }
+            const user = new User(userData);
+            await user.save();
+            console.log(`Created user: ${userData.email} (${userData.role})`);
         }
 
-        console.log('\n=== Test Users Created Successfully ===');
+        console.log('\n=== Test Accounts Created Successfully ===');
         console.log('\nLogin Credentials:');
         console.log('-----------------------------------');
-        console.log('1. ADMIN:');
-        console.log('   Email: admin@alumni.com');
-        console.log('   Password: password123');
-        console.log('\n2. ALUMNI:');
-        console.log('   Email: alumni@alumni.com');
-        console.log('   Password: password123');
-        console.log('\n3. STUDENT:');
-        console.log('   Email: student@alumni.com');
-        console.log('   Password: password123');
+        console.log('1. ADMIN collection: admin@alumni.com / password123');
+        console.log('2. USER collection : alumni@alumni.com / password123');
+        console.log('3. USER collection : student@alumni.com / password123');
         console.log('-----------------------------------\n');
 
         mongoose.connection.close();

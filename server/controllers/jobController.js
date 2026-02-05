@@ -53,7 +53,10 @@ exports.applyJob = async (req, res) => {
         if (!job) return res.status(404).json({ msg: 'Job not found' });
 
         // Check if already applied
-        if (job.applicants.some(applicant => applicant.user.toString() === req.user.id)) {
+        const alreadyApplied = job.applicants.some(applicant => applicant.user.toString() === req.user.id);
+        console.log(`Debug: User ${req.user.id} applying for job ${req.params.id}. Already applied: ${alreadyApplied}`);
+
+        if (alreadyApplied) {
             return res.status(400).json({ msg: 'Already applied' });
         }
 

@@ -16,15 +16,47 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['student', 'alumni', 'admin'],
+        enum: ['student', 'alumni'],
         default: 'student'
     },
-    isVerified: {
-        type: Boolean,
-        default: false // Alumni need admin verification
+    // Student specific
+    registerNumber: {
+        type: String,
+        sparse: true,
+        unique: true
     },
-    // Extended Profile Data (Optional/role-specific, but keeping common fields here for simplicity or creating separate Profile model)
-    // For now, storing core profile data here to simplify initial networking
+    // Alumni specific
+    approvalStatus: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: function () {
+            return this.role === 'alumni' ? 'pending' : 'approved';
+        }
+    },
+    phoneNumber: String,
+    department: String,
+    batch: String,
+    passedOutYear: String,
+    currentCompany: String,
+    jobRole: String,
+    accountStatus: {
+        type: String,
+        enum: ['active', 'blocked'],
+        default: 'active'
+    },
+
+    // Mentor specific
+    isMentor: {
+        type: Boolean,
+        default: false
+    },
+    mentorSettings: {
+        capacity: { type: Number, default: 3 },
+        mentorshipAreas: [String],
+        resumeReview: { type: Boolean, default: true }
+    },
+
+    // Common Profile Data
     profile: {
         department: String,
         batch: String, // Year
@@ -32,12 +64,27 @@ const userSchema = new mongoose.Schema({
         designation: String,
         skills: [String],
         linkedin: String,
-        github: String
+        github: String,
+        resumeUrl: String
     },
     createdAt: {
         type: Date,
         default: Date.now
     }
+});
+
+// Pre-save middleware to sync fields
+userSchema.pre('save', async function () {
+    if (this.role === 'alumni') {
+        if (this.batch && !this.passedOutYear) this.passedOutYear = this.batch;
+        if (!this.batch && this.passedOutYear) this.batch = this.passedOutYear;
+
+        if (this.currentCompany) this.profile.company = this.currentCompany;
+        if (this.jobRole) this.profile.designation = this.jobRole;
+    }
+
+    if (this.department) this.profile.department = this.department;
+    if (this.batch) this.profile.batch = this.batch;
 });
 
 module.exports = mongoose.model('User', userSchema);

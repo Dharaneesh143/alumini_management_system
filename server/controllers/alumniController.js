@@ -15,18 +15,33 @@ exports.getProfile = async (req, res) => {
 // Update Alumni Profile
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, profile } = req.body;
-        const user = await User.findById(req.user.id);
+        const { name, profile, isMentor, mentorSettings } = req.body;
+        const alumni = await User.findById(req.user.id);
 
-        // Verification check could be added here if critical info changes
+        if (!alumni) return res.status(404).json({ msg: 'Alumni not found' });
 
-        if (name) user.name = name;
+        if (name) alumni.name = name;
         if (profile) {
-            user.profile = { ...user.profile, ...profile };
+            alumni.profile = { ...alumni.profile, ...profile };
+            if (profile.batch) {
+                alumni.batch = profile.batch;
+                alumni.passedOutYear = profile.batch;
+            }
+            if (profile.department) alumni.department = profile.department;
+            if (profile.phoneNumber) alumni.phoneNumber = profile.phoneNumber;
         }
 
-        await user.save();
-        res.json(user);
+        // Mentorship settings
+        if (typeof isMentor === 'boolean') alumni.isMentor = isMentor;
+        if (mentorSettings) {
+            alumni.mentorSettings = {
+                ...alumni.mentorSettings,
+                ...mentorSettings
+            };
+        }
+
+        await alumni.save();
+        res.json(alumni);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -36,14 +51,19 @@ exports.updateProfile = async (req, res) => {
 // Post a Job
 exports.postJob = async (req, res) => {
     try {
-        // Strict verification check
         const user = await User.findById(req.user.id);
-        if (!user.isVerified) {
+        if (user.approvalStatus !== 'approved') {
             return res.status(403).json({ msg: 'Account not verified. Cannot post jobs.' });
         }
 
         const newJob = new Job({
-            ...req.body,
+            title: req.body.title,
+            company: req.body.company,
+            location: req.body.location,
+            description: req.body.description,
+            requirements: req.body.requirements,
+            salary: req.body.salary,
+            jobType: req.body.jobType,
             postedBy: req.user.id
         });
 
@@ -58,7 +78,7 @@ exports.postJob = async (req, res) => {
 // Get My Posted Jobs
 exports.getMyJobs = async (req, res) => {
     try {
-        const jobs = await Job.find({ postedBy: req.user.id }).sort({ postedDate: -1 });
+        const jobs = await Job.find({ postedBy: req.user.id }).sort({ createdAt: -1 });
         res.json(jobs);
     } catch (err) {
         console.error(err.message);
@@ -75,7 +95,6 @@ exports.getJobApplicants = async (req, res) => {
             return res.status(404).json({ msg: 'Job not found' });
         }
 
-        // Ensure job belongs to logged in alumni
         if (job.postedBy.toString() !== req.user.id) {
             return res.status(401).json({ msg: 'Not authorized' });
         }

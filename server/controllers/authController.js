@@ -1,11 +1,12 @@
 const User = require('../models/User');
+const Admin = require('../models/Admin');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Register User
+// Register User (Handles Student, Alumni)
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, role, profile } = req.body;
+        const { name, email, password, role, registerNumber, phoneNumber, passedOutYear, currentCompany, jobRole, department, batch } = req.body;
 
         // Check if user exists
         let user = await User.findOne({ email });
@@ -13,42 +14,75 @@ exports.register = async (req, res) => {
             return res.status(400).json({ msg: 'User already exists' });
         }
 
+        if (registerNumber) {
+            const existingStudent = await User.findOne({ registerNumber });
+            if (existingStudent) {
+                return res.status(400).json({ msg: 'Register number already exists' });
+            }
+        }
+
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Verification status: Alumni = false (pending), Student = true (auto)
-        // Admin verification logic can be refined later
-        const isVerified = role === 'alumni' ? false : true;
-
-        user = new User({
+        // Map data based on role
+        const userData = {
             name,
             email,
             password: hashedPassword,
-            role,
-            isVerified,
-            profile // Optional profile data during registration
-        });
+            role: role || 'student',
+            department: department || 'N/A',
+            batch: batch || passedOutYear || req.body.graduationYear || 'N/A',
+            phoneNumber: phoneNumber || 'N/A',
+            profile: {
+                department: department || 'N/A',
+                batch: batch || passedOutYear || req.body.graduationYear || 'N/A',
+                company: currentCompany || 'N/A',
+                designation: jobRole || 'N/A'
+            }
+        };
 
+        if (userData.role === 'student') {
+            userData.registerNumber = registerNumber;
+            userData.approvalStatus = 'approved'; // Students are auto-approved
+        } else if (userData.role === 'alumni') {
+            userData.passedOutYear = userData.batch;
+            userData.currentCompany = currentCompany;
+            userData.jobRole = jobRole;
+            userData.approvalStatus = 'pending'; // Alumni need admin approval
+        }
+
+        user = new User(userData);
         await user.save();
 
-        // payload for token (optional to login immediately, but maybe wait for verify if alumni)
         const payload = {
             user: {
-                id: user.id,
+                id: user._id,
                 role: user.role
             }
         };
 
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '5h' },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, role: user.role, isVerified } });
+        const token = await new Promise((resolve, reject) => {
+            jwt.sign(
+                payload,
+                process.env.JWT_SECRET,
+                { expiresIn: '5h' },
+                (err, token) => {
+                    if (err) reject(err);
+                    else resolve(token);
+                }
+            );
+        });
+
+        res.status(201).json({
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                role: user.role,
+                isVerified: user.approvalStatus === 'approved'
             }
-        );
+        });
 
     } catch (err) {
         console.error(err.message);
@@ -56,40 +90,31 @@ exports.register = async (req, res) => {
     }
 };
 
-// Login User (Student & Alumni)
+// Generic Login (Used by Student, Alumni portals)
 exports.login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
-        console.log('Login attempt:', { email, role }); // DEBUG LOG
 
-        // Check user
         let user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        // Match password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        // Verify Role if provided (Strict Check)
+        // Role Check
         if (role && user.role !== role) {
             return res.status(403).json({ msg: 'Unauthorized: Role mismatch' });
         }
 
-        // Prevent Admin from logging in via this portal (if strict separation requested)
-        if (user.role === 'admin') {
-            return res.status(403).json({ msg: 'Admins must use the Admin Portal' });
+        // Alumni Approval Check
+        if (user.role === 'alumni' && user.approvalStatus !== 'approved') {
+            return res.status(403).json({ msg: 'Your alumni account is waiting for admin approval.' });
         }
 
-        // Alumni Verification Check
-        if (user.role === 'alumni' && !user.isVerified) {
-            return res.status(403).json({ msg: 'Your alumni account is pending admin verification.' });
-        }
-
-        // Return token
         const payload = {
             user: {
                 id: user.id,
@@ -103,7 +128,16 @@ exports.login = async (req, res) => {
             { expiresIn: '5h' },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, role: user.role, isVerified: user.isVerified } });
+                res.json({
+                    token,
+                    user: {
+                        id: user.id,
+                        name: user.name,
+                        role: user.role,
+                        isVerified: user.approvalStatus === 'approved',
+                        profile: user.profile
+                    }
+                });
             }
         );
 
@@ -113,39 +147,25 @@ exports.login = async (req, res) => {
     }
 };
 
-// Admin Login
+// Admin Login (Dedicated collection)
 exports.adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log('Admin Login Attempt:', { email }); // Debug Log
 
-        // Check user
-        let user = await User.findOne({ email });
-        if (!user) {
-            console.log('Admin Login Failed: User not found');
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+        let admin = await Admin.findOne({ email });
+        if (!admin) {
+            return res.status(400).json({ msg: 'Invalid Admin Credentials' });
         }
 
-        console.log('User found, Role:', user.role); // Debug Log
-
-        // Match password
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) {
-            console.log('Admin Login Failed: Password mismatch');
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+            return res.status(400).json({ msg: 'Invalid Admin Credentials' });
         }
 
-        // Force Admin Role Check
-        if (user.role !== 'admin') {
-            console.log('Admin Login Failed: Role denied (' + user.role + ')');
-            return res.status(403).json({ msg: 'Access Denied: Admins Only' });
-        }
-
-        // Return token
         const payload = {
             user: {
-                id: user.id,
-                role: user.role
+                id: admin.id,
+                role: 'admin'
             }
         };
 
@@ -155,7 +175,14 @@ exports.adminLogin = async (req, res) => {
             { expiresIn: '5h' },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, role: user.role, isVerified: user.isVerified } });
+                res.json({
+                    token,
+                    user: {
+                        id: admin.id,
+                        name: admin.name,
+                        role: 'admin'
+                    }
+                });
             }
         );
 
@@ -165,10 +192,18 @@ exports.adminLogin = async (req, res) => {
     }
 };
 
-// Get Current User (Me)
 exports.getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password');
+        let user;
+        if (req.user.role === 'admin') {
+            user = await Admin.findById(req.user.id).select('-password');
+        } else {
+            user = await User.findById(req.user.id).select('-password');
+        }
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
         res.json(user);
     } catch (err) {
         console.error(err.message);
