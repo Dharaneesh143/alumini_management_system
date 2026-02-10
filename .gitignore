@@ -24,3 +24,6 @@ server/restore_admin.js
 server/seed_all_admins.js
 server/testAdminVerify.js
 server/testAuthFlow.js
+
+node_modules/
+.env

@@ -56,6 +56,16 @@ body {
   --danger-light: #fee2e2;
   --info: #3b82f6;
   --info-light: #dbeafe;
+  --purple: #a855f7;
+  --purple-light: #f3e8ff;
+  --indigo: #6366f1;
+  --indigo-light: #e0e7ff;
+  --rose: #f43f5e;
+  --rose-light: #fff1f2;
+  --amber: #f59e0b;
+  --amber-light: #fff7ed;
+  --orange: #f97316;
+  --orange-light: #fff7ed;
 
   /* Application Colors */
   --primary: var(--primary-600);
@@ -180,9 +190,19 @@ a:hover {
 }
 
 .content-wrapper {
-  padding: var(--spacing-xl);
+  padding: var(--spacing-2xl);
   max-width: var(--container-max);
   margin: 0 auto;
+  padding-bottom: 6rem !important;
+  min-height: calc(100vh - var(--topbar-height));
+  position: relative;
+}
+
+.content-wrapper::after {
+  content: '';
+  display: block;
+  height: 100px;
+  width: 100%;
 }
 
 /* ============================================
@@ -192,7 +212,7 @@ a:hover {
   background: var(--surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-xl);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
 }
@@ -403,6 +423,7 @@ a:hover {
 
 .table tbody tr:last-child td {
   border-bottom: none;
+  padding-bottom: 2rem;
 }
 
 /* ============================================
@@ -528,6 +549,101 @@ a:hover {
 .gap-8 {
   gap: var(--spacing-xl);
 }
+/* GAP CLASSES */
+
+.gap-1{gap:4px;}
+.gap-1\.5{gap:6px;}
+.gap-2{gap:8px;}
+.gap-2\.5{gap:10px;}
+.gap-3{gap:12px;}
+.gap-3\.5{gap:14px;}
+.gap-4{gap:16px;}
+.gap-4\.5{gap:18px;}
+.gap-5{gap:20px;}
+.gap-5\.5{gap:22px;}
+.gap-6{gap:24px;}
+.gap-6\.5{gap:26px;}
+.gap-7{gap:28px;}
+.gap-7\.5{gap:30px;}
+.gap-8{gap:32px;}
+.gap-8\.5{gap:34px;}
+.gap-9{gap:36px;}
+.gap-9\.5{gap:38px;}
+.gap-10{gap:40px;}
+.gap-11{gap:44px;}
+.gap-12{gap:48px;}
+.gap-13{gap:52px;}
+.gap-14{gap:56px;}
+.gap-15{gap:60px;}
+.gap-16{gap:64px;}
+.gap-17{gap:68px;}
+.gap-18{gap:72px;}
+.gap-19{gap:76px;}
+.gap-20{gap:80px;}
+
+
+/* PADDING X */
+
+.px-1{padding-left:4px;padding-right:4px;}
+.px-1\.5{padding-left:6px;padding-right:6px;}
+.px-2{padding-left:8px;padding-right:8px;}
+.px-2\.5{padding-left:10px;padding-right:10px;}
+.px-3{padding-left:12px;padding-right:12px;}
+.px-3\.5{padding-left:14px;padding-right:14px;}
+.px-4{padding-left:16px;padding-right:16px;}
+.px-5{padding-left:20px;padding-right:20px;}
+.px-6{padding-left:24px;padding-right:24px;}
+.px-7{padding-left:28px;padding-right:28px;}
+.px-8{padding-left:32px;padding-right:32px;}
+.px-9{padding-left:36px;padding-right:36px;}
+.px-10{padding-left:40px;padding-right:40px;}
+.px-11{padding-left:44px;padding-right:44px;}
+.px-12{padding-left:48px;padding-right:48px;}
+.px-13{padding-left:52px;padding-right:52px;}
+.px-14{padding-left:56px;padding-right:56px;}
+.px-15{padding-left:60px;padding-right:60px;}
+.px-16{padding-left:64px;padding-right:64px;}
+.px-17{padding-left:68px;padding-right:68px;}
+.px-18{padding-left:72px;padding-right:72px;}
+.px-19{padding-left:76px;padding-right:76px;}
+.px-20{padding-left:80px;padding-right:80px;}
+
+
+/* PADDING Y */
+
+.py-1{padding-top:4px;padding-bottom:4px;}
+.py-1\.5{padding-top:6px;padding-bottom:6px;}
+.py-2{padding-top:8px;padding-bottom:8px;}
+.py-2\.5{padding-top:10px;padding-bottom:10px;}
+.py-3{padding-top:12px;padding-bottom:12px;}
+.py-3\.5{padding-top:14px;padding-bottom:14px;}
+.py-4{padding-top:16px;padding-bottom:16px;}
+.py-5{padding-top:20px;padding-bottom:20px;}
+.py-6{padding-top:24px;padding-bottom:24px;}
+.py-7{padding-top:28px;padding-bottom:28px;}
+.py-8{padding-top:32px;padding-bottom:32px;}
+.py-9{padding-top:36px;padding-bottom:36px;}
+.py-10{padding-top:40px;padding-bottom:40px;}
+.py-11{padding-top:44px;padding-bottom:44px;}
+.py-12{padding-top:48px;padding-bottom:48px;}
+.py-13{padding-top:52px;padding-bottom:52px;}
+.py-14{padding-top:56px;padding-bottom:56px;}
+.py-15{padding-top:60px;padding-bottom:60px;}
+.py-16{padding-top:64px;padding-bottom:64px;}
+.py-17{padding-top:68px;padding-bottom:68px;}
+.py-18{padding-top:72px;padding-bottom:72px;}
+.py-19{padding-top:76px;padding-bottom:76px;}
+.py-20{padding-top:80px;padding-bottom:80px;}
+
+
+/* Space Between */
+.space-y-6>*+* {
+  margin-top: var(--spacing-lg);
+}
+
+.space-y-8>*+* {
+  margin-top: var(--spacing-xl);
+}
 
 /* Spacing */
 .m-0 {
@@ -558,12 +674,30 @@ a:hover {
   margin-bottom: var(--spacing-lg);
 }
 
+.mb-8 {
+  margin-bottom: var(--spacing-xl);
+}
+
+.p-2{
+  padding: 0.625rem;
+}
+
 .p-4 {
   padding: var(--spacing-md);
 }
-
+.p-8{
+  padding: var(--spacing-xl);
+}
 .p-6 {
   padding: var(--spacing-lg);
+}
+
+.pl-10 {
+  padding-left: var(--spacing-xl);
+}
+
+.pl-12 {
+  padding-left: var(--spacing-2xl);
 }
 
 /* Text */
@@ -637,6 +771,62 @@ a:hover {
 
 .text-warning {
   color: var(--warning);
+}
+
+.text-purple {
+  color: var(--purple);
+}
+
+.text-indigo {
+  color: var(--indigo);
+}
+
+.text-rose {
+  color: var(--rose);
+}
+
+.text-amber {
+  color: var(--amber);
+}
+
+.bg-primary-light {
+  background: var(--primary-50);
+}
+
+.bg-purple-light {
+  background: var(--purple-light);
+}
+
+.bg-success-light {
+  background: var(--success-light);
+}
+
+.bg-indigo-light {
+  background: var(--indigo-light);
+}
+
+.bg-warning-light {
+  background: var(--warning-light);
+}
+
+.bg-danger-light {
+  background: var(--danger-light);
+}
+
+.bg-info-light {
+  background: var(--info-light);
+}
+
+.bg-rose-light {
+  background: var(--rose-light);
+}
+
+.bg-amber-light {
+  background: var(--amber-light);
+}
+
+.bg-orange-light {
+  background: var(--orange-light);
 }
 
 /* Width */
@@ -1038,5 +1228,143 @@ a:hover {
   .auth-3d-icon {
     width: 120px;
     height: 120px;
+  }
+}
+
+/* ============================================
+   ALUMNI DASHBOARD STYLES
+   ============================================ */
+.dashboard-container {
+  padding: 30px;
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.dashboard-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.dashboard-header p {
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* STATS */
+.stats-grid {
+  margin-top: 25px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.stat-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.stat-card h2 {
+  margin-top: 8px;
+  font-size: 26px;
+}
+
+.stat-card .icon {
+  font-size: 26px;
+}
+
+.blue {
+  border-left: 5px solid #4f46e5;
+}
+
+.green {
+  border-left: 5px solid #22c55e;
+}
+
+.orange {
+  border-left: 5px solid #f59e0b;
+}
+
+.purple {
+  border-left: 5px solid #9333ea;
+}
+
+/* CHARTS */
+.charts-grid {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+}
+
+.chart-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.chart-card h3 {
+  margin-bottom: 15px;
+}
+
+/* BOTTOM */
+.bottom-grid {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.activity-card,
+.alert-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.activity-card ul {
+  list-style: none;
+  margin-top: 10px;
+}
+
+.activity-card li {
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+/* Responsive Alumni Dashboard */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-container {
+    padding: 20px;
   }
 }

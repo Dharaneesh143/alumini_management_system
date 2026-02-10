@@ -4,7 +4,7 @@ import { GraduationCap, Briefcase, Users, Search, Lightbulb } from 'lucide-react
 
 const Landing = () => {
     return (
-        <div className="landing-page">
+        <div className="landing-page" style={{ marginBottom: '2rem' }}>
             {/* Hero Section */}
             <section className="animated-gradient-bg" style={{
                 color: 'white',
@@ -153,6 +153,21 @@ const Landing = () => {
 
                 </div>
             </section>
+            {/* Footer */}
+            <footer style={{
+                textAlign: 'center',
+                padding: '3rem 0',
+                borderTop: '1px solid var(--border)',
+                marginTop: '3rem',
+                marginBottom: '3rem'
+            }}>
+                <p className="text-secondary text-sm">
+                    &copy; 2026 Alumni Portal. All rights reserved.
+                </p>
+                <Link to="/auth/admin/login" className="text-xs text-secondary hover:text-primary transition-colors" style={{ opacity: 0.6 }}>
+                    Admin Access
+                </Link>
+            </footer>
         </div>
     );
 };

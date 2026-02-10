@@ -2,7 +2,7 @@ import React from 'react';
 import { FileText, Download, Play, Check, CheckCheck, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 
-const MessageBubble = ({ message, isOwn, partnerName, onDelete }) => {
+const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) => {
     const formatTime = (date) => {
         return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
@@ -16,7 +16,13 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete }) => {
                             src={`${API_BASE_URL}/${message.fileUrl}`}
                             alt="Sent image"
                             className="rounded-lg max-w-full max-h-[350px] w-auto h-auto object-contain cursor-pointer hover:opacity-95 transition-opacity mx-auto"
-                            onClick={() => window.open(`${API_BASE_URL}/${message.fileUrl}`, '_blank')}
+                            onClick={() => {
+                                if (onImageClick) {
+                                    onImageClick(`${API_BASE_URL}/${message.fileUrl}`, message.text);
+                                } else {
+                                    window.open(`${API_BASE_URL}/${message.fileUrl}`, '_blank');
+                                }
+                            }}
                         />
                         {message.text && <p className="mt-2 text-sm">{message.text}</p>}
                     </div>
@@ -87,18 +93,18 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete }) => {
                 <div className={`
                     p-4 rounded-3xl shadow-sm relative
                     ${isOwn
-                        ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-tr-none'
+                        ? 'bg-indigo-100 text-gray-800 rounded-tr-none'
                         : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'}
                 `}>
                     {renderContent()}
 
-                    <div className={`flex items-center gap-1 mt-2 justify-end ${isOwn ? 'text-white/70' : 'text-gray-400'}`}>
+                    <div className={`flex items-center gap-1 mt-2 justify-end text-gray-400`}>
                         <span className="text-[10px] font-medium">{formatTime(message.createdAt)}</span>
                         {isOwn && (
                             message.readBy?.length > 1 ? (
-                                <CheckCheck size={14} className="text-white" />
+                                <CheckCheck size={14} className="text-indigo-600" />
                             ) : (
-                                <Check size={14} />
+                                <Check size={14} className="text-gray-500" />
                             )
                         )}
                     </div>

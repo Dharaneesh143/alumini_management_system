@@ -19,8 +19,10 @@ router.use(auth);
 router.get('/profile', studentController.getProfile);
 router.put('/profile', studentController.updateProfile);
 
+const jobController = require('../controllers/jobController');
+
 // Job Routes
-router.get('/jobs', studentController.getJobs);
+router.get('/jobs', jobController.getJobs);
 router.post('/jobs/apply/:jobId', studentController.applyForJob);
 router.get('/applications', studentController.getAppliedJobs);
 
@@ -29,19 +31,7 @@ router.get('/stats', studentController.getDashboardStats);
 router.get('/alumni-discovery', studentController.getVerifiedAlumni);
 
 // Resume (New)
-const multer = require('multer');
-const path = require('path');
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/resumes'),
-    filename: (req, file, cb) => cb(null, `resume-${req.user.id}-${Date.now()}${path.extname(file.originalname)}`)
-});
-const upload = multer({
-    storage,
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf') return cb(null, true);
-        cb(new Error('Only PDF allowed'));
-    }
-});
+const upload = require('../middleware/upload');
 router.post('/resume', upload.single('resume'), studentController.uploadResume);
 
 module.exports = router;

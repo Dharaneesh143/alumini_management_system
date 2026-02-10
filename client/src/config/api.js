@@ -84,10 +84,31 @@ export const API_ENDPOINTS = {
     CREATE_JOB: '/api/jobs',
     APPLY_JOB: (jobId) => `/api/jobs/${jobId}/apply`,
     GET_JOB: (jobId) => `/api/jobs/${jobId}`,
+    GET_JOB_APPLICANTS: (jobId) => `/api/jobs/${jobId}/applicants`,
 
     // Mentorship
     REQUEST_MENTORSHIP: '/api/mentorship/request',
     GET_MENTORSHIP_REQUESTS: '/api/mentorship/requests',
     RESPOND_MENTORSHIP: '/api/mentorship/respond',
+
+    // Notifications
+    GET_NOTIFICATIONS: '/api/notifications',
+    MARK_NOTIFICATION_READ: (id) => `/api/notifications/${id}/read`,
+    MARK_ALL_READ: '/api/notifications/read-all',
+
+    // Admin
+    GET_ADMIN_STATS: '/api/admin/stats',
+    GET_ADMIN_ACTIVITY: '/api/admin/activity',
+
+    // Alumni
+    GET_ALUMNI_STATS: '/api/alumni/stats',
+
+    // Events
+    EVENTS: '/api/events',
+    EVENT_DETAILS: (id) => `/api/events/${id}`,
+    REGISTER_EVENT: (id) => `/api/events/${id}/register`,
+    UPLOAD_PRESENTATION: (id) => `/api/events/${id}/presentation`,
+    EVENT_STATS: '/api/events/stats/analytics',
+    ADD_FEEDBACK: (id) => `/api/events/${id}/feedback`
 };
 

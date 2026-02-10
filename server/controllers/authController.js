@@ -2,6 +2,17 @@ const User = require('../models/User');
 const Admin = require('../models/Admin');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+
+// Helper to log to debug.log
+const logToFile = (msg) => {
+    const logMsg = `[${new Date().toISOString()}] ${msg}\n`;
+    try {
+        fs.appendFileSync(path.join(__dirname, '../debug.log'), logMsg);
+    } catch (e) { }
+    console.log(msg);
+};
 
 // Register User (Handles Student, Alumni)
 exports.register = async (req, res) => {
@@ -115,6 +126,15 @@ exports.login = async (req, res) => {
             return res.status(403).json({ msg: 'Your alumni account is waiting for admin approval.' });
         }
 
+        // Account Status Check
+        if (user.accountStatus === 'deactivated') {
+            return res.status(403).json({ msg: 'Your account has been deactivated. Please contact support for reactivation.' });
+        }
+
+        if (user.accountStatus === 'blocked') {
+            return res.status(403).json({ msg: 'Your account has been blocked. Please contact the administrator.' });
+        }
+
         const payload = {
             user: {
                 id: user.id,
@@ -147,21 +167,31 @@ exports.login = async (req, res) => {
     }
 };
 
-// Admin Login (Dedicated collection)
+// Admin Login (Checks User collection for role='admin')
 exports.adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
+        logToFile(`🔍 Admin Login Attempt: ${JSON.stringify({ email, passwordLength: password?.length })}`);
 
-        let admin = await Admin.findOne({ email });
+        // Check User collection for admin role
+        let admin = await User.findOne({ email, role: 'admin' });
+        logToFile(`🔍 Admin found: ${admin ? `Yes (${admin.name})` : 'No'}`);
+
         if (!admin) {
+            logToFile(`❌ Admin ${email} not found in User collection`);
             return res.status(400).json({ msg: 'Invalid Admin Credentials' });
         }
 
+        logToFile('🔍 Comparing passwords...');
         const isMatch = await bcrypt.compare(password, admin.password);
+        logToFile(`🔍 Password match: ${isMatch ? '✅ YES' : '❌ NO'}`);
+
         if (!isMatch) {
+            logToFile(`❌ Password mismatch for ${email}`);
             return res.status(400).json({ msg: 'Invalid Admin Credentials' });
         }
 
+        logToFile(`✅ Admin login successful for ${email}!`);
         const payload = {
             user: {
                 id: admin.id,
@@ -187,19 +217,15 @@ exports.adminLogin = async (req, res) => {
         );
 
     } catch (err) {
-        console.error(err.message);
+        console.error('💥 Admin Login Error:', err.message);
         res.status(500).send('Server Error');
     }
 };
 
 exports.getMe = async (req, res) => {
     try {
-        let user;
-        if (req.user.role === 'admin') {
-            user = await Admin.findById(req.user.id).select('-password');
-        } else {
-            user = await User.findById(req.user.id).select('-password');
-        }
+        // All users (including admins) are in User collection
+        const user = await User.findById(req.user.id).select('-password');
 
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
+import { Link } from 'react-router-dom';
 import api, { API_ENDPOINTS } from '../config/api';
 import {
     Clock,
@@ -16,10 +17,13 @@ const MentorshipRequests = () => {
     const { user } = useContext(AuthContext);
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [respondingTo, setRespondingTo] = useState(null);
-    const [viewingRequest, setViewingRequest] = useState(null);
-    const [responseMessage, setResponseMessage] = useState('');
     const [statusFilter, setStatusFilter] = useState('pending');
+    const [showEndModal, setShowEndModal] = useState(false);
+    const [selectedRequestForEnd, setSelectedRequestForEnd] = useState(null);
+    const [endFeedback, setEndFeedback] = useState('');
+    const [viewingRequest, setViewingRequest] = useState(null);
+    const [respondingTo, setRespondingTo] = useState(null);
+    const [responseMessage, setResponseMessage] = useState('');
 
     useEffect(() => {
         fetchRequests();
@@ -42,10 +46,13 @@ const MentorshipRequests = () => {
             await api.post(API_ENDPOINTS.RESPOND_MENTORSHIP, {
                 requestId,
                 status,
-                response: quickRequest ? 'Mentorship ended by Alumni' : responseMessage
+                response: quickRequest ? (status === 'removed' ? endFeedback : 'Mentorship ended by Alumni') : responseMessage
             });
             setRespondingTo(null);
             setResponseMessage('');
+            setShowEndModal(false);
+            setEndFeedback('');
+            setSelectedRequestForEnd(null);
             fetchRequests();
         } catch (err) {
             alert(err.response?.data?.msg || 'Failed to update request');
@@ -176,9 +183,8 @@ const MentorshipRequests = () => {
                                 {user.role === 'alumni' && req.status === 'accepted' && (
                                     <button
                                         onClick={() => {
-                                            if (window.confirm('Are you sure you want to end this mentorship?')) {
-                                                handleRespond('removed', req);
-                                            }
+                                            setSelectedRequestForEnd(req);
+                                            setShowEndModal(true);
                                         }}
                                         className="text-xs text-danger hover:underline"
                                     >
@@ -293,6 +299,81 @@ const MentorshipRequests = () => {
                                 Cancel
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+            {/* End Mentorship Modal - Refined Review Style Design */}
+            {showEndModal && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-[2px] flex items-center justify-center z-[9999] p-4"
+                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowEndModal(false);
+                            setEndFeedback('');
+                            setSelectedRequestForEnd(null);
+                        }
+                    }}
+                >
+                    <div
+                        className="bg-white rounded-[2rem] p-8 w-full max-w-[400px] shadow-2xl relative animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close Button */}
+                        <button
+                            onClick={() => {
+                                setShowEndModal(false);
+                                setEndFeedback('');
+                                setSelectedRequestForEnd(null);
+                            }}
+                            className="absolute top-8 right-8 w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all group"
+                        >
+                            <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-800 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {/* Title Section */}
+                        <h3 className="text-[24px] font-bold text-gray-900 mb-6 font-serif leading-tight">End Mentorship</h3>
+
+                        {/* Student Identity Section */}
+                        <div className="flex items-center gap-4 mb-8 pb-2">
+                            <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg shadow-indigo-200">
+                                {selectedRequestForEnd?.student?.name?.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold text-lg text-gray-900 leading-tight">{selectedRequestForEnd?.student?.name}</p>
+                                <p className="text-[15px] text-gray-500 mt-0.5">Student</p>
+                            </div>
+                        </div>
+
+                        {/* Question Header */}
+                        <div className="mb-6">
+                            <p className="text-[17px] font-semibold text-gray-800">Reason for ending this mentorship?</p>
+                        </div>
+
+                        {/* Feedback Input Block */}
+                        <div className="mb-8">
+                            <label className="block text-sm font-medium text-gray-500 mb-3">
+                                Describe the reason
+                            </label>
+                            <textarea
+                                className="w-full border-2 border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all h-32 resize-none text-[15px] text-gray-900 placeholder-gray-400"
+                                placeholder=""
+                                value={endFeedback}
+                                onChange={(e) => setEndFeedback(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Action Button */}
+                        <button
+                            onClick={() => handleRespond('removed', selectedRequestForEnd)}
+                            disabled={!endFeedback.trim()}
+                            className="w-full py-4 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold rounded-full disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 text-[17px]"
+                        >
+                            Confirm Removal
+                        </button>
                     </div>
                 </div>
             )}

@@ -134,10 +134,15 @@ exports.updateRequestStatus = async (req, res) => {
         mentorship.status = status;
         if (response) mentorship.response = response;
 
-        // If status is changed to 'removed' or 'rejected'
-        if (status === 'removed' || status === 'rejected') {
-            // Future-proofing: could add notification logic here
-            console.log(`Mentorship ${mentorshipId} marked as ${status}`);
+        // If status is changed to 'removed', clear all chat messages
+        if (status === 'removed') {
+            mentorship.messages = [];
+            console.log(`Mentorship ${requestId} marked as removed - chat history cleared`);
+        }
+
+        // If status is changed to 'rejected'
+        if (status === 'rejected') {
+            console.log(`Mentorship ${requestId} marked as rejected`);
         }
 
         await mentorship.save();
@@ -162,7 +167,7 @@ exports.sendMessage = async (req, res) => {
         }
 
         if (mentorship.status !== 'accepted') {
-            return res.status(400).json({ msg: 'Mentorship is not active' });
+            return res.status(400).json({ msg: 'Mentorship is not active. Cannot send messages to pending, rejected, or removed mentorships.' });
         }
 
         const newMessage = {
@@ -203,6 +208,11 @@ exports.getConversation = async (req, res) => {
 
         if (mentorship.student._id.toString() !== req.user.id && mentorship.alumni._id.toString() !== req.user.id) {
             return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        // Prevent access to removed mentorships
+        if (mentorship.status === 'removed') {
+            return res.status(403).json({ msg: 'This mentorship has been ended. Please find a new mentor.' });
         }
 
         res.json(mentorship);

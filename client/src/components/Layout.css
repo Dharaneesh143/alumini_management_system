@@ -27,8 +27,16 @@
     margin: 0 0 var(--spacing-sm) 0;
 }
 
-.sidebar-role-badge {
-    margin-top: var(--spacing-sm);
+.sidebar-admin-badge {
+    background: #f43f5e;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    margin-top: 0.25rem;
 }
 
 .sidebar-nav {
@@ -57,8 +65,8 @@
 }
 
 .sidebar-nav-item.active {
-    background: var(--primary-50);
-    color: var(--primary);
+    background: #eff6ff;
+    color: #2563eb;
     font-weight: 600;
 }
 
@@ -72,9 +80,89 @@
     flex: 1;
 }
 
-.sidebar-footer {
+.sidebar-footer-card {
     padding: var(--spacing-lg);
     border-top: 1px solid var(--border-light);
+    margin: var(--spacing-md);
+    background: var(--surface);
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-lg);
+}
+
+.sidebar-logout-btn {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.sidebar-logout-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.sidebar-user-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s;
+}
+
+.sidebar-user-link:hover {
+    transform: translateY(-2px);
+}
+
+.sidebar-user-link:hover .sidebar-user-chevron {
+    transform: translateX(3px);
+    color: var(--primary);
+}
+
+.sidebar-user-chevron {
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.sidebar-logout-btn-mini {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.sidebar-logout-btn-mini:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #fecaca;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.bg-success {
+    background-color: #22c55e;
+}
+
+.bg-danger {
+    background-color: #ef4444;
 }
 
 .sidebar-user {
@@ -161,6 +249,26 @@
 /* ============================================
    RESPONSIVE STYLES
    ============================================ */
+/* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);

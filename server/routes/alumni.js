@@ -18,6 +18,8 @@ router.use(auth);
 // Profile Routes
 router.get('/profile', alumniController.getProfile);
 router.put('/profile', alumniController.updateProfile);
+router.get('/stats', alumniController.getAlumniStats);
+
 
 // Job Routes
 router.post('/jobs', alumniController.postJob);

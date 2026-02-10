@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['student', 'alumni'],
+        enum: ['student', 'alumni', 'admin'],
         default: 'student'
     },
     // Student specific
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
     jobRole: String,
     accountStatus: {
         type: String,
-        enum: ['active', 'blocked'],
+        enum: ['active', 'blocked', 'deactivated'],
         default: 'active'
     },
 
@@ -55,6 +55,11 @@ const userSchema = new mongoose.Schema({
         mentorshipAreas: [String],
         resumeReview: { type: Boolean, default: true }
     },
+    deactivationRequest: {
+        status: { type: String, enum: ['none', 'pending', 'approved', 'rejected'], default: 'none' },
+        reason: String,
+        requestedAt: Date
+    },
 
     // Common Profile Data
     profile: {
@@ -65,7 +70,8 @@ const userSchema = new mongoose.Schema({
         skills: [String],
         linkedin: String,
         github: String,
-        resumeUrl: String
+        resumeUrl: String,
+        cgpa: String
     },
     createdAt: {
         type: Date,

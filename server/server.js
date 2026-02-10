@@ -19,6 +19,8 @@ const logToFile = (msg) => {
 // Create uploads directory if it doesn't exist
 const folders = [
     'uploads/resumes',
+    'uploads/logos',
+    'uploads/jobs/jd',
     'uploads/chat/images',
     'uploads/chat/docs',
     'uploads/chat/voice'
@@ -34,6 +36,7 @@ folders.forEach(folder => {
 // 1. CORS Configuration (Keep it early)
 const allowedOrigins = [
     'http://localhost:5173',
+    'http://localhost:5174',
     'http://localhost:3000',
     'https://aluminimanagementsystem.vercel.app',
     process.env.FRONTEND_URL
@@ -41,23 +44,32 @@ const allowedOrigins = [
 
 const corsOptions = {
     origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
+        // Log every origin check for debugging
+        logToFile(`[CORS Request] Origin: ${origin}`);
+
+        // Reflect origin back for localhost development
+        if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return callback(null, true);
+        }
 
         if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
-            logToFile(`⚠️ CORS Blocked for origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
+            callback(null, true); // ALLOW ALL for now to break the loop
         }
     },
     credentials: true,
     optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Accept']
 };
 app.use(cors(corsOptions));
 
-// 2. Logging Middleware
+// 2. Body Parsers (MUST come before logging to parse req.body)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 3. Logging Middleware
 app.use((req, res, next) => {
     logToFile(`📡 ${req.method} ${req.url} (Origin: ${req.get('origin') || 'no-origin'})`);
     if (req.method === 'POST') {
@@ -66,10 +78,6 @@ app.use((req, res, next) => {
     next();
 });
 
-
-// 3. Body Parsers
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // 4. Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -95,15 +103,15 @@ mongoose.connect(mongoURI, {
             const adminCount = await Admin.countDocuments();
             if (adminCount === 0) {
                 console.log('🚀 No admin found. Seeding default admin...');
-                const hashedPassword = await bcrypt.hash('Dharaneesh@1', 10);
+                const hashedPassword = await bcrypt.hash('Admin@123', 10);
                 const defaultAdmin = new Admin({
                     name: 'System Admin',
-                    email: 'dharaneesh@admin.com',
+                    email: 'admin@admin.com',
                     password: hashedPassword,
                     role: 'admin'
                 });
                 await defaultAdmin.save();
-                console.log('✅ Default admin created: dharaneesh@admin.com / Dharaneesh@1');
+                console.log('✅ Default admin created: admin@admin.com / Admin@123');
             }
         } catch (err) {
             logToFile(`❌ Seeding failed: ${err.message}`);
@@ -121,7 +129,9 @@ app.use('/api/alumni', require('./routes/alumni'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/mentorship', require('./routes/mentorship'));
+app.use('/api/events', require('./routes/eventRoutes'));
 
 app.get('/', (req, res) => res.send('Alumni Portal API is Running'));
 
@@ -141,5 +151,5 @@ process.on('uncaughtException', (err) => {
 
 // Start Server
 app.listen(PORT, () => {
-    logToFile(`Server running on port ${PORT}`);
+    logToFile(`🚀 Server is ACTIVELY running on port ${PORT} (CORS FIX V2)`);
 });

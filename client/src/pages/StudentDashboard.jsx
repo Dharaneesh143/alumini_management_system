@@ -20,6 +20,7 @@ import api, { API_ENDPOINTS } from '../config/api';
 const StudentDashboard = () => {
     const { user } = useContext(AuthContext);
     const [jobs, setJobs] = useState([]);
+    const [totalJobsCount, setTotalJobsCount] = useState(0);
     const [stats, setStats] = useState({ appliedJobs: 0, mentorshipRequests: 0, events: 0 });
     const [activeMentorship, setActiveMentorship] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -36,6 +37,7 @@ const StudentDashboard = () => {
                 api.get('/api/student/stats'),
                 api.get(API_ENDPOINTS.GET_MENTORSHIP_REQUESTS)
             ]);
+            setTotalJobsCount(jobsRes.data.length);
             setJobs(jobsRes.data.slice(0, 3));
             setStats(statsRes.data);
             const active = requestsRes.data.find(r => r.status === 'accepted');
@@ -47,12 +49,32 @@ const StudentDashboard = () => {
         }
     };
 
+    const calculateProfileProgress = () => {
+        if (!user) return 0;
+        const fields = [
+            user.name,
+            user.email,
+            user.role,
+            user.phoneNumber,
+            user.profile?.department || user.department,
+            user.profile?.batch || user.batch,
+            user.profile?.cgpa,
+            user.profile?.skills?.length > 0 ? 'skills' : null,
+            user.profile?.resumeUrl
+        ];
+        // Check for null, undefined, or empty string, but allow 0
+        const filled = fields.filter(f => f !== null && f !== undefined && f !== '').length;
+        return Math.round((filled / fields.length) * 100);
+    };
+
+    const progress = calculateProfileProgress();
+
     return (
-        <div>
+        <div className="space-y-8 pb-8 mb-8" style={{ paddingBottom: '100px', marginBottom: '50px' }}>
             {/* Welcome Section */}
             <div className="mb-6">
                 <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h2>
-                <p className="text-secondary">Here's your student dashboard overview</p>
+                <p className="text-secondary">Here's your dashboard overview</p>
             </div>
 
             {/* Stats Overview */}
@@ -60,7 +82,7 @@ const StudentDashboard = () => {
                 <StatCard
                     icon={Briefcase}
                     label="Jobs Available"
-                    value={jobs.length}
+                    value={totalJobsCount}
                     color="primary"
                 />
                 <StatCard
@@ -74,12 +96,6 @@ const StudentDashboard = () => {
                     label="Mentors"
                     value={stats.mentorshipRequests}
                     color="info"
-                />
-                <StatCard
-                    icon={Calendar}
-                    label="Events"
-                    value={stats.events}
-                    color="warning"
                 />
             </div>
 
@@ -118,7 +134,7 @@ const StudentDashboard = () => {
                                                     <span className="flex items-center gap-1"><DollarSign size={12} /> {job.salary || 'Not specified'}</span>
                                                 </div>
                                             </div>
-                                            <Link to={`/jobs`} className="btn btn-sm btn-primary">
+                                            <Link to={`/jobs/${job._id}`} className="btn btn-sm btn-primary">
                                                 View
                                             </Link>
                                         </div>
@@ -158,7 +174,7 @@ const StudentDashboard = () => {
                                     {/* Large Avatar */}
                                     <div className="relative flex-shrink-0">
                                         <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                                            {activeMentorship.alumni?.name?.charAt(0).toUpperCase()}
+                                            {(activeMentorship.alumni?.name || 'M').charAt(0).toUpperCase()}
                                         </div>
                                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>
                                     </div>
@@ -220,10 +236,10 @@ const StudentDashboard = () => {
                         <div className="mb-4">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-sm text-secondary">Progress</span>
-                                <span className="text-sm font-semibold">60%</span>
+                                <span className="text-sm font-semibold">{progress}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-primary h-2 rounded-full" style={{ width: '60%' }}></div>
+                                <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
                             </div>
                         </div>
                         <p className="text-xs text-secondary mb-4">
@@ -248,17 +264,13 @@ const StudentDashboard = () => {
                                     Find Mentor
                                 </Link>
                             )}
-                            <Link to="/events" className="btn btn-outline w-full flex items-center justify-center gap-2">
-                                <Calendar size={18} />
-                                View Events
-                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Activity Section */}
-            <div className="mt-8">
+            <div className="mt-8 mb-16" style={{ marginBottom: '100px' }}>
                 <div className="card">
                     <div className="card-header">
                         <h3 className="card-title">Your Activity</h3>
@@ -272,10 +284,6 @@ const StudentDashboard = () => {
                             <div className="text-center p-4 bg-gray-50 rounded-lg">
                                 <div className="text-2xl font-bold text-success mb-1">{stats.mentorshipRequests}</div>
                                 <div className="text-sm text-secondary">Mentorship Requests</div>
-                            </div>
-                            <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                <div className="text-2xl font-bold text-info mb-1">{stats.events}</div>
-                                <div className="text-sm text-secondary">Events Registered</div>
                             </div>
                         </div>
                     </div>

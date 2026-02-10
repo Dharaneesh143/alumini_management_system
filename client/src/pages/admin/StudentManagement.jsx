@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, UserPlus, FileText, ChevronRight, Trash2 } from 'lucide-react';
+import { Search, Filter, UserPlus, FileText, ChevronRight, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import api from '../../config/api';
 import DataTable from '../../components/DataTable';
 
@@ -67,13 +67,38 @@ const StudentManagement = () => {
         }
     };
 
+    const handleActivate = async (userId, e) => {
+        e.stopPropagation();
+        try {
+            await api.post(`/api/admin/users/${userId}/activate`);
+            alert('Account activated successfully');
+            fetchStudents();
+        } catch (err) {
+            console.error('Activate error:', err);
+            alert('Failed to activate account');
+        }
+    };
+
+    const handleDeactivate = async (userId, e) => {
+        e.stopPropagation();
+        if (!confirm('Are you sure you want to deactivate this account?')) return;
+        try {
+            await api.delete(`/api/admin/users/${userId}`);
+            alert('Account deactivated successfully');
+            fetchStudents();
+        } catch (err) {
+            console.error('Deactivate error:', err);
+            alert('Failed to deactivate account');
+        }
+    };
+
     const columns = [
         {
             header: 'Student Name',
             render: (row) => (
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center font-bold">
-                        {row.name.charAt(0)}
+                        {(row.name || 'S').charAt(0)}
                     </div>
                     <div>
                         <div className="font-semibold">{row.name}</div>
@@ -106,6 +131,23 @@ const StudentManagement = () => {
                     >
                         <ChevronRight size={14} />
                     </button>
+                    {row.accountStatus === 'active' ? (
+                        <button
+                            onClick={(e) => handleDeactivate(row._id, e)}
+                            className="btn btn-xs btn-secondary"
+                            title="Deactivate Account"
+                        >
+                            <XCircle size={14} />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={(e) => handleActivate(row._id, e)}
+                            className="btn btn-xs btn-success"
+                            title="Activate Account"
+                        >
+                            <CheckCircle size={14} />
+                        </button>
+                    )}
                     <button
                         onClick={(e) => handleDeleteClick(row, e)}
                         className="btn btn-xs btn-danger flex items-center"
@@ -118,7 +160,7 @@ const StudentManagement = () => {
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 mb-8">
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-2xl font-bold">Student Management</h2>
@@ -159,12 +201,19 @@ const StudentManagement = () => {
                         onChange={handleFilterChange}
                     >
                         <option value="">All Departments</option>
-                        <option value="CSE">CSE</option>
-                        <option value="IT">IT</option>
-                        <option value="ECE">ECE</option>
-                        <option value="EEE">EEE</option>
-                        <option value="MECH">MECH</option>
-                        <option value="CIVIL">CIVIL</option>
+                        <option value="BE CSE (Computer Science & Engineering)">BE CSE (Computer Science & Engineering)</option>
+                        <option value="BE ECE (Electronics & Communication Engineering)">BE ECE (Electronics & Communication Engineering)</option>
+                        <option value="BE EEE (Electrical & Electronics Engineering)">BE EEE (Electrical & Electronics Engineering)</option>
+                        <option value="BE MECH (Mechanical Engineering)">BE MECH (Mechanical Engineering)</option>
+                        <option value="BE CIVIL (Civil Engineering)">BE CIVIL (Civil Engineering)</option>
+                        <option value="BE BME (Biomedical Engineering)">BE BME (Biomedical Engineering)</option>
+                        <option value="BE AGRI (Agricultural Engineering)">BE AGRI (Agricultural Engineering)</option>
+                        <option value="BE AERO (Aeronautical Engineering)">BE AERO (Aeronautical Engineering)</option>
+                        <option value="BE AUTO (Automobile Engineering)">BE AUTO (Automobile Engineering)</option>
+                        <option value="BTech IT (Information Technology)">BTech IT (Information Technology)</option>
+                        <option value="BTech AI&DS (Artificial Intelligence & Data Science)">BTech AI&DS (Artificial Intelligence & Data Science)</option>
+                        <option value="BTech CSBS (Computer Science & Business Systems)">BTech CSBS (Computer Science & Business Systems)</option>
+                        <option value="BTech CHEM (Chemical Engineering)">BTech CHEM (Chemical Engineering)</option>
                     </select>
                     <select
                         name="batch"
@@ -191,7 +240,7 @@ const StudentManagement = () => {
             </div>
 
             {/* Students Table */}
-            <div className="card shadow-md p-0 overflow-hidden">
+            <div className="card shadow-md p-0 overflow-hidden pb-8" style={{ paddingBottom: '2rem' }}>
                 <DataTable
                     columns={columns}
                     data={students}
@@ -205,45 +254,76 @@ const StudentManagement = () => {
                 )}
             </div>
 
-            {/* Delete Feedback Modal */}
+            {/* Delete Modal - Refined Review Style Design */}
             {deleteModal.show && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center gap-3 text-danger mb-4">
-                            <Trash2 size={24} />
-                            <h3 className="text-xl font-bold">Confirm Permanent Deletion</h3>
+                <div
+                    className="fixed inset-0 bg-opacity-30 backdrop-blur-[2px] flex items-center justify-center z-[9999] p-4"
+                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setDeleteModal({ show: false, user: null });
+                            setDeleteFeedback('');
+                        }
+                    }}
+                >
+                    <div
+                        className="bg-white rounded-[2rem] p-6 w-full max-w-[400px] shadow-2xl relative animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close Button - Top Right (Circle style) */}
+                        <button
+                            onClick={() => {
+                                setDeleteModal({ show: false, user: null });
+                                setDeleteFeedback('');
+                            }}
+                            className="absolute top-8 right-8 w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all group"
+                        >
+                            <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-800 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {/* Title Section */}
+                        <h3 className="text-[24px] font-bold text-gray-900 mb-6 font-serif leading-tight">Delete Student</h3>
+
+                        {/* User Identity Section */}
+                        <div className="flex items-center gap-4 mb-8 pb-2">
+                            <div className="w-14 h-14 bg-red-600 rounded-xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg shadow-red-200">
+                                {(deleteModal.user?.name || 'S').charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold text-lg text-gray-900 leading-tight">{deleteModal.user?.name}</p>
+                                <p className="text-[15px] text-gray-500 mt-0.5">Student</p>
+                            </div>
                         </div>
-                        <p className="text-secondary mb-4">
-                            Are you sure you want to permanently delete <strong>{deleteModal.user.name}</strong>?
-                            This action will remove them from MongoDB and cannot be undone.
-                        </p>
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold">Reason for deletion (Feedback)</label>
+
+                        {/* Question Header */}
+                        <div className="mb-6">
+                            <p className="text-[17px] font-semibold text-gray-800">Why are you deleting this student?</p>
+                        </div>
+
+                        {/* Feedback Input Block */}
+                        <div className="mb-8">
+                            <label className="block text-sm font-medium text-gray-500 mb-3">
+                                Describe the reason
+                            </label>
                             <textarea
-                                className="form-input w-full min-h-[100px]"
-                                placeholder="Please provide a reason for removing this account..."
+                                className="w-full border-2 border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all h-32 resize-none text-[15px] text-gray-900 placeholder-gray-400"
+                                placeholder=""
                                 value={deleteFeedback}
                                 onChange={(e) => setDeleteFeedback(e.target.value)}
-                            ></textarea>
+                                autoFocus
+                            />
                         </div>
-                        <div className="flex justify-end gap-3 mt-6">
-                            <button
-                                onClick={() => {
-                                    setDeleteModal({ show: false, user: null });
-                                    setDeleteFeedback('');
-                                }}
-                                className="btn btn-secondary"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDelete}
-                                className="btn btn-danger"
-                                disabled={!deleteFeedback.trim()}
-                            >
-                                Delete Permanently
-                            </button>
-                        </div>
+
+                        {/* Action Button */}
+                        <button
+                            onClick={confirmDelete}
+                            disabled={!deleteFeedback.trim()}
+                            className="w-full py-4 bg-[#1a73e8] hover:bg-[#1557b0] h-12.5 text-white font-bold rounded-full disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 text-[17px]"
+                        >
+                            Confirm Deletion
+                        </button>
                     </div>
                 </div>
             )}

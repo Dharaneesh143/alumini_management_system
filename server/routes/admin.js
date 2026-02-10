@@ -8,6 +8,11 @@ const adminAuth = require('../middleware/adminAuth');
 // @access  Admin only
 router.get('/stats', adminAuth, adminController.getSystemStats);
 
+// @route   GET api/admin/activity
+// @desc    Get recent system activity
+// @access  Admin only
+router.get('/activity', adminAuth, adminController.getRecentActivity);
+
 // @route   GET api/admin/users
 // @desc    Get all users with filters
 // @access  Admin only
@@ -17,6 +22,14 @@ router.get('/users', adminAuth, adminController.getAllUsers);
 // @desc    Verify or reject alumni
 // @access  Admin only
 router.post('/verify-alumni', adminAuth, adminController.verifyAlumni);
+
+// @route   POST api/admin/users/:userId/activate
+// @desc    Activate user
+// @access  Admin only
+router.post('/users/:userId/activate', adminAuth, (req, res, next) => {
+    console.log('[ROUTE] Activate route matched:', req.params);
+    next();
+}, adminController.activateUser);
 
 // @route   DELETE api/admin/users/:userId
 // @desc    Deactivate user
@@ -36,6 +49,9 @@ router.get('/students', adminAuth, adminController.getStudents);
 // @route   GET api/admin/students/:id
 router.get('/students/:id', adminAuth, adminController.getStudentById);
 
+// @route   GET api/admin/alumni
+router.get('/alumni', adminAuth, adminController.getAlumni);
+
 // @route   GET api/admin/alumni/:id
 router.get('/alumni/:id', adminAuth, adminController.getAlumniById);
 
@@ -53,5 +69,19 @@ router.delete('/students/:id', adminAuth, adminController.deleteStudent);
 
 // @route   GET api/admin/alumni/:id/mentorships
 router.get('/alumni/:id/mentorships', adminAuth, adminController.getAlumniMentorships);
+
+// @route   GET api/admin/students/:id/mentorship
+router.get('/students/:id/mentorship', adminAuth, adminController.getStudentMentorship);
+
+// @route   POST api/admin/students/end-mentorship
+router.post('/students/end-mentorship', adminAuth, adminController.endStudentMentorship);
+
+// @route   GET api/admin/mentorships
+router.get('/mentorships', adminAuth, adminController.getAllMentorships);
+
+// @route   POST api/admin/handle-deactivation
+// @desc    Approve or reject deactivation requests
+// @access  Admin only
+router.post('/handle-deactivation', adminAuth, adminController.handleDeactivationRequest);
 
 module.exports = router;

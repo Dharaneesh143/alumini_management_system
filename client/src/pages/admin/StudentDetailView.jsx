@@ -15,7 +15,9 @@ import {
     Edit3,
     Clock,
     Download,
-    FileText
+    FileText,
+    UserMinus,
+    Users
 } from 'lucide-react';
 import api from '../../config/api';
 
@@ -26,11 +28,14 @@ const StudentDetailView = () => {
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
-    const [deleteModal, setDeleteModal] = useState({ show: false });
+    const [deleteModal, setDeleteModal] = useState({ show: false, mode: 'delete' });
     const [deleteFeedback, setDeleteFeedback] = useState('');
+    const [mentorship, setMentorship] = useState(null);
+    const [loadingMentorship, setLoadingMentorship] = useState(false);
 
     useEffect(() => {
         fetchStudent();
+        fetchMentorship();
     }, [id]);
 
     const fetchStudent = async () => {
@@ -47,18 +52,27 @@ const StudentDetailView = () => {
         }
     };
 
-    const handleStatusToggle = async () => {
-        const newStatus = student.accountStatus === 'active' ? 'blocked' : 'active';
-        if (!window.confirm(`Are you sure you want to ${newStatus} this student?`)) return;
-
+    const fetchMentorship = async () => {
         try {
-            await api.put(`/api/admin/students/${id}/status`, { status: newStatus });
-            setStudent({ ...student, accountStatus: newStatus });
-            alert(`Student account ${newStatus} successfully`);
+            setLoadingMentorship(true);
+            const res = await api.get(`/api/admin/students/${id}/mentorship`);
+            setMentorship(res.data);
         } catch (err) {
-            console.error('Error updating status:', err);
-            alert('Failed to update status');
+            // No mentorship found is okay
+            setMentorship(null);
+        } finally {
+            setLoadingMentorship(false);
         }
+    };
+
+    const handleEndMentorship = async () => {
+        if (!mentorship) return;
+        setDeleteModal({ show: true, mode: 'endMentorship' });
+    };
+
+    const handleStatusToggle = async () => {
+        const mode = student.accountStatus === 'active' ? 'deactivate' : 'activate';
+        setDeleteModal({ show: true, mode });
     };
 
     const handleUpdate = async (e) => {
@@ -75,23 +89,41 @@ const StudentDetailView = () => {
     };
 
     const handleDeleteClick = () => {
-        setDeleteModal({ show: true });
+        setDeleteModal({ show: true, mode: 'delete' });
     };
 
-    const confirmDelete = async () => {
-        if (!deleteFeedback.trim()) return alert('Feedback is required for deletion');
+    const confirmAction = async () => {
+        if (!deleteFeedback.trim()) return alert('Feedback is required');
 
         try {
-            await api.post('/api/admin/delete-user', {
-                userId: id,
-                feedback: deleteFeedback
-            });
-            alert('Student deleted permanently');
-            setDeleteModal({ show: false });
-            navigate('/admin/students');
+            if (deleteModal.mode === 'delete') {
+                await api.post('/api/admin/delete-user', {
+                    userId: id,
+                    feedback: deleteFeedback
+                });
+                alert('Student deleted permanently');
+                navigate('/admin/students');
+            } else if (deleteModal.mode === 'endMentorship') {
+                await api.post('/api/admin/students/end-mentorship', {
+                    mentorshipId: mentorship._id,
+                    feedback: deleteFeedback
+                });
+                alert('Mentorship ended successfully');
+                fetchMentorship();
+            } else if (deleteModal.mode === 'deactivate' || deleteModal.mode === 'activate') {
+                const newStatus = deleteModal.mode === 'deactivate' ? 'blocked' : 'active';
+                await api.put(`/api/admin/students/${id}/status`, {
+                    status: newStatus,
+                    feedback: deleteFeedback
+                });
+                setStudent({ ...student, accountStatus: newStatus });
+                alert(`Student account ${newStatus} successfully`);
+            }
+            setDeleteModal({ show: false, mode: 'delete' });
+            setDeleteFeedback('');
         } catch (err) {
-            console.error('Delete error:', err);
-            alert('Failed to delete student');
+            console.error('Action error:', err);
+            alert(err.response?.data?.msg || 'Action failed');
         }
     };
 
@@ -104,7 +136,7 @@ const StudentDetailView = () => {
     if (!student) return <div className="p-8 text-center text-danger">Student not found</div>;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 mb-8">
             {/* Header Actions */}
             <div className="flex justify-between items-center">
                 <button onClick={() => navigate('/admin/students')} className="flex items-center gap-2 text-secondary hover:text-primary">
@@ -138,7 +170,7 @@ const StudentDetailView = () => {
                 <div className="space-y-6">
                     <div className="card text-center py-8">
                         <div className="w-24 h-24 rounded-full bg-primary-light text-primary flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-sm">
-                            {student.name.charAt(0)}
+                            {(student?.name || 'S').charAt(0).toUpperCase()}
                         </div>
                         <h2 className="text-xl font-bold">{student.name}</h2>
                         <p className="text-secondary">{student.email}</p>
@@ -245,10 +277,20 @@ const StudentDetailView = () => {
                                             value={formData.department}
                                             onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                                         >
-                                            <option value="CSE">Computer Science & Engineering</option>
-                                            <option value="IT">Information Technology</option>
-                                            <option value="ECE">Electronics & Communication</option>
-                                            <option value="MECH">Mechanical Engineering</option>
+                                            <option value="">Select Department</option>
+                                            <option value="BE CSE (Computer Science & Engineering)">BE CSE (Computer Science & Engineering)</option>
+                                            <option value="BE ECE (Electronics & Communication Engineering)">BE ECE (Electronics & Communication Engineering)</option>
+                                            <option value="BE EEE (Electrical & Electronics Engineering)">BE EEE (Electrical & Electronics Engineering)</option>
+                                            <option value="BE MECH (Mechanical Engineering)">BE MECH (Mechanical Engineering)</option>
+                                            <option value="BE CIVIL (Civil Engineering)">BE CIVIL (Civil Engineering)</option>
+                                            <option value="BE BME (Biomedical Engineering)">BE BME (Biomedical Engineering)</option>
+                                            <option value="BE AGRI (Agricultural Engineering)">BE AGRI (Agricultural Engineering)</option>
+                                            <option value="BE AERO (Aeronautical Engineering)">BE AERO (Aeronautical Engineering)</option>
+                                            <option value="BE AUTO (Automobile Engineering)">BE AUTO (Automobile Engineering)</option>
+                                            <option value="BTech IT (Information Technology)">BTech IT (Information Technology)</option>
+                                            <option value="BTech AI&DS (Artificial Intelligence & Data Science)">BTech AI&DS (Artificial Intelligence & Data Science)</option>
+                                            <option value="BTech CSBS (Computer Science & Business Systems)">BTech CSBS (Computer Science & Business Systems)</option>
+                                            <option value="BTech CHEM (Chemical Engineering)">BTech CHEM (Chemical Engineering)</option>
                                         </select>
                                     </div>
                                     <div className="flex gap-4">
@@ -273,8 +315,37 @@ const StudentDetailView = () => {
                                 <h5 className="text-sm font-bold flex items-center gap-2 mb-2">
                                     <GraduationCap size={16} /> Mentorship Status
                                 </h5>
-                                <p className="text-xs text-secondary">Currently connected to:</p>
-                                <div className="mt-2 text-sm font-semibold">Not enrolled in mentorship programme</div>
+                                {loadingMentorship ? (
+                                    <div className="text-xs text-secondary">Loading...</div>
+                                ) : mentorship ? (
+                                    <div className="space-y-2">
+                                        <p className="text-xs text-secondary">Currently connected to:</p>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="text-sm font-semibold">{mentorship.alumni?.name || 'Unknown'}</div>
+                                                <div className="text-xs text-secondary">{mentorship.alumni?.currentCompany || 'N/A'}</div>
+                                            </div>
+                                            <button
+                                                onClick={handleEndMentorship}
+                                                className="btn btn-sm btn-danger flex items-center gap-1"
+                                                title="End Mentorship"
+                                            >
+                                                <UserMinus size={14} />
+                                                End
+                                            </button>
+                                        </div>
+                                        {mentorship.mentorshipTopic && (
+                                            <div className="text-xs text-secondary mt-2">
+                                                Topic: <span className="font-medium">{mentorship.mentorshipTopic}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <p className="text-xs text-secondary">Currently connected to:</p>
+                                        <div className="mt-2 text-sm font-semibold text-gray-500">Not enrolled in mentorship programme</div>
+                                    </div>
+                                )}
                             </div>
                             <div className="bg-gray-50 p-4 rounded-lg">
                                 <h5 className="text-sm font-bold flex items-center gap-2 mb-2">
@@ -290,45 +361,86 @@ const StudentDetailView = () => {
                 </div>
             </div>
 
-            {/* Delete Feedback Modal */}
+            {/* Universal Confirmation Modal - Refined Review Style Design */}
             {deleteModal.show && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center gap-3 text-danger mb-4">
-                            <Trash2 size={24} />
-                            <h3 className="text-xl font-bold">Confirm Permanent Deletion</h3>
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-[2px] flex items-center justify-center z-[9999] p-4"
+                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setDeleteModal({ show: false, mode: 'delete' });
+                            setDeleteFeedback('');
+                        }
+                    }}
+                >
+                    <div
+                        className="bg-white rounded-[2rem] p-8 w-full max-w-[400px] shadow-2xl relative animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close Button */}
+                        <button
+                            onClick={() => {
+                                setDeleteModal({ show: false, mode: 'delete' });
+                                setDeleteFeedback('');
+                            }}
+                            className="absolute top-8 right-8 w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all group"
+                        >
+                            <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-800 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {/* Title Section */}
+                        <h3 className="text-[24px] font-bold text-gray-900 mb-6 font-serif leading-tight">
+                            {deleteModal.mode === 'delete' ? 'Delete Student' :
+                                deleteModal.mode === 'endMentorship' ? 'End Mentorship' :
+                                    deleteModal.mode === 'deactivate' ? 'Block Student' : 'Unblock Student'}
+                        </h3>
+
+                        {/* User Identity Section */}
+                        <div className="flex items-center gap-4 mb-8 pb-2">
+                            <div className={`w-14 h-14 ${deleteModal.mode === 'activate' ? 'bg-green-600' : 'bg-red-600'} rounded-xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg`}>
+                                {student?.name?.charAt(0).toUpperCase() || 'S'}
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold text-lg text-gray-900 leading-tight">{student?.name}</p>
+                                <p className="text-[15px] text-gray-500 mt-0.5">Student</p>
+                            </div>
                         </div>
-                        <p className="text-secondary mb-4">
-                            Are you sure you want to permanently delete <strong>{student.name}</strong>?
-                            This action will remove them from MongoDB and cannot be undone.
-                        </p>
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold">Reason for deletion (Feedback)</label>
+
+                        {/* Question Header */}
+                        <div className="mb-6">
+                            <p className="text-[17px] font-semibold text-gray-800">
+                                {deleteModal.mode === 'delete' ? 'Why are you deleting this student?' :
+                                    deleteModal.mode === 'endMentorship' ? 'Reason for ending mentorship?' :
+                                        deleteModal.mode === 'deactivate' ? 'Why are you blocking this student?' : 'Reason for unblocking?'}
+                            </p>
+                        </div>
+
+                        {/* Feedback Input Block */}
+                        <div className="mb-8">
+                            <label className="block text-sm font-medium text-gray-500 mb-3">
+                                Describe the reason
+                            </label>
                             <textarea
-                                className="form-input w-full min-h-[100px]"
-                                placeholder="Please provide a reason for removing this account..."
+                                className={`w-full border-2 border-gray-200 rounded-2xl p-4 focus:ring-2 ${deleteModal.mode === 'activate' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-red-500 focus:border-red-500'} outline-none transition-all h-32 resize-none text-[15px] text-gray-900 placeholder-gray-400`}
+                                placeholder=""
                                 value={deleteFeedback}
                                 onChange={(e) => setDeleteFeedback(e.target.value)}
-                            ></textarea>
+                                autoFocus
+                            />
                         </div>
-                        <div className="flex justify-end gap-3 mt-6">
-                            <button
-                                onClick={() => {
-                                    setDeleteModal({ show: false });
-                                    setDeleteFeedback('');
-                                }}
-                                className="btn btn-secondary"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDelete}
-                                className="btn btn-danger"
-                                disabled={!deleteFeedback.trim()}
-                            >
-                                Delete Permanently
-                            </button>
-                        </div>
+
+                        {/* Action Button */}
+                        <button
+                            onClick={confirmAction}
+                            disabled={!deleteFeedback.trim()}
+                            className={`w-full py-4 ${deleteModal.mode === 'activate' ? 'bg-green-600 hover:bg-green-700' : 'bg-[#1a73e8] hover:bg-[#1557b0]'} text-white font-bold rounded-full disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 text-[17px]`}
+                        >
+                            {deleteModal.mode === 'delete' ? 'Confirm Deletion' :
+                                deleteModal.mode === 'endMentorship' ? 'Confirm Removal' :
+                                    deleteModal.mode === 'deactivate' ? 'Confirm Block' : 'Confirm Unblock'}
+                        </button>
                     </div>
                 </div>
             )}

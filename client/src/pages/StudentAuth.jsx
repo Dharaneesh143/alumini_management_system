@@ -112,12 +112,19 @@ const StudentAuth = () => {
                                         className="auth-select"
                                     >
                                         <option value="">Select Department</option>
-                                        <option value="CSE">CSE</option>
-                                        <option value="ECE">ECE</option>
-                                        <option value="EEE">EEE</option>
-                                        <option value="MECH">MECH</option>
-                                        <option value="CIVIL">CIVIL</option>
-                                        <option value="IT">IT</option>
+                                        <option value="BE CSE (Computer Science & Engineering)">BE CSE (Computer Science & Engineering)</option>
+                                        <option value="BE ECE (Electronics & Communication Engineering)">BE ECE (Electronics & Communication Engineering)</option>
+                                        <option value="BE EEE (Electrical & Electronics Engineering)">BE EEE (Electrical & Electronics Engineering)</option>
+                                        <option value="BE MECH (Mechanical Engineering)">BE MECH (Mechanical Engineering)</option>
+                                        <option value="BE CIVIL (Civil Engineering)">BE CIVIL (Civil Engineering)</option>
+                                        <option value="BE BME (Biomedical Engineering)">BE BME (Biomedical Engineering)</option>
+                                        <option value="BE AGRI (Agricultural Engineering)">BE AGRI (Agricultural Engineering)</option>
+                                        <option value="BE AERO (Aeronautical Engineering)">BE AERO (Aeronautical Engineering)</option>
+                                        <option value="BE AUTO (Automobile Engineering)">BE AUTO (Automobile Engineering)</option>
+                                        <option value="BTech IT (Information Technology)">BTech IT (Information Technology)</option>
+                                        <option value="BTech AI&DS (Artificial Intelligence & Data Science)">BTech AI&DS (Artificial Intelligence & Data Science)</option>
+                                        <option value="BTech CSBS (Computer Science & Business Systems)">BTech CSBS (Computer Science & Business Systems)</option>
+                                        <option value="BTech CHEM (Chemical Engineering)">BTech CHEM (Chemical Engineering)</option>
                                     </select>
                                 </div>
                                 <div className="auth-input-group">

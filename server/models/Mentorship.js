@@ -13,7 +13,7 @@ const MentorshipSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected', 'removed'],
+        enum: ['pending', 'accepted', 'rejected', 'removed', 'completed'],
         default: 'pending'
     },
     message: {

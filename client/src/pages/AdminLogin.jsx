@@ -1,59 +1,97 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
+import Shield3DIcon from '../components/Shield3DIcon';
 
 const AdminLogin = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const { adminLogin } = useContext(AuthContext);
     const navigate = useNavigate();
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const onSubmit = async e => {
         e.preventDefault();
+        setError('');
+        setLoading(true);
         try {
             await adminLogin(formData.email, formData.password);
-            navigate('/dashboard'); // Will redirect to Admin Dashboard via helper
+            navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.msg || 'Admin Login Failed');
+            setError(err.response?.data?.msg || 'Admin Login Failed. Please check your credentials.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="container" style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
-            <div className="card" style={{ width: '100%', maxWidth: '400px', borderColor: 'var(--danger)' }}>
-                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                    <div className="text-4xl mb-2">🛡️</div>
-                    <h2 className="text-2xl font-bold text-danger">Admin Portal</h2>
-                    <p className="text-secondary text-sm">Restricted Access Only</p>
+        <div className="auth-container">
+            {/* Left Panel - Admin Focused */}
+            <div className="auth-left-panel" style={{ background: 'linear-gradient(-45deg, #1e293b 0%, #0f172a 100%)' }}>
+                <div className="auth-left-content">
+                    <Shield3DIcon size={220} />
+                    <h1 className="auth-left-title">
+                        Admin Control Panel
+                    </h1>
+                    <p className="auth-left-subtitle">
+                        Secure access to system management, user verification, and platform moderation
+                    </p>
                 </div>
+            </div>
 
-                {error && <div className="p-3 mb-4 bg-danger-light text-danger rounded text-sm text-center">{error}</div>}
+            {/* Right Panel - Form */}
+            <div className="auth-right-panel">
+                <div className="auth-form-container">
+                    <div className="auth-form-header">
+                        <h2 className="auth-form-title">🛡️ Admin Login</h2>
+                        <p className="auth-form-subtitle">Enter your secure credentials to proceed</p>
+                    </div>
 
-                <form onSubmit={onSubmit} className="flex flex-col gap-4">
-                    <div className="form-group">
-                        <label className="form-label text-xs uppercase font-bold text-secondary">Admin Email</label>
-                        <input
-                            type="email"
-                            required
-                            className="form-input"
-                            value={formData.email}
-                            onChange={e => setFormData({ ...formData, email: e.target.value })}
-                            placeholder="admin@example.com"
-                        />
+                    {error && (
+                        <div className="auth-error">
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={onSubmit} className="auth-form">
+                        <div className="auth-input-group">
+                            <label className="auth-label">Administrator Email</label>
+                            <input
+                                type="email"
+                                required
+                                className="auth-input"
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                placeholder="admin@example.com"
+                            />
+                        </div>
+                        <div className="auth-input-group">
+                            <label className="auth-label">Password</label>
+                            <input
+                                type="password"
+                                required
+                                className="auth-input"
+                                value={formData.password}
+                                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                placeholder="••••••••"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="auth-button"
+                            style={{ background: '#ef4444' }}
+                            disabled={loading}
+                        >
+                            {loading ? 'Authenticating...' : 'Secure Access'}
+                        </button>
+                    </form>
+
+                    <div className="auth-toggle-text">
+                        <p className="text-sm text-secondary" style={{ marginTop: '2rem' }}>
+                            Restricted area. All access attempts are logged.
+                        </p>
                     </div>
-                    <div className="form-group">
-                        <label className="form-label text-xs uppercase font-bold text-secondary">Password</label>
-                        <input
-                            type="password"
-                            required
-                            className="form-input"
-                            value={formData.password}
-                            onChange={e => setFormData({ ...formData, password: e.target.value })}
-                            placeholder="••••••••"
-                        />
-                    </div>
-                    <button type="submit" className="btn btn-danger w-full">Secure Login</button>
-                </form>
+                </div>
             </div>
         </div>
     );

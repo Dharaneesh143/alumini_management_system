@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api, { API_ENDPOINTS } from '../config/api';
 import { Search, GraduationCap, MessageSquare, CheckCircle, Clock } from 'lucide-react';
@@ -31,10 +32,14 @@ const MentorshipList = () => {
                 api.get(`/api/student/alumni-discovery?${params.toString()}`),
                 api.get(API_ENDPOINTS.GET_MENTORSHIP_REQUESTS)
             ]);
-            setAlumni(alumniRes.data);
-            setRequests(requestsRes.data);
+            console.log('Alumni Response:', alumniRes);
+            console.log('Requests Response:', requestsRes);
+
+            setAlumni(Array.isArray(alumniRes.data) ? alumniRes.data : []);
+            setRequests(Array.isArray(requestsRes.data) ? requestsRes.data : []);
         } catch (err) {
             console.error('Error fetching alumni:', err);
+            setStatusMessage({ type: 'error', text: 'Failed to load data. Please try again.' });
         } finally {
             setLoading(false);
         }
@@ -84,13 +89,13 @@ const MentorshipList = () => {
 
             {(() => {
                 const active = requests.find(r => r.status === 'accepted');
-                if (active) {
+                if (active && active.alumni) {
                     return (
                         <div className="card text-center py-16 bg-primary-light border-primary/20">
                             <GraduationCap size={64} className="mx-auto mb-4 text-primary opacity-50" />
                             <h2 className="text-2xl font-bold mb-2">You have an Active Mentor!</h2>
                             <p className="text-secondary max-w-md mx-auto mb-8">
-                                You are currently being mentored by <strong>{active.alumni.name}</strong>.
+                                You are currently being mentored by <strong>{active.alumni.name || 'Alumni'}</strong>.
                                 You can only have one active mentor at a time.
                             </p>
                             <Link
@@ -162,7 +167,7 @@ const MentorshipList = () => {
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-16 h-16 bg-primary-light rounded-full flex items-center justify-center text-primary text-xl font-bold">
-                                                {mentor.name.charAt(0).toUpperCase()}
+                                                {(mentor.name || 'A').charAt(0).toUpperCase()}
                                             </div>
                                             <div>
                                                 <h3 className="font-bold text-lg">{mentor.name}</h3>
@@ -189,7 +194,12 @@ const MentorshipList = () => {
                                     </div>
 
                                     {(() => {
-                                        const request = requests.find(r => r.alumni._id === mentor._id || r.alumni === mentor._id);
+                                        const request = requests.find(r => {
+                                            if (!r.alumni) return false;
+                                            const alumniId = r.alumni._id || r.alumni;
+                                            return alumniId === mentor._id;
+                                        });
+
                                         if (request) {
                                             return (
                                                 <div className={`w-full py-2 px-4 rounded-md text-center font-medium flex items-center justify-center gap-2 ${request.status === 'accepted' ? 'bg-success-light text-success' :

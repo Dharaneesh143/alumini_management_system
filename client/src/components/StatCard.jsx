@@ -1,11 +1,12 @@
 import React from 'react';
 
-const StatCard = ({ icon, label, value, trend, trendValue, color = 'primary' }) => {
+const StatCard = ({ icon, label, title, value, trend, trendValue, color = 'primary' }) => {
+    const displayLabel = label || title;
     return (
         <div className="stat-card">
-            <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3 justify-between">
                 <div className="flex-1">
-                    <div className="text-sm text-secondary font-medium mb-2">{label}</div>
+                    <div className="text-sm text-secondary font-medium mb-2">{displayLabel}</div>
                     <div className="stat-value">{value}</div>
                     {trend && (
                         <div className={`text-xs mt-2 ${trend === 'up' ? 'text-success' : 'text-danger'}`}>

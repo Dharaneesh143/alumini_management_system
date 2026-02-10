@@ -1,5 +1,8 @@
 const User = require('../models/User');
 const Job = require('../models/Job');
+const Mentorship = require('../models/Mentorship');
+const mongoose = require('mongoose');
+
 
 // Get Alumni Profile
 exports.getProfile = async (req, res) => {
@@ -105,3 +108,77 @@ exports.getJobApplicants = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+// Get Alumni Dashboard Statistics
+exports.getAlumniStats = async (req, res) => {
+    try {
+        const alumniId = req.user.id;
+
+        // 1. Active Mentees (Accepted mentorships)
+        const activeMenteesCount = await Mentorship.countDocuments({
+            alumni: alumniId,
+            status: 'accepted'
+        });
+
+        // 2. Mentorship Requests (Pending)
+        const pendingRequestsCount = await Mentorship.countDocuments({
+            alumni: alumniId,
+            status: 'pending'
+        });
+
+        // 3. Completed Sessions
+        const completedSessionsCount = await Mentorship.countDocuments({
+            alumni: alumniId,
+            status: 'completed'
+        });
+
+        // 4. Job Referrals (Jobs posted by this alumni)
+        const jobReferralsCount = await Job.countDocuments({
+            postedBy: alumniId
+        });
+
+        // 5. Monthly Distribution (for the bar chart)
+        // Grouping by month for the last 6 months
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+        const monthlyStats = await Mentorship.aggregate([
+            {
+                $match: {
+                    alumni: new mongoose.Types.ObjectId(alumniId),
+                    createdAt: { $gte: sixMonthsAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        month: { $month: "$createdAt" },
+                        year: { $year: "$createdAt" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+        ]);
+
+        // Format month names
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const formattedMonthlyData = monthlyStats.map(stat => ({
+            month: monthNames[stat._id.month - 1],
+            sessions: stat.count
+        }));
+
+        res.json({
+            activeMentees: activeMenteesCount,
+            pendingRequests: pendingRequestsCount,
+            completedSessions: completedSessionsCount,
+            jobReferrals: jobReferralsCount,
+            monthlyData: formattedMonthlyData
+        });
+
+    } catch (err) {
+        console.error('Alumni Stats Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+

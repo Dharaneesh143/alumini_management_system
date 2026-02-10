@@ -8,6 +8,8 @@ import DashboardHelper from './pages/DashboardHelper';
 import JobList from './pages/JobList';
 import CreateJob from './pages/CreateJob';
 import Profile from './pages/Profile';
+import JobDetail from './pages/JobDetail';
+import ApplicantManager from './pages/ApplicantManager';
 import Navbar from './components/Navbar';
 import Layout from './components/Layout';
 import { AuthProvider } from './context/AuthContext.jsx';
@@ -21,6 +23,9 @@ import AlumniDetailView from './pages/admin/AlumniDetailView';
 import MentorshipConversation from './pages/MentorshipConversation';
 import MentorshipChatList from './pages/MentorshipChatList';
 import MenteeDetailView from './pages/MenteeDetailView';
+import AlumniManagement from './pages/admin/AlumniManagement';
+import MentorshipManagement from './pages/admin/MentorshipManagement';
+// import Events from './pages/Events';
 
 function App() {
   return (
@@ -64,6 +69,12 @@ function App() {
               <AdminLogin />
             </>
           } />
+          <Route path="/auth/admin/login" element={
+            <>
+              <Navbar />
+              <AdminLogin />
+            </>
+          } />
 
           {/* Authenticated routes with Layout (sidebar + topbar) */}
           <Route path="/dashboard" element={
@@ -79,7 +90,12 @@ function App() {
           } />
           <Route path="/admin/alumni" element={
             <Layout>
-              <DashboardHelper />
+              <AlumniManagement />
+            </Layout>
+          } />
+          <Route path="/admin/mentorships" element={
+            <Layout>
+              <MentorshipManagement />
             </Layout>
           } />
           <Route path="/admin/students" element={
@@ -105,6 +121,21 @@ function App() {
           <Route path="/jobs/create" element={
             <Layout>
               <CreateJob />
+            </Layout>
+          } />
+          <Route path="/jobs/edit/:id" element={
+            <Layout>
+              <CreateJob />
+            </Layout>
+          } />
+          <Route path="/jobs/:id" element={
+            <Layout>
+              <JobDetail />
+            </Layout>
+          } />
+          <Route path="/jobs/:id/applicants" element={
+            <Layout>
+              <ApplicantManager />
             </Layout>
           } />
           <Route path="/profile" element={
@@ -137,6 +168,13 @@ function App() {
               <MenteeDetailView />
             </Layout>
           } />
+          {/* 
+          <Route path="/events" element={
+            <Layout>
+              <Events />
+            </Layout>
+          } /> 
+*/}
         </Routes>
       </Router>
     </AuthProvider>

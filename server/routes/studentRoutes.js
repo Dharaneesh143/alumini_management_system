@@ -1,3 +1,5 @@
+const express = require('express');
+const router = express.Router();
 const studentAuthController = require('../controllers/studentAuthController');
 const studentController = require('../controllers/studentController');
 const auth = require('../middleware/auth');
@@ -39,6 +41,10 @@ router.get('/stats', auth, studentController.getDashboardStats);
 // @route   GET api/student/alumni
 // @access  Private (Student)
 router.get('/alumni', auth, studentController.getVerifiedAlumni);
+
+// @route   GET api/student/alumni-discovery
+// @access  Private (Student) - Alias for alumni endpoint
+router.get('/alumni-discovery', auth, studentController.getVerifiedAlumni);
 
 // @route   POST api/student/resume
 // @access  Private (Student)

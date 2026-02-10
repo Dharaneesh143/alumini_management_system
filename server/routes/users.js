@@ -23,4 +23,9 @@ router.get('/', auth, userController.getAllUsers);
 // @access  Private
 router.get('/:id', auth, userController.getUserById);
 
+// @route   POST api/users/deactivate
+// @desc    Deactivate current user account
+// @access  Private
+router.post('/deactivate', auth, userController.deactivateMe);
+
 module.exports = router;
