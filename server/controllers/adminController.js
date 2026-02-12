@@ -20,7 +20,7 @@ const logToFile = (msg) => {
 // Get system statistics for dashboard analytics
 exports.getSystemStats = async (req, res) => {
     try {
-        const totalAdmins = await Admin.countDocuments();
+        const totalAdmins = await User.countDocuments({ role: 'admin' });
         const totalStudents = await User.countDocuments({ role: 'student' });
         const totalAlumni = await User.countDocuments({ role: 'alumni' });
         const verifiedAlumni = await User.countDocuments({ role: 'alumni', approvalStatus: 'approved' });
@@ -145,6 +145,7 @@ exports.handleDeactivationRequest = async (req, res) => {
 
         if (action === 'approve') {
             user.accountStatus = 'deactivated';
+            user.status = 'Inactive';
             user.deactivationRequest.status = 'approved';
 
             // Log the action
@@ -193,6 +194,10 @@ exports.getAllUsers = async (req, res) => {
             filter.approvalStatus = 'approved';
         } else if (isVerified === 'false') {
             filter.approvalStatus = 'pending';
+        }
+
+        if (req.query.status) {
+            filter.status = req.query.status;
         }
 
         const users = await User.find(filter).select('-password').sort({ createdAt: -1 });
@@ -384,7 +389,7 @@ exports.getStudents = async (req, res) => {
 
         if (department) query.department = department;
         if (batch) query.batch = batch;
-        if (status) query.accountStatus = status;
+        if (status) query.status = status;
 
         const students = await User.find(query)
             .select('-password')

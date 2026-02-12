@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, Briefcase, Users, Search, Lightbulb } from 'lucide-react';
+import { GraduationCap, Users, Search, Lightbulb } from 'lucide-react';
+import alumni from '../assets/alumni.png'
 
 const Landing = () => {
     return (
@@ -14,6 +15,7 @@ const Landing = () => {
                 zIndex: 1
             }}>
                 <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+                    
                     <h1 className="text-2xl" style={{
                         fontSize: '3rem',
                         marginBottom: '1.5rem',
@@ -82,6 +84,7 @@ const Landing = () => {
                             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                             borderRadius: '1rem'
                         }}>
+                            
                             <div style={{
                                 display: 'flex',
                                 justifyContent: 'center',
@@ -90,8 +93,8 @@ const Landing = () => {
                                 gap: '0.5rem',
                                 alignItems: 'center'
                             }}>
-                                <Briefcase size={40} strokeWidth={2} />
-                                <Users size={40} strokeWidth={2} />
+                                <img src={alumni} alt='alumni' className='w-15 h-15' />
+                                
                             </div>
                             <h2 className="text-xl" style={{ marginBottom: '1rem', fontWeight: '700', color: 'white' }}>Alumni</h2>
                             <p style={{ marginBottom: '1.5rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.95rem' }}>

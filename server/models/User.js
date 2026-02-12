@@ -34,15 +34,25 @@ const userSchema = new mongoose.Schema({
         }
     },
     phoneNumber: String,
+    phone_number: String, // Explicit mapping from request
     department: String,
     batch: String,
     passedOutYear: String,
     currentCompany: String,
+    company_name: String, // Explicit mapping from request
     jobRole: String,
+    designation: String, // Explicit mapping from request
+    profile_image: String,
+    resume: String, // PDF path for students
     accountStatus: {
         type: String,
         enum: ['active', 'blocked', 'deactivated'],
         default: 'active'
+    },
+    status: {
+        type: String,
+        enum: ['Active', 'Inactive'],
+        default: 'Active'
     },
 
     // Mentor specific
@@ -72,12 +82,8 @@ const userSchema = new mongoose.Schema({
         github: String,
         resumeUrl: String,
         cgpa: String
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
     }
-});
+}, { timestamps: true });
 
 // Pre-save middleware to sync fields
 userSchema.pre('save', async function () {
@@ -85,12 +91,32 @@ userSchema.pre('save', async function () {
         if (this.batch && !this.passedOutYear) this.passedOutYear = this.batch;
         if (!this.batch && this.passedOutYear) this.batch = this.passedOutYear;
 
-        if (this.currentCompany) this.profile.company = this.currentCompany;
-        if (this.jobRole) this.profile.designation = this.jobRole;
+        if (this.currentCompany) {
+            this.profile.company = this.currentCompany;
+            this.company_name = this.currentCompany;
+        } else if (this.company_name) {
+            this.profile.company = this.company_name;
+            this.currentCompany = this.company_name;
+        }
+
+        if (this.jobRole) {
+            this.profile.designation = this.jobRole;
+            this.designation = this.jobRole;
+        } else if (this.designation) {
+            this.profile.designation = this.designation;
+            this.jobRole = this.designation;
+        }
     }
 
     if (this.department) this.profile.department = this.department;
     if (this.batch) this.profile.batch = this.batch;
+
+    if (this.phoneNumber) this.phone_number = this.phoneNumber;
+    else if (this.phone_number) this.phoneNumber = this.phone_number;
+
+    if (this.accountStatus === 'active') this.status = 'Active';
+    else if (this.status === 'Active') this.accountStatus = 'active';
+    else if (this.status === 'Inactive' && this.accountStatus === 'active') this.accountStatus = 'deactivated';
 });
 
 module.exports = mongoose.model('User', userSchema);

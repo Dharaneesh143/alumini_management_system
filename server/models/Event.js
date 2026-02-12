@@ -12,24 +12,43 @@ const eventSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['Alumni Meet', 'Webinar', 'Workshop', 'Guest Lecture', 'Other'],
+        enum: ['Alumni Meet', 'Webinar', 'Workshop', 'Guest Lecture', 'Seminar', 'Placement Drive', 'Other'],
         default: 'Webinar'
+    },
+    event_type: { // Explicit mapping from request
+        type: String,
+        enum: ['Seminar', 'Workshop', 'Placement Drive', 'Other']
     },
     date: {
         type: Date,
-        required: true
+        required: false
     },
+    event_date: Date, // Explicit mapping from request
     time: {
         type: String,
-        required: true
+        required: false
     },
     venue: {
         type: String,
-        required: true // Can be a physical location or an online link
+        required: false
+    },
+    mode: {
+        type: String,
+        enum: ['Online', 'Offline'],
+        default: 'Online'
+    },
+    organized_by: { // Explicit mapping from request: Admin / Alumni
+        type: String,
+        enum: ['Admin', 'Alumni']
+    },
+    registration_link: String, // Explicit mapping from request
+    requestDetails: {
+        message: String,
+        preferredDateRange: String
     },
     speaker: {
         name: { type: String, required: true },
-        alumniId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // If the speaker is an alumni
+        alumniId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
     },
     department: {
         type: String,
@@ -52,7 +71,7 @@ const eventSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ['Upcoming', 'Ongoing', 'Completed'],
+        enum: ['Upcoming', 'Ongoing', 'Completed', 'Pending', 'Active', 'Inactive'],
         default: 'Upcoming'
     },
     createdBy: {
@@ -67,5 +86,18 @@ const eventSchema = new mongoose.Schema({
         createdAt: { type: Date, default: Date.now }
     }]
 }, { timestamps: true });
+
+// Pre-validate to sync fields before Mongoose validation
+eventSchema.pre('validate', function () {
+    if (this.event_type) this.type = this.event_type;
+    else if (this.type && !this.event_type) this.event_type = ['Seminar', 'Workshop', 'Placement Drive'].includes(this.type) ? this.type : 'Other';
+
+    if (this.event_date && !this.date) this.date = this.event_date;
+    else if (this.date && !this.event_date) this.event_date = this.date;
+
+    if (this.organized_by) {
+        // No direct sync needed, but can be derived if necessary
+    }
+});
 
 module.exports = mongoose.model('Event', eventSchema);

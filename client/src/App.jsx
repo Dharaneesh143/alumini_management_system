@@ -25,7 +25,7 @@ import MentorshipChatList from './pages/MentorshipChatList';
 import MenteeDetailView from './pages/MenteeDetailView';
 import AlumniManagement from './pages/admin/AlumniManagement';
 import MentorshipManagement from './pages/admin/MentorshipManagement';
-// import Events from './pages/Events';
+import Events from './pages/Events';
 
 function App() {
   return (
@@ -168,13 +168,11 @@ function App() {
               <MenteeDetailView />
             </Layout>
           } />
-          {/* 
           <Route path="/events" element={
             <Layout>
               <Events />
             </Layout>
-          } /> 
-*/}
+          } />
         </Routes>
       </Router>
     </AuthProvider>

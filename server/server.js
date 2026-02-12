@@ -98,20 +98,22 @@ mongoose.connect(mongoURI, {
         logToFile('✅ MongoDB Connected Successfully');
         // Admin seeding...
         try {
-            const Admin = require('./models/Admin');
+            const User = require('./models/User');
             const bcrypt = require('bcrypt');
-            const adminCount = await Admin.countDocuments();
+            const adminCount = await User.countDocuments({ role: 'admin' });
             if (adminCount === 0) {
-                console.log('🚀 No admin found. Seeding default admin...');
+                console.log('🚀 No admin found in User collection. Seeding default admin...');
                 const hashedPassword = await bcrypt.hash('Admin@123', 10);
-                const defaultAdmin = new Admin({
+                const defaultAdmin = new User({
                     name: 'System Admin',
                     email: 'admin@admin.com',
                     password: hashedPassword,
-                    role: 'admin'
+                    role: 'admin',
+                    approvalStatus: 'approved',
+                    status: 'Active'
                 });
                 await defaultAdmin.save();
-                console.log('✅ Default admin created: admin@admin.com / Admin@123');
+                console.log('✅ Default admin created in User collection: admin@admin.com / Admin@123');
             }
         } catch (err) {
             logToFile(`❌ Seeding failed: ${err.message}`);
@@ -132,6 +134,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/mentorship', require('./routes/mentorship'));
 app.use('/api/events', require('./routes/eventRoutes'));
+app.use('/api/college-info', require('./routes/collegeInfoRoutes'));
 
 app.get('/', (req, res) => res.send('Alumni Portal API is Running'));
 

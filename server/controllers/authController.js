@@ -17,7 +17,15 @@ const logToFile = (msg) => {
 // Register User (Handles Student, Alumni)
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, role, registerNumber, phoneNumber, passedOutYear, currentCompany, jobRole, department, batch } = req.body;
+        const {
+            name, email, password, role, registerNumber,
+            phoneNumber, phone_number,
+            passedOutYear,
+            currentCompany, company_name,
+            jobRole, designation,
+            department, batch,
+            profile_image, resume
+        } = req.body;
 
         // Check if user exists
         let user = await User.findOne({ email });
@@ -44,23 +52,28 @@ exports.register = async (req, res) => {
             role: role || 'student',
             department: department || 'N/A',
             batch: batch || passedOutYear || req.body.graduationYear || 'N/A',
-            phoneNumber: phoneNumber || 'N/A',
+            phoneNumber: phoneNumber || phone_number || 'N/A',
+            phone_number: phone_number || phoneNumber || 'N/A',
+            profile_image,
+            resume,
             profile: {
                 department: department || 'N/A',
                 batch: batch || passedOutYear || req.body.graduationYear || 'N/A',
-                company: currentCompany || 'N/A',
-                designation: jobRole || 'N/A'
+                company: currentCompany || company_name || 'N/A',
+                designation: jobRole || designation || 'N/A'
             }
         };
 
         if (userData.role === 'student') {
             userData.registerNumber = registerNumber;
-            userData.approvalStatus = 'approved'; // Students are auto-approved
+            userData.approvalStatus = 'approved';
         } else if (userData.role === 'alumni') {
             userData.passedOutYear = userData.batch;
-            userData.currentCompany = currentCompany;
-            userData.jobRole = jobRole;
-            userData.approvalStatus = 'pending'; // Alumni need admin approval
+            userData.currentCompany = currentCompany || company_name;
+            userData.company_name = company_name || currentCompany;
+            userData.jobRole = jobRole || designation;
+            userData.designation = designation || jobRole;
+            userData.approvalStatus = 'pending';
         }
 
         user = new User(userData);

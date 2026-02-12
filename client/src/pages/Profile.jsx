@@ -142,6 +142,7 @@ const Profile = () => {
             )}
 
             {/* Profile Form */}
+            
             <div className="card">
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-2 gap-6">
@@ -208,7 +209,7 @@ const Profile = () => {
                                 placeholder="e.g., 2020"
                             />
                         </div>
-
+                        
                         {user?.role === 'student' && (
                             <div className="form-group">
                                 <label className="form-label">CGPA (0-10)</label>
@@ -229,6 +230,7 @@ const Profile = () => {
                         {/* Professional Information (for Alumni) */}
                         {user?.role === 'alumni' && (
                             <>
+                            
                                 <div className="form-group">
                                     <label className="form-label">Company</label>
                                     <input
@@ -407,7 +409,7 @@ const Profile = () => {
                                                 href={`${api.defaults.baseURL}${user.profile?.resumeUrl || user.resumeUrl}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-full font-bold hover:bg-primary-dark transition-all shadow-md"
+                                                className="inline-flex items-center gap-2 text-white px-6 py-2 rounded-full font-bold hover:bg-primary-dark transition-all shadow-md"
                                             >
                                                 <Download size={16} /> View/Download File
                                             </a>
@@ -513,8 +515,8 @@ const Profile = () => {
                                 setShowDeactivateModal(false);
                                 setDeactivateFeedback('');
                             }}
-                            className="absolute top-8 right-8 w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all group"
-                        >
+                            className="absolute top-8 right-8 w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-400 transition-all group"
+ x                       >
                             <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-800 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -541,7 +543,7 @@ const Profile = () => {
 
                         {/* Feedback Input Block */}
                         <div className="mb-8">
-                            <label className="block text-sm font-medium text-gray-500 mb-3">
+                            <label className="block text-sm font-medium mb-4 text-gray-500 mb-3">
                                 Share your reason (optional)
                             </label>
                             <textarea

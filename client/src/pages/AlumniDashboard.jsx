@@ -29,8 +29,10 @@ const AlumniDashboard = () => {
         pendingRequests: 0,
         completedSessions: 0,
         jobReferrals: 0,
+        jobReferrals: 0,
         monthlyData: []
     });
+    const [alumniRequests, setAlumniRequests] = React.useState([]); // New Request State
     const [loading, setLoading] = React.useState(true);
     const { user } = React.useContext(AuthContext);
     const navigate = useNavigate();
@@ -40,6 +42,10 @@ const AlumniDashboard = () => {
             try {
                 const res = await api.get(API_ENDPOINTS.GET_ALUMNI_STATS);
                 setStats(res.data);
+
+                // Fetch Pending Requests
+                const reqRes = await api.get('/api/events/alumni/requests');
+                setAlumniRequests(reqRes.data);
             } catch (err) {
                 console.error('Error fetching alumni stats:', err);
             } finally {
@@ -79,6 +85,27 @@ const AlumniDashboard = () => {
                         className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-800 transition-all shadow-lg active:scale-95 whitespace-nowrap"
                     >
                         Enable Now
+                    </Link>
+                </div>
+            )}
+
+            {/* PENDING EVENT REQUESTS ALERT */}
+            {alumniRequests.length > 0 && (
+                <div className="bg-blue-50 border-2 border-blue-100 rounded-[2rem] p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-500">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm">
+                            📅
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-gray-900">You have {alumniRequests.length} Pending Event Request{alumniRequests.length > 1 ? 's' : ''}</h3>
+                            <p className="text-gray-600 mt-1">The college has requested you to schedule these events.</p>
+                        </div>
+                    </div>
+                    <Link
+                        to="/events"
+                        className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-800 transition-all shadow-lg active:scale-95 whitespace-nowrap"
+                    >
+                        View & Schedule
                     </Link>
                 </div>
             )}
@@ -123,24 +150,27 @@ const AlumniDashboard = () => {
                 {/* BAR */}
                 <div className="chart-card wide">
                     <h3>Monthly Mentorship Sessions</h3>
-                    <Bar
-                        data={{
-                            labels: stats.monthlyData.map(d => d.month),
-                            datasets: [
-                                {
-                                    label: "Sessions",
-                                    data: stats.monthlyData.map(d => d.sessions),
-                                    backgroundColor: "#4f46e5"
+                    <div style={{ height: '300px', width: '100%' }}>
+                        <Bar
+                            data={{
+                                labels: stats.monthlyData.map(d => d.month),
+                                datasets: [
+                                    {
+                                        label: "Sessions",
+                                        data: stats.monthlyData.map(d => d.sessions),
+                                        backgroundColor: "#4f46e5"
+                                    }
+                                ]
+                            }}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false }
                                 }
-                            ]
-                        }}
-                        options={{
-                            responsive: true,
-                            plugins: {
-                                legend: { display: false }
-                            }
-                        }}
-                    />
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
 

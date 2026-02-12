@@ -158,10 +158,11 @@ const AlumniDetailView = () => {
                     </button>
                 </div>
             </div>
-
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="space-y-6">
-                    <div className="card text-center py-8">
+                    <div className="card text-center flex flex-col items-center justify-center py-8">
+                        
                         <div className="w-24 h-24 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-sm">
                             {(alumni?.name || 'A').charAt(0).toUpperCase()}
                         </div>

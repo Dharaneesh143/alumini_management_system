@@ -78,7 +78,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-3 gap-6 mb-8 justify-between">
                 <StatCard
                     icon={Briefcase}
                     label="Jobs Available"

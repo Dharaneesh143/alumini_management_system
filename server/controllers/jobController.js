@@ -10,23 +10,31 @@ const sendEmail = require('../utils/emailService');
 exports.createJob = async (req, res) => {
     try {
         const {
-            title, description, company, location,
-            opportunityType, requiredSkills, departmentsEligible,
-            minQualification, deadline, contactEmail, openingsCount,
-            referralAvailable, salaryRange, employmentType, experienceRequired,
-            stipend, duration, startDate, endDate, ppoAvailable
+            title, description, company, company_name, location,
+            opportunityType, job_type,
+            skills_required, requiredSkills, departmentsEligible,
+            minQualification, eligibility,
+            deadline, application_deadline,
+            contactEmail, openingsCount,
+            referralAvailable, salaryRange, salary, employmentType, experienceRequired,
+            stipend, duration, startDate, start_date, endDate, end_date, ppoAvailable
         } = req.body;
 
         const jobData = {
             title,
             description,
-            company,
+            company: company || company_name,
+            company_name: company_name || company,
             location,
-            opportunityType,
-            requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : (requiredSkills ? requiredSkills.split(',').map(s => s.trim()) : []),
+            opportunityType: opportunityType || (job_type === 'Full-Time' ? 'Job' : 'Internship'),
+            job_type: job_type || (opportunityType === 'Job' ? 'Full-Time' : 'Internship'),
+            requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : (requiredSkills ? requiredSkills.split(',').map(s => s.trim()) : (Array.isArray(skills_required) ? skills_required : (skills_required ? skills_required.split(',').map(s => s.trim()) : []))),
+            skills_required: Array.isArray(skills_required) ? skills_required : (skills_required ? skills_required.split(',').map(s => s.trim()) : (Array.isArray(requiredSkills) ? requiredSkills : (requiredSkills ? requiredSkills.split(',').map(s => s.trim()) : []))),
             departmentsEligible: Array.isArray(departmentsEligible) ? departmentsEligible : (departmentsEligible ? departmentsEligible.split(',').map(s => s.trim()) : []),
             minQualification,
-            deadline,
+            eligibility: eligibility || minQualification,
+            deadline: deadline || application_deadline,
+            application_deadline: application_deadline || deadline,
             contactEmail,
             openingsCount,
             referralAvailable: referralAvailable === 'true' || referralAvailable === true,
@@ -46,15 +54,18 @@ exports.createJob = async (req, res) => {
         }
 
         // Type specific fields
-        if (opportunityType === 'Job') {
-            jobData.salaryRange = salaryRange;
+        if (jobData.opportunityType === 'Job' || jobData.job_type === 'Full-Time') {
+            jobData.salaryRange = salaryRange || salary;
+            jobData.salary = salary || salaryRange;
             jobData.employmentType = employmentType;
             jobData.experienceRequired = experienceRequired;
         } else {
             jobData.stipend = stipend;
             jobData.duration = duration;
-            jobData.startDate = startDate;
-            jobData.endDate = endDate;
+            jobData.startDate = startDate || start_date;
+            jobData.start_date = start_date || startDate;
+            jobData.endDate = endDate || end_date;
+            jobData.end_date = end_date || endDate;
             jobData.ppoAvailable = ppoAvailable === 'true' || ppoAvailable === true;
         }
 

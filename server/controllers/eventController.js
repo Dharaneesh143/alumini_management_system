@@ -13,10 +13,15 @@ exports.createEvent = async (req, res) => {
             date,
             time,
             venue,
+            mode,
             speaker,
             department,
-            maxParticipants
+            maxParticipants,
+            requestDetails
         } = req.body;
+
+        // If it's a request to alumni, set status to Pending, otherwise Upcoming
+        const status = (speaker?.alumniId && !date) ? 'Pending' : 'Upcoming';
 
         const event = new Event({
             title,
@@ -25,9 +30,12 @@ exports.createEvent = async (req, res) => {
             date,
             time,
             venue,
+            mode: mode || 'Online',
             speaker,
             department,
             maxParticipants,
+            status,
+            requestDetails,
             createdBy: req.user.id
         });
 
@@ -35,7 +43,7 @@ exports.createEvent = async (req, res) => {
         res.status(201).json(event);
     } catch (err) {
         console.error('Create Event Error:', err.message);
-        res.status(500).send('Server Error');
+        res.status(500).send('Server Error: ' + err.message);
     }
 };
 
@@ -269,6 +277,42 @@ exports.getEventStats = async (req, res) => {
         });
     } catch (err) {
         console.error('Get Event Stats Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+
+// @desc    Get event requests for alumni
+exports.getAlumniRequests = async (req, res) => {
+    try {
+        const requests = await Event.find({ 'speaker.alumniId': req.user.id, status: 'Pending' }).sort({ createdAt: -1 });
+        res.json(requests);
+    } catch (err) {
+        console.error('Get Alumni Requests Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Schedule an event (Alumni accepts request)
+exports.scheduleEvent = async (req, res) => {
+    try {
+        const { date, time, venue, mode } = req.body;
+        const event = await Event.findById(req.params.id);
+        if (!event) return res.status(404).json({ msg: 'Event not found' });
+
+        if (event.speaker.alumniId.toString() !== req.user.id) {
+            return res.status(403).json({ msg: 'Not authorized' });
+        }
+
+        event.date = date;
+        event.time = time;
+        event.venue = venue;
+        event.mode = mode || 'Online';
+        event.status = 'Upcoming';
+        await event.save();
+        res.json(event);
+    } catch (err) {
+        console.error('Schedule Event Error:', err.message);
         res.status(500).send('Server Error');
     }
 };

@@ -39,6 +39,12 @@ const Events = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [filters, setFilters] = useState({ type: '', status: '', search: '' });
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [isAlumniRequest, setIsAlumniRequest] = useState(false); // New State
+
+    // Add requests state for alumni
+    const [alumniRequests, setAlumniRequests] = useState([]);
+    const [showScheduleModal, setShowScheduleModal] = useState(null);
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -47,6 +53,7 @@ const Events = () => {
         time: '',
         venue: '',
         speakerName: '',
+        alumniId: '', // For selecting specific alumni
         department: '',
         maxParticipants: 100
     });
@@ -56,7 +63,19 @@ const Events = () => {
         if (user?.role === 'admin') {
             fetchStats();
         }
+        if (user?.role === 'alumni') {
+            fetchAlumniRequests();
+        }
     }, [filters, user]);
+
+    const fetchAlumniRequests = async () => {
+        try {
+            const res = await api.get('/api/events/alumni/requests');
+            setAlumniRequests(res.data);
+        } catch (err) {
+            console.error('Error fetching alumni requests:', err);
+        }
+    };
 
     const fetchEvents = async () => {
         try {
@@ -86,16 +105,51 @@ const Events = () => {
     const handleCreateEvent = async (e) => {
         e.preventDefault();
         try {
+            // Find alumni ID if needed (For now, assumes speakerName matches an existing alumni name or ID if we implement search)
+            // In a real scenario, we would use a search dropdown to get the _id.
+            // For MVP, if Admin checks "Ask Alumni", we might need to input the Email or search results.
+
+            // NOTE: Since we don't have an Alumni Search UI here yet, we'll assume speakerName is text, and for "Ask Alumni",
+            // we really need the Alumni ID. 
+            // Workaround: We will fetch all alumni and filter by name to get ID (simple approach) or 
+            // just ask admin to enter ID if we want to be strict.
+            // BETTER: Use the existing "Find Mentor" API to simple search.
+
+            let alumniId = null;
+            if (isAlumniRequest) {
+                // Simple lookup logic or require ID. 
+                // For now, let's look for a user with the name.
+                const usersRes = await api.get(`/api/users?search=${formData.speakerName}&role=alumni`);
+                const found = usersRes.data.find(u => u.name.toLowerCase() === formData.speakerName.toLowerCase());
+                if (found) alumniId = found._id;
+                else {
+                    alert('Alumni not found with that exact name. Please enter exact name.');
+                    return;
+                }
+            }
+
             const eventData = {
                 ...formData,
-                speaker: { name: formData.speakerName }
+                speaker: {
+                    name: formData.speakerName,
+                    alumniId: alumniId
+                },
+                // If requesting, date/time can be empty
+                date: isAlumniRequest ? null : formData.date,
+                time: isAlumniRequest ? null : formData.time,
+                venue: isAlumniRequest ? null : formData.venue,
             };
+
             await api.post(API_ENDPOINTS.EVENTS, eventData);
             setShowAddForm(false);
+            setFormData({
+                title: '', description: '', type: 'Webinar', date: '', time: '', venue: '', speakerName: '', department: '', maxParticipants: 100
+            });
+            setIsAlumniRequest(false);
             fetchEvents();
             if (user?.role === 'admin') fetchStats();
         } catch (err) {
-            alert('Failed to create event');
+            alert('Failed to create event: ' + (err.response?.data?.msg || err.message));
         }
     };
 
@@ -120,11 +174,128 @@ const Events = () => {
         }
     };
 
+    const handleScheduleEvent = async (e) => {
+        e.preventDefault();
+        try {
+            await api.put(`/api/events/${showScheduleModal._id}/schedule`, {
+                date: formData.date,
+                time: formData.time,
+                venue: formData.venue,
+                mode: formData.mode || 'Online'
+            });
+            setShowScheduleModal(null);
+            fetchAlumniRequests();
+            fetchEvents();
+            setFormData({
+                title: '', description: '', type: 'Webinar', date: '', time: '', venue: '', speakerName: '', department: '', maxParticipants: 100
+            });
+            alert('Event Scheduled Successfully!');
+        } catch (err) {
+            alert('Failed to schedule event');
+        }
+    };
+
     const isAdmin = user?.role === 'admin';
     const isAlumni = user?.role === 'alumni';
 
     return (
         <div className="events-page">
+            {/* Alumni Requests Section */}
+            {isAlumni && alumniRequests.length > 0 && (
+                <div className="mb-10 bg-orange-50 border border-orange-100 rounded-2xl p-6">
+                    <h2 className="text-xl font-bold text-orange-800 mb-4 flex items-center gap-2">
+                        <CalendarIcon size={24} /> Pending Event Requests
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {alumniRequests.map(request => (
+                            <div key={request._id} className="bg-white p-5 rounded-xl shadow-sm border border-orange-100">
+                                <h3 className="font-bold text-lg mb-2">{request.title}</h3>
+                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{request.description}</p>
+                                <div className="flex justify-between items-center">
+                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Pending Schedule</span>
+                                    <button
+                                        onClick={() => {
+                                            setFormData({ ...formData, mode: 'Online' }); // Default
+                                            setShowScheduleModal(request);
+                                        }}
+                                        className="btn btn-sm bg-orange-500 hover:bg-orange-600 text-white border-none"
+                                    >
+                                        Schedule Now
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Schedule Modal */}
+            {showScheduleModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h2 className="text-2xl font-bold text-gray-800">Schedule Event</h2>
+                            <button onClick={() => setShowScheduleModal(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <X size={24} className="text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-6 bg-gray-50 border-b border-gray-100">
+                            <h3 className="font-bold text-lg">{showScheduleModal.title}</h3>
+                            <p className="text-gray-600 text-sm mt-1">{showScheduleModal.description}</p>
+                        </div>
+                        <form onSubmit={handleScheduleEvent} className="p-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold mb-2">Mode</label>
+                                    <select
+                                        className="form-input w-full"
+                                        value={formData.mode || 'Online'}
+                                        onChange={(e) => setFormData({ ...formData, mode: e.target.value })}
+                                    >
+                                        <option value="Online">Online</option>
+                                        <option value="Offline">Offline</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold mb-2">Date</label>
+                                    <input
+                                        required
+                                        type="date"
+                                        className="form-input w-full"
+                                        value={formData.date}
+                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                        min={new Date().toISOString().split('T')[0]}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold mb-2">Time</label>
+                                    <input
+                                        required
+                                        type="time"
+                                        className="form-input w-full"
+                                        value={formData.time}
+                                        onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold mb-2">Venue / Link</label>
+                                    <input
+                                        required
+                                        className="form-input w-full"
+                                        placeholder={formData.mode === 'Online' ? "Zoom/Meet Link" : "Room Number / Address"}
+                                        value={formData.venue}
+                                        onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="mt-8 flex gap-4">
+                                <button type="submit" className="btn btn-primary flex-1">Confirm Schedule</button>
+                                <button type="button" onClick={() => setShowScheduleModal(null)} className="btn btn-outline flex-1">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">College Events & Presentations</h1>
@@ -248,15 +419,22 @@ const Events = () => {
                                 <div className="space-y-3 mb-6">
                                     <div className="flex items-center gap-3 text-secondary text-sm">
                                         <CalendarIcon size={16} className="text-primary" />
-                                        <span>{new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {event.time}</span>
+                                        <span>
+                                            {event.date
+                                                ? `${new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at ${event.time}`
+                                                : <span className="text-orange-600 font-bold italic">Date & Time TBD</span>
+                                            }
+                                        </span>
                                     </div>
                                     <div className="flex items-center gap-3 text-secondary text-sm">
-                                        {event.venue.includes('http') ? <Video size={16} className="text-primary" /> : <MapPin size={16} className="text-primary" />}
-                                        <span className="truncate">{event.venue}</span>
+                                        {event.venue?.includes('http') ? <Video size={16} className="text-primary" /> : <MapPin size={16} className="text-primary" />}
+                                        <span className="truncate">
+                                            {event.venue || <span className="text-orange-600 font-bold italic">Venue TBD</span>}
+                                        </span>
                                     </div>
                                     <div className="flex items-center gap-3 text-secondary text-sm">
                                         <Users size={16} className="text-primary" />
-                                        <span>{event.speaker.name} • {event.department}</span>
+                                        <span>{event.speaker?.name || 'Unknown Speaker'} • {event.department || 'General'}</span>
                                     </div>
                                 </div>
 
@@ -301,6 +479,19 @@ const Events = () => {
                         </div>
                         <form onSubmit={handleCreateEvent} className="p-8 overflow-y-auto max-h-[calc(90vh-160px)]">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="md:col-span-2 flex items-center gap-2 mb-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                    <input
+                                        type="checkbox"
+                                        id="alumniRequest"
+                                        className="w-5 h-5 text-primary rounded"
+                                        checked={isAlumniRequest}
+                                        onChange={(e) => setIsAlumniRequest(e.target.checked)}
+                                    />
+                                    <label htmlFor="alumniRequest" className="font-bold text-blue-800 cursor-pointer select-none">
+                                        Ask Alumni to Schedule (Book Free Slot)
+                                    </label>
+                                </div>
+
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-bold mb-2">Event Title</label>
                                     <input
@@ -321,59 +512,81 @@ const Events = () => {
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2">Event Type</label>
-                                    <select
-                                        className="form-input w-full"
-                                        value={formData.type}
-                                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                    >
-                                        <option value="Alumni Meet">Alumni Meet</option>
-                                        <option value="Webinar">Webinar</option>
-                                        <option value="Workshop">Workshop</option>
-                                        <option value="Guest Lecture">Guest Lecture</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2">Department</label>
-                                    <input
-                                        required
-                                        className="form-input w-full"
-                                        placeholder="e.g. Computer Science"
-                                        value={formData.department}
-                                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2">Date</label>
-                                    <input
-                                        required
-                                        type="date"
-                                        className="form-input w-full"
-                                        value={formData.date}
-                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2">Time</label>
-                                    <input
-                                        required
-                                        type="time"
-                                        className="form-input w-full"
-                                        value={formData.time}
-                                        onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold mb-2">Venue / Link</label>
-                                    <input
-                                        required
-                                        className="form-input w-full"
-                                        placeholder="Room 101 or Zoom Link"
-                                        value={formData.venue}
-                                        onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                                    />
-                                </div>
+
+                                {!isAlumniRequest && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-bold mb-2">Event Type</label>
+                                            <select
+                                                className="form-input w-full"
+                                                value={formData.type}
+                                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                            >
+                                                <option value="Alumni Meet">Alumni Meet</option>
+                                                <option value="Webinar">Webinar</option>
+                                                <option value="Workshop">Workshop</option>
+                                                <option value="Guest Lecture">Guest Lecture</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold mb-2">Department</label>
+                                            <input
+                                                required
+                                                className="form-input w-full"
+                                                placeholder="e.g. Computer Science"
+                                                value={formData.department}
+                                                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold mb-2">Date</label>
+                                            <input
+                                                required
+                                                type="date"
+                                                className="form-input w-full"
+                                                value={formData.date}
+                                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold mb-2">Time</label>
+                                            <input
+                                                required
+                                                type="time"
+                                                className="form-input w-full"
+                                                value={formData.time}
+                                                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold mb-2">Venue / Link</label>
+                                            <input
+                                                required
+                                                className="form-input w-full"
+                                                placeholder="Room 101 or Zoom Link"
+                                                value={formData.venue}
+                                                onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {isAlumniRequest && (
+                                    <div className="md:col-span-2">
+                                        <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded-lg mb-4">
+                                            The Alumni will be notified to choose a Date, Time, and Venue/Link for this event.
+                                        </div>
+                                        <label className="block text-sm font-bold mb-2">Department</label>
+                                        <input
+                                            required
+                                            className="form-input w-full"
+                                            placeholder="e.g. Computer Science"
+                                            value={formData.department}
+                                            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                                        />
+                                    </div>
+                                )}
+
                                 <div>
                                     <label className="block text-sm font-bold mb-2">Max Participants</label>
                                     <input
@@ -384,18 +597,20 @@ const Events = () => {
                                     />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-bold mb-2">Speaker Name</label>
+                                    <label className="block text-sm font-bold mb-2">Speaker Name {isAlumniRequest && '(Exact Alumni Name Required)'}</label>
                                     <input
                                         required
                                         className="form-input w-full"
-                                        placeholder="Who will be speaking?"
+                                        placeholder={isAlumniRequest ? "Enter exact Alumni name to send request" : "Who will be speaking?"}
                                         value={formData.speakerName}
                                         onChange={(e) => setFormData({ ...formData, speakerName: e.target.value })}
                                     />
                                 </div>
                             </div>
                             <div className="mt-10 flex gap-4">
-                                <button type="submit" className="btn btn-primary flex-1 py-4 text-lg shadow-xl shadow-primary/20">Create Event</button>
+                                <button type="submit" className="btn btn-primary flex-1 py-4 text-lg shadow-xl shadow-primary/20">
+                                    {isAlumniRequest ? 'Send Request to Alumni' : 'Create Event'}
+                                </button>
                                 <button type="button" onClick={() => setShowAddForm(false)} className="btn btn-outline flex-1 py-4 text-lg">Cancel</button>
                             </div>
                         </form>
@@ -414,110 +629,115 @@ const Events = () => {
                             </div>
                             <h2 className="text-3xl font-bold mb-6 leading-tight">{selectedEvent.title}</h2>
                             <div className="space-y-6 mt-4">
-                                <div className="flex gap-4 items-start">
-                                    <div className="p-3 bg-white/10 rounded-2xl"><CalendarIcon size={20} /></div>
-                                    <div>
-                                        <p className="text-gray-400 text-xs font-bold uppercase">When</p>
-                                        <p className="font-medium">{new Date(selectedEvent.date).toLocaleDateString()} • {selectedEvent.time}</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 items-start">
-                                    <div className="p-3 bg-white/10 rounded-2xl"><MapPin size={20} /></div>
-                                    <div>
-                                        <p className="text-gray-400 text-xs font-bold uppercase">Where</p>
-                                        <p className="font-medium">{selectedEvent.venue}</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 items-start">
-                                    <div className="p-3 bg-white/10 rounded-2xl"><Users size={20} /></div>
-                                    <div>
-                                        <p className="text-gray-400 text-xs font-bold uppercase">Speaker</p>
-                                        <p className="font-medium text-lg text-primary-light">{selectedEvent.speaker.name}</p>
-                                        <p className="text-gray-400 text-xs">{selectedEvent.department} Department</p>
-                                    </div>
+                                <div className="p-3 bg-white/10 rounded-2xl"><CalendarIcon size={20} /></div>
+                                <div>
+                                    <p className="text-gray-400 text-xs font-bold uppercase">When</p>
+                                    <p className="font-medium">
+                                        {selectedEvent.date
+                                            ? `${new Date(selectedEvent.date).toLocaleDateString()} • ${selectedEvent.time}`
+                                            : <span className="text-orange-400">To Be Scheduled</span>
+                                        }
+                                    </p>
                                 </div>
                             </div>
-                            <div className="mt-auto pt-10">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-bold text-gray-500 uppercase">Availability</span>
-                                    <span className="text-xs font-bold text-primary">{selectedEvent.registeredParticipants.length} / {selectedEvent.maxParticipants}</span>
+                            <div className="flex gap-4 items-start">
+                                <div className="p-3 bg-white/10 rounded-2xl"><MapPin size={20} /></div>
+                                <div>
+                                    <p className="text-gray-400 text-xs font-bold uppercase">Where</p>
+                                    <p className="font-medium">
+                                        {selectedEvent.venue || <span className="text-orange-400">To Be Scheduled</span>}
+                                    </p>
                                 </div>
-                                <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                                    <div
-                                        className="bg-primary h-full transition-all duration-1000"
-                                        style={{ width: `${(selectedEvent.registeredParticipants.length / selectedEvent.maxParticipants) * 100}%` }}
-                                    ></div>
+                            </div>
+                            <div className="flex gap-4 items-start">
+                                <div className="p-3 bg-white/10 rounded-2xl"><Users size={20} /></div>
+                                <div>
+                                    <p className="text-gray-400 text-xs font-bold uppercase">Speaker</p>
+                                    <p className="font-medium text-lg text-primary-light">{selectedEvent.speaker.name}</p>
+                                    <p className="text-gray-400 text-xs">{selectedEvent.department} Department</p>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Right scrollable content */}
-                        <div className="md:w-3/5 p-10 overflow-y-auto flex flex-col bg-white">
-                            <div className="flex justify-end mb-4">
-                                <button onClick={() => setSelectedEvent(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                    <X size={24} />
-                                </button>
+                        <div className="mt-auto pt-10">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-bold text-gray-500 uppercase">Availability</span>
+                                <span className="text-xs font-bold text-primary">{selectedEvent.registeredParticipants.length} / {selectedEvent.maxParticipants}</span>
                             </div>
-
-                            <div className="mb-10">
-                                <h4 className="text-xs uppercase font-extrabold tracking-widest text-primary mb-4">About the Event</h4>
-                                <p className="text-secondary leading-relaxed text-lg">{selectedEvent.description}</p>
+                            <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                                <div
+                                    className="bg-primary h-full transition-all duration-1000"
+                                    style={{ width: `${(selectedEvent.registeredParticipants.length / selectedEvent.maxParticipants) * 100}%` }}
+                                ></div>
                             </div>
+                        </div>
+                    </div>
 
-                            {/* Presentation Files Section */}
-                            <div className="mb-10">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h4 className="text-xs uppercase font-extrabold tracking-widest text-primary">Presentations</h4>
-                                    {(isAdmin || (isAlumni && selectedEvent.speaker.alumniId === user.id)) && (
-                                        <button className="text-primary text-xs font-bold flex items-center gap-1 hover:underline">
-                                            <Upload size={14} /> Upload New
-                                        </button>
-                                    )}
-                                </div>
-                                {selectedEvent.presentations.length === 0 ? (
-                                    <div className="p-6 border-2 border-dashed rounded-3xl text-center text-gray-400">
-                                        <FileText size={24} className="mx-auto mb-2 opacity-20" />
-                                        <p className="text-sm">No materials shared yet</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {selectedEvent.presentations.map((file, idx) => (
-                                            <a
-                                                key={idx}
-                                                href={file.fileUrl}
-                                                className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-primary/30 transition-all"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                                                        <FileText size={18} />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-gray-800">{file.fileName}</p>
-                                                        <p className="text-[10px] text-gray-400">Shared on {new Date(file.uploadedAt).toLocaleDateString()}</p>
-                                                    </div>
-                                                </div>
-                                                <ChevronRight size={16} className="text-gray-300 group-hover:text-primary transition-colors" />
-                                            </a>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                    {/* Right scrollable content */}
+                    <div className="md:w-3/5 p-10 overflow-y-auto flex flex-col bg-white">
+                        <div className="flex justify-end mb-4">
+                            <button onClick={() => setSelectedEvent(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
 
-                            <div className="mt-auto flex gap-4 pt-4 border-t">
-                                {selectedEvent.status !== 'Completed' ? (
-                                    <button
-                                        onClick={() => handleRegister(selectedEvent._id)}
-                                        className="btn btn-primary flex-1 py-4 text-lg shadow-xl shadow-primary/20"
-                                        disabled={selectedEvent.registeredParticipants.some(p => p.user._id === user?.id || p.user === user?.id)}
-                                    >
-                                        {selectedEvent.registeredParticipants.some(p => p.user._id === user?.id || p.user === user?.id) ? 'Already Registered' : 'Confirm Registration'}
+                        <div className="mb-10">
+                            <h4 className="text-xs uppercase font-extrabold tracking-widest text-primary mb-4">About the Event</h4>
+                            <p className="text-secondary leading-relaxed text-lg">{selectedEvent.description}</p>
+                        </div>
+
+                        {/* Presentation Files Section */}
+                        <div className="mb-10">
+                            <div className="flex justify-between items-center mb-6">
+                                <h4 className="text-xs uppercase font-extrabold tracking-widest text-primary">Presentations</h4>
+                                {(isAdmin || (isAlumni && selectedEvent.speaker.alumniId === user.id)) && (
+                                    <button className="text-primary text-xs font-bold flex items-center gap-1 hover:underline">
+                                        <Upload size={14} /> Upload New
                                     </button>
-                                ) : (
-                                    <button className="btn btn-outline flex-1 py-4 text-lg">Leave Feedback</button>
                                 )}
                             </div>
+                            {selectedEvent.presentations.length === 0 ? (
+                                <div className="p-6 border-2 border-dashed rounded-3xl text-center text-gray-400">
+                                    <FileText size={24} className="mx-auto mb-2 opacity-20" />
+                                    <p className="text-sm">No materials shared yet</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {selectedEvent.presentations.map((file, idx) => (
+                                        <a
+                                            key={idx}
+                                            href={file.fileUrl}
+                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-primary/30 transition-all"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                                    <FileText size={18} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-gray-800">{file.fileName}</p>
+                                                    <p className="text-[10px] text-gray-400">Shared on {new Date(file.uploadedAt).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                            <ChevronRight size={16} className="text-gray-300 group-hover:text-primary transition-colors" />
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-auto flex gap-4 pt-4 border-t">
+                            {selectedEvent.status !== 'Completed' ? (
+                                <button
+                                    onClick={() => handleRegister(selectedEvent._id)}
+                                    className="btn btn-primary flex-1 py-4 text-lg shadow-xl shadow-primary/20"
+                                    disabled={selectedEvent.registeredParticipants.some(p => p.user._id === user?.id || p.user === user?.id)}
+                                >
+                                    {selectedEvent.registeredParticipants.some(p => p.user._id === user?.id || p.user === user?.id) ? 'Already Registered' : 'Confirm Registration'}
+                                </button>
+                            ) : (
+                                <button className="btn btn-outline flex-1 py-4 text-lg">Leave Feedback</button>
+                            )}
                         </div>
                     </div>
                 </div>

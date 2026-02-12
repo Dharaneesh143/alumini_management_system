@@ -84,3 +84,12 @@ router.post('/:id/presentation', [auth, upload.single('presentation')], eventCon
 router.post('/:id/feedback', auth, eventController.addFeedback);
 
 module.exports = router;
+
+
+// @route   GET /api/events/alumni/requests
+// @access  Private (Alumni)
+router.get('/alumni/requests', auth, eventController.getAlumniRequests);
+
+// @route   PUT /api/events/:id/schedule
+// @access  Private (Alumni)
+router.put('/:id/schedule', auth, eventController.scheduleEvent);

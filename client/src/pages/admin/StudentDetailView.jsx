@@ -168,7 +168,7 @@ const StudentDetailView = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Column: Summary & Quick Info */}
                 <div className="space-y-6">
-                    <div className="card text-center py-8">
+                    <div className="card text-center flex flex-col items-center justify-center py-8">
                         <div className="w-24 h-24 rounded-full bg-primary-light text-primary flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-sm">
                             {(student?.name || 'S').charAt(0).toUpperCase()}
                         </div>
@@ -181,22 +181,22 @@ const StudentDetailView = () => {
                             <span className="badge badge-info">STUDENT</span>
                         </div>
                     </div>
-
+                    
                     <div className="card space-y-4">
                         <h3 className="font-bold flex items-center gap-2 border-b pb-2 text-primary">
                             <Shield size={18} />
                             Account Metadata
                         </h3>
-                        <div className="space-y-3 text-sm">
-                            <div className="flex justify-between">
+                        <div className="space-y-3 text-sm ">
+                            <div className="flex justify-between p-2">
                                 <span className="text-secondary flex items-center gap-2"><Calendar size={14} /> Registered</span>
                                 <span className="font-medium">{new Date(student.createdAt).toLocaleDateString()}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between p-2">
                                 <span className="text-secondary flex items-center gap-2"><Clock size={14} /> Role</span>
                                 <span className="font-medium">{student.role.toUpperCase()}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between p-2">
                                 <span className="text-secondary">Student ID</span>
                                 <span className="font-mono text-xs">{student._id}</span>
                             </div>

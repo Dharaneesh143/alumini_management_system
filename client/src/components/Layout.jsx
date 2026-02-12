@@ -98,7 +98,8 @@ const Layout = ({ children }) => {
                 ...commonItems,
                 { path: '/mentorship/requests', label: 'Mentorship Requests', icon: GraduationCap },
                 { path: '/mentorship/chats', label: 'My Students', icon: Users },
-                { path: '/jobs/create', label: 'Post Job', icon: PlusCircle }
+                { path: '/jobs/create', label: 'Post Job', icon: PlusCircle },
+                { path: '/events', label: 'Events', icon: Calendar }
             ];
         }
 
@@ -108,7 +109,8 @@ const Layout = ({ children }) => {
                 activeMentorship
                     ? { path: `/mentorship/conversation/${activeMentorship._id}`, label: 'My Mentor', icon: GraduationCap }
                     : { path: '/mentorship', label: 'Find Mentors', icon: GraduationCap },
-                { path: '/mentorship/requests', label: 'My Requests', icon: Clock }
+                { path: '/mentorship/requests', label: 'My Requests', icon: Clock },
+                { path: '/events', label: 'Events', icon: Calendar }
             ];
         }
 

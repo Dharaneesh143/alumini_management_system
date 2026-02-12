@@ -104,6 +104,10 @@ export const API_ENDPOINTS = {
     GET_ALUMNI_STATS: '/api/alumni/stats',
 
     // Events
+    // Event Requests
+    GET_ALUMNI_EVENT_REQUESTS: '/api/events/alumni/requests',
+    SCHEDULE_EVENT: (id) => `/api/events/${id}/schedule`,
+
     EVENTS: '/api/events',
     EVENT_DETAILS: (id) => `/api/events/${id}`,
     REGISTER_EVENT: (id) => `/api/events/${id}/register`,
