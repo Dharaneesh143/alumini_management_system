@@ -88,7 +88,7 @@ const MentorshipList = () => {
             </div>
 
             {(() => {
-                const active = requests.find(r => r.status === 'accepted');
+                const active = requests.find(r => r.status === 'accepted' || r.status === 'Active');
                 if (active && active.alumni) {
                     return (
                         <div className="card text-center py-16 bg-primary-light border-primary/20">
@@ -111,7 +111,7 @@ const MentorshipList = () => {
                 return null;
             })()}
 
-            {!requests.find(r => r.status === 'accepted') && (
+            {!requests.find(r => r.status === 'accepted' || r.status === 'Active') && (
                 <>
                     {statusMessage.text && (
                         <div className={`card mb-6 ${statusMessage.type === 'success' ? 'bg-success-light' : 'bg-danger-light'}`}>
@@ -201,14 +201,18 @@ const MentorshipList = () => {
                                         });
 
                                         if (request) {
+                                            const isAccepted = request.status === 'accepted' || request.status === 'Active';
+                                            const isRejected = request.status === 'rejected' || request.status === 'Rejected';
+                                            const isPending = request.status === 'pending' || request.status === 'Pending';
+
                                             return (
-                                                <div className={`w-full py-2 px-4 rounded-md text-center font-medium flex items-center justify-center gap-2 ${request.status === 'accepted' ? 'bg-success-light text-success' :
-                                                    request.status === 'rejected' ? 'bg-danger-light text-danger' :
+                                                <div className={`w-full py-2 px-4 rounded-md text-center font-medium flex items-center justify-center gap-2 ${isAccepted ? 'bg-success-light text-success' :
+                                                    isRejected ? 'bg-danger-light text-danger' :
                                                         'bg-warning-light text-warning'
                                                     }`}>
-                                                    {request.status === 'accepted' ? <CheckCircle size={18} /> : <Clock size={18} />}
-                                                    {request.status === 'accepted' ? 'Active Mentor' :
-                                                        request.status === 'rejected' ? 'Request Rejected' : 'Pending Approval'}
+                                                    {isAccepted ? <CheckCircle size={18} /> : <Clock size={18} />}
+                                                    {isAccepted ? 'Active Mentor' :
+                                                        isRejected ? 'Request Rejected' : 'Pending Approval'}
                                                 </div>
                                             );
                                         }

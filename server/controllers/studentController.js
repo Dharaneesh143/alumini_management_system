@@ -17,10 +17,14 @@ exports.getProfile = async (req, res) => {
 // Update Student Profile
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, department, batch, skills, linkedin, github } = req.body;
+        const { name, phoneNumber, department, batch, skills, linkedin, github } = req.body;
         const student = await User.findById(req.user.id);
 
         if (name) student.name = name;
+        if (phoneNumber) {
+            student.phoneNumber = phoneNumber;
+            student.phone_number = phoneNumber;
+        }
         if (department) {
             student.department = department;
             student.profile.department = department;

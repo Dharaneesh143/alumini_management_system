@@ -104,7 +104,9 @@ exports.register = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 role: user.role,
-                isVerified: user.approvalStatus === 'approved'
+                isVerified: user.approvalStatus === 'approved',
+                phoneNumber: user.phoneNumber,
+                phone_number: user.phone_number
             }
         });
 
@@ -168,6 +170,8 @@ exports.login = async (req, res) => {
                         name: user.name,
                         role: user.role,
                         isVerified: user.approvalStatus === 'approved',
+                        phoneNumber: user.phoneNumber,
+                        phone_number: user.phone_number,
                         profile: user.profile
                     }
                 });
@@ -223,7 +227,9 @@ exports.adminLogin = async (req, res) => {
                     user: {
                         id: admin.id,
                         name: admin.name,
-                        role: 'admin'
+                        role: 'admin',
+                        phoneNumber: admin.phoneNumber,
+                        phone_number: admin.phone_number
                     }
                 });
             }

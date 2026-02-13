@@ -170,7 +170,7 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
         <div className={`flex flex-col ${isEmbedded ? 'h-full' : 'h-screen'} bg-white`}>
             {/* Header */}
             {!isEmbedded && (
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 flex items-center gap-4 shadow-lg">
+                <div className="bg-blue-400 text-white px-6 py-4 flex items-center gap-4 shadow-lg">
                     <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                         <ArrowLeft size={24} />
                     </button>

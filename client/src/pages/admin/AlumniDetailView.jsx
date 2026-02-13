@@ -158,11 +158,11 @@ const AlumniDetailView = () => {
                     </button>
                 </div>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="space-y-6">
                     <div className="card text-center flex flex-col items-center justify-center py-8">
-                        
+
                         <div className="w-24 h-24 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-sm">
                             {(alumni?.name || 'A').charAt(0).toUpperCase()}
                         </div>
@@ -338,15 +338,15 @@ const AlumniDetailView = () => {
                             <div className="mb-6">
                                 <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                                     <CheckCircle size={16} className="text-success" />
-                                    Active Mentees ({mentorships.filter(m => m.status === 'accepted').length})
+                                    Active Mentees ({mentorships.filter(m => ['accepted', 'Active'].includes(m.status)).length})
                                 </h4>
                                 <div className="space-y-3">
-                                    {mentorships.filter(m => m.status === 'accepted').length === 0 ? (
+                                    {mentorships.filter(m => ['accepted', 'Active'].includes(m.status)).length === 0 ? (
                                         <p className="text-secondary text-sm italic py-4 bg-gray-50 rounded-lg text-center">
                                             No active students currently.
                                         </p>
                                     ) : (
-                                        mentorships.filter(m => m.status === 'accepted').map(m => (
+                                        mentorships.filter(m => ['accepted', 'Active'].includes(m.status)).map(m => (
                                             <div key={m._id} className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-indigo-50 rounded-lg border border-green-200 hover:shadow-md transition-all">
                                                 <div className="flex items-center gap-4 flex-1">
                                                     <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center font-bold text-white shadow-md">
@@ -384,10 +384,10 @@ const AlumniDetailView = () => {
                                 <div className="mb-6">
                                     <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                                         <Clock size={16} className="text-warning" />
-                                        Pending Requests ({mentorships.filter(m => m.status === 'pending').length})
+                                        Pending Requests ({mentorships.filter(m => ['pending', 'Pending'].includes(m.status)).length})
                                     </h4>
                                     <div className="space-y-3">
-                                        {mentorships.filter(m => m.status === 'pending').map(m => (
+                                        {mentorships.filter(m => ['pending', 'Pending'].includes(m.status)).map(m => (
                                             <div key={m._id} className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center font-bold text-yellow-700">
@@ -411,15 +411,15 @@ const AlumniDetailView = () => {
                             <div className="pt-4 border-t">
                                 <div className="grid grid-cols-3 gap-4 text-center">
                                     <div className="p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-2xl font-bold text-indigo-600">{mentorships.filter(m => m.status === 'accepted').length}</div>
+                                        <div className="text-2xl font-bold text-indigo-600">{mentorships.filter(m => ['accepted', 'Active'].includes(m.status)).length}</div>
                                         <div className="text-xs text-secondary mt-1">Active</div>
                                     </div>
                                     <div className="p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-2xl font-bold text-yellow-600">{mentorships.filter(m => m.status === 'pending').length}</div>
+                                        <div className="text-2xl font-bold text-yellow-600">{mentorships.filter(m => ['pending', 'Pending'].includes(m.status)).length}</div>
                                         <div className="text-xs text-secondary mt-1">Pending</div>
                                     </div>
                                     <div className="p-3 bg-gray-50 rounded-lg">
-                                        <div className="text-2xl font-bold text-gray-600">{mentorships.filter(m => m.status === 'rejected' || m.status === 'removed').length}</div>
+                                        <div className="text-2xl font-bold text-gray-600">{mentorships.filter(m => ['rejected', 'Rejected', 'removed', 'Removed'].includes(m.status)).length}</div>
                                         <div className="text-xs text-secondary mt-1">Ended</div>
                                     </div>
                                 </div>

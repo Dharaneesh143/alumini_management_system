@@ -40,7 +40,7 @@ exports.requestMentorship = async (req, res) => {
 
         const activeMenteesCount = await Mentorship.countDocuments({
             alumni: alumniId,
-            status: 'accepted'
+            status: 'Active'
         });
         if (activeMenteesCount >= (alumni.mentorSettings?.capacity || 3)) {
             return res.status(400).json({ msg: 'Mentor has reached maximum student capacity' });
@@ -48,7 +48,7 @@ exports.requestMentorship = async (req, res) => {
 
         const hasActiveMentor = await Mentorship.findOne({
             student: studentId,
-            status: 'accepted'
+            status: 'Active'
         });
         if (hasActiveMentor) {
             return res.status(400).json({ msg: 'You already have an active mentor. You can only have one at a time.' });
@@ -57,7 +57,7 @@ exports.requestMentorship = async (req, res) => {
         const existingRequest = await Mentorship.findOne({
             student: studentId,
             alumni: alumniId,
-            status: 'pending'
+            status: 'Pending'
         });
         if (existingRequest) {
             return res.status(400).json({ msg: 'You already have a pending request for this mentor' });
@@ -67,11 +67,14 @@ exports.requestMentorship = async (req, res) => {
         const resumeUrl = student?.profile?.resumeUrl || null;
 
         const newRequest = new Mentorship({
+            studentId: studentId, // Using standardized field name
+            mentorId: alumniId,   // Using standardized field name
             student: studentId,
             alumni: alumniId,
             message,
             mentorshipTopic,
-            resumeUrl
+            resumeUrl,
+            status: 'Pending'
         });
 
         await newRequest.save();
@@ -97,14 +100,20 @@ exports.getMentorshipRequests = async (req, res) => {
                 .sort({ createdAt: -1 });
         }
 
-        const sanitizedRequests = requests.map(reqDoc => {
-            const r = reqDoc.toObject();
-            if (req.user.role === 'alumni' && r.status === 'pending') {
-                delete r.resumeUrl;
-                if (r.student && r.student.profile) delete r.student.profile.resumeUrl;
-            }
-            return r;
-        });
+        const sanitizedRequests = requests
+            .filter(reqDoc => {
+                // Filter out orphaned mentorship records if the user was deleted
+                if (req.user.role === 'alumni') return !!reqDoc.student;
+                return !!reqDoc.alumni;
+            })
+            .map(reqDoc => {
+                const r = reqDoc.toObject();
+                if (req.user.role === 'alumni' && (r.status === 'Pending' || r.status === 'pending')) {
+                    delete r.resumeUrl;
+                    if (r.student && r.student.profile) delete r.student.profile.resumeUrl;
+                }
+                return r;
+            });
 
         res.json(sanitizedRequests);
     } catch (err) {
@@ -166,7 +175,7 @@ exports.sendMessage = async (req, res) => {
             return res.status(401).json({ msg: 'Not authorized' });
         }
 
-        if (mentorship.status !== 'accepted') {
+        if (mentorship.status !== 'Active' && mentorship.status !== 'accepted') {
             return res.status(400).json({ msg: 'Mentorship is not active. Cannot send messages to pending, rejected, or removed mentorships.' });
         }
 
@@ -211,7 +220,7 @@ exports.getConversation = async (req, res) => {
         }
 
         // Prevent access to removed mentorships
-        if (mentorship.status === 'removed') {
+        if (mentorship.status === 'removed' || mentorship.status === 'Removed') {
             return res.status(403).json({ msg: 'This mentorship has been ended. Please find a new mentor.' });
         }
 

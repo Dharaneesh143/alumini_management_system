@@ -94,12 +94,12 @@ const MentorshipManagement = () => {
         {
             header: 'Status',
             render: (row) => (
-                <span className={`badge ${row.status === 'accepted' ? 'badge-success' :
-                    row.status === 'pending' ? 'badge-warning' :
-                        row.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                <span className={`badge ${['accepted', 'Active'].includes(row.status) ? 'badge-success' :
+                    ['pending', 'Pending'].includes(row.status) ? 'badge-warning' :
+                        ['completed', 'Completed'].includes(row.status) ? 'bg-blue-100 text-blue-700' :
                             'badge-danger'
                     }`}>
-                    {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+                    {row.status}
                 </span>
             )
         },
@@ -116,7 +116,7 @@ const MentorshipManagement = () => {
             header: 'Actions',
             render: (row) => (
                 <div className="flex gap-2">
-                    {row.status === 'accepted' && (
+                    {['accepted', 'Active'].includes(row.status) && (
                         <button
                             onClick={(e) => handleEndMentorship(row._id, e)}
                             className="btn btn-xs btn-outline-danger"
@@ -155,11 +155,11 @@ const MentorshipManagement = () => {
                 <div className="bg-white p-3 rounded-2xl border flex gap-6 shadow-sm">
                     <div className="flex flex-col items-center px-4 border-r">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Sessions</span>
-                        <span className="text-xl font-bold text-success">{mentorships.filter(m => m.status === 'accepted').length}</span>
+                        <span className="text-xl font-bold text-success">{mentorships.filter(m => ['accepted', 'Active'].includes(m.status)).length}</span>
                     </div>
                     <div className="flex flex-col items-center px-4">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pending Requests</span>
-                        <span className="text-xl font-bold text-warning">{mentorships.filter(m => m.status === 'pending').length}</span>
+                        <span className="text-xl font-bold text-warning">{mentorships.filter(m => ['pending', 'Pending'].includes(m.status)).length}</span>
                     </div>
                 </div>
             </div>

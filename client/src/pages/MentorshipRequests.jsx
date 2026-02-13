@@ -17,7 +17,7 @@ const MentorshipRequests = () => {
     const { user } = useContext(AuthContext);
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [statusFilter, setStatusFilter] = useState('pending');
+    const [statusFilter, setStatusFilter] = useState('Pending');
     const [showEndModal, setShowEndModal] = useState(false);
     const [selectedRequestForEnd, setSelectedRequestForEnd] = useState(null);
     const [endFeedback, setEndFeedback] = useState('');
@@ -59,9 +59,11 @@ const MentorshipRequests = () => {
         }
     };
 
-    const filteredRequests = requests.filter(r =>
-        statusFilter === 'all' ? true : r.status === statusFilter
-    );
+    const filteredRequests = requests.filter(r => {
+        if (statusFilter === 'all') return true;
+        const normalizedStatus = r.status.toLowerCase();
+        return normalizedStatus === statusFilter.toLowerCase();
+    });
 
     if (loading) return <div className="container py-8">Loading requests...</div>;
 
@@ -78,14 +80,14 @@ const MentorshipRequests = () => {
                 </div>
 
                 <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-200">
-                    {['pending', 'accepted', 'rejected', 'all'].map(status => (
+                    {['Pending', 'Active', 'Rejected', 'all'].map(status => (
                         <button
                             key={status}
                             onClick={() => setStatusFilter(status)}
                             className={`px-4 py-2 rounded-md transition-all text-sm font-medium ${statusFilter === status ? 'bg-primary text-white shadow-md' : 'text-secondary hover:bg-gray-50'
                                 }`}
                         >
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                            {status === 'all' ? 'All' : status}
                         </button>
                     ))}
                 </div>
@@ -110,14 +112,14 @@ const MentorshipRequests = () => {
                                             <h3 className="font-bold text-lg">
                                                 {user.role === 'alumni' ? req.student?.name : req.alumni?.name}
                                             </h3>
-                                            <span className={`badge flex items-center gap-1 ${req.status === 'accepted' ? 'badge-success' :
-                                                req.status === 'rejected' ? 'badge-danger' :
-                                                    req.status === 'removed' ? 'badge-gray' : 'badge-warning'
+                                            <span className={`badge flex items-center gap-1 ${['accepted', 'Active'].includes(req.status) ? 'badge-success' :
+                                                ['rejected', 'Rejected'].includes(req.status) ? 'badge-danger' :
+                                                    ['removed', 'Removed'].includes(req.status) ? 'badge-gray' : 'badge-warning'
                                                 }`}>
-                                                {req.status === 'accepted' ? <CheckCircle size={12} /> :
-                                                    req.status === 'rejected' ? <XCircle size={12} /> :
-                                                        req.status === 'removed' ? <Clock size={12} /> : <Clock size={12} />}
-                                                {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                                                {['accepted', 'Active'].includes(req.status) ? <CheckCircle size={12} /> :
+                                                    ['rejected', 'Rejected'].includes(req.status) ? <XCircle size={12} /> :
+                                                        ['removed', 'Removed'].includes(req.status) ? <Clock size={12} /> : <Clock size={12} />}
+                                                {req.status}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-4 text-sm text-secondary mb-3">
@@ -132,7 +134,7 @@ const MentorshipRequests = () => {
                                         </div>
 
                                         {/* Interaction Section (Post-Acceptance) */}
-                                        {req.status === 'accepted' && (
+                                        {(req.status === 'accepted' || req.status === 'Active') && (
                                             <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
                                                 <div className="flex items-center gap-4">
                                                     {user.role === 'alumni' && req.student?.resumeUrl && (
@@ -158,7 +160,7 @@ const MentorshipRequests = () => {
                                             </div>
                                         )}
 
-                                        {req.status !== 'accepted' && (
+                                        {req.status !== 'accepted' && req.status !== 'Active' && (
                                             <button
                                                 onClick={() => setViewingRequest(req)}
                                                 className="btn btn-sm btn-outline flex items-center gap-2 mt-2"
@@ -169,7 +171,7 @@ const MentorshipRequests = () => {
                                     </div>
                                 </div>
 
-                                {user.role === 'alumni' && req.status === 'pending' && (
+                                {user.role === 'alumni' && (req.status === 'pending' || req.status === 'Pending') && (
                                     <div className="flex flex-col gap-2">
                                         <button
                                             onClick={() => setRespondingTo(req)}
@@ -180,7 +182,7 @@ const MentorshipRequests = () => {
                                     </div>
                                 )}
 
-                                {user.role === 'alumni' && req.status === 'accepted' && (
+                                {user.role === 'alumni' && (req.status === 'accepted' || req.status === 'Active') && (
                                     <button
                                         onClick={() => {
                                             setSelectedRequestForEnd(req);
@@ -233,14 +235,14 @@ const MentorshipRequests = () => {
                                         <span className="text-[10px] text-secondary">
                                             {new Date(viewingRequest.updatedAt).toLocaleString()}
                                         </span>
-                                        <span className={`text-xs font-bold uppercase tracking-wider ${viewingRequest.status === 'accepted' ? 'text-success' : 'text-danger'
+                                        <span className={`text-xs font-bold uppercase tracking-wider ${['accepted', 'Active'].includes(viewingRequest.status) ? 'text-success' : 'text-danger'
                                             }`}>
                                             Mentor's Decision: {viewingRequest.status}
                                         </span>
                                     </div>
-                                    <div className={`p-4 rounded-xl border relative w-[90%] ${viewingRequest.status === 'accepted' ? 'bg-success-light border-success/20' : 'bg-danger-light border-danger/20'
+                                    <div className={`p-4 rounded-xl border relative w-[90%] ${['accepted', 'Active'].includes(viewingRequest.status) ? 'bg-success-light border-success/20' : 'bg-danger-light border-danger/20'
                                         }`}>
-                                        <div className={`absolute -right-2 top-4 w-4 h-4 rotate-[135deg] border-l border-t ${viewingRequest.status === 'accepted' ? 'bg-success-light border-success/20' : 'bg-danger-light border-danger/20'
+                                        <div className={`absolute -right-2 top-4 w-4 h-4 rotate-[135deg] border-l border-t ${['accepted', 'Active'].includes(viewingRequest.status) ? 'bg-success-light border-success/20' : 'bg-danger-light border-danger/20'
                                             }`}></div>
                                         <p className="text-sm font-medium">"{viewingRequest.response}"</p>
                                     </div>

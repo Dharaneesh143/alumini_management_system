@@ -33,7 +33,10 @@ exports.updateProfile = async (req, res) => {
         if (!user) return res.status(404).json({ msg: 'User not found' });
 
         if (name) user.name = name;
-        if (phoneNumber) user.phoneNumber = phoneNumber;
+        if (phoneNumber) {
+            user.phoneNumber = phoneNumber;
+            user.phone_number = phoneNumber;
+        }
 
         if (req.body.isMentor !== undefined) user.isMentor = req.body.isMentor;
         if (req.body.mentorSettings) {

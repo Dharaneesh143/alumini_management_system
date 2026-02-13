@@ -18,6 +18,7 @@ const adminSchema = new mongoose.Schema({
         type: String,
         default: 'admin'
     },
+    phoneNumber: String,
     createdAt: {
         type: Date,
         default: Date.now

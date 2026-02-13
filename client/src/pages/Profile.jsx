@@ -37,7 +37,7 @@ const Profile = () => {
             console.log('Profile User Data:', JSON.stringify(user, null, 2)); // Debug Log
             setFormData({
                 name: user.name || '',
-                phoneNumber: (user.phoneNumber && !isNaN(user.phoneNumber)) ? user.phoneNumber : '',
+                phoneNumber: user.phoneNumber || user.phone_number || '',
                 profile: {
                     department: user.profile?.department || user.department || '',
                     batch: user.profile?.batch || user.batch || '',
@@ -142,7 +142,7 @@ const Profile = () => {
             )}
 
             {/* Profile Form */}
-            
+
             <div className="card">
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-2 gap-6">
@@ -209,7 +209,7 @@ const Profile = () => {
                                 placeholder="e.g., 2020"
                             />
                         </div>
-                        
+
                         {user?.role === 'student' && (
                             <div className="form-group">
                                 <label className="form-label">CGPA (0-10)</label>
@@ -230,7 +230,7 @@ const Profile = () => {
                         {/* Professional Information (for Alumni) */}
                         {user?.role === 'alumni' && (
                             <>
-                            
+
                                 <div className="form-group">
                                     <label className="form-label">Company</label>
                                     <input
@@ -479,12 +479,12 @@ const Profile = () => {
 
                     {/* Account Security / Deactivation */}
                     <div className="mt-12 pt-8 border-t border-gray-200">
-                        <h3 className="text-xl font-bold text-danger mb-2">Account Security</h3>
+                        <h3 className="text-xl font-bold text-danger mt-4 mb-2">Account Security</h3>
                         <p className="text-secondary mb-4">Deactivating your account will disable your access to the portal. Your data will be preserved if you wish to reactivate later.</p>
                         <button
                             type="button"
                             onClick={() => setShowDeactivateModal(true)}
-                            className="btn-outline-danger"
+                            className="btn btn-danger "
                             disabled={loading}
                         >
                             Deactivate Account
@@ -516,7 +516,7 @@ const Profile = () => {
                                 setDeactivateFeedback('');
                             }}
                             className="absolute top-8 right-8 w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-400 transition-all group"
- x                       >
+                            x                       >
                             <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-800 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>

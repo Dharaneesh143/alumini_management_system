@@ -116,19 +116,19 @@ exports.getAlumniStats = async (req, res) => {
         // 1. Active Mentees (Accepted mentorships)
         const activeMenteesCount = await Mentorship.countDocuments({
             alumni: alumniId,
-            status: 'accepted'
+            status: { $in: ['accepted', 'Active'] }
         });
 
         // 2. Mentorship Requests (Pending)
         const pendingRequestsCount = await Mentorship.countDocuments({
             alumni: alumniId,
-            status: 'pending'
+            status: { $in: ['pending', 'Pending'] }
         });
 
         // 3. Completed Sessions
         const completedSessionsCount = await Mentorship.countDocuments({
             alumni: alumniId,
-            status: 'completed'
+            status: { $in: ['completed', 'Completed'] }
         });
 
         // 4. Job Referrals (Jobs posted by this alumni)

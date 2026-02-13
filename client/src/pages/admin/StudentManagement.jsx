@@ -108,6 +108,7 @@ const StudentManagement = () => {
             )
         },
         { header: 'Reg No', accessor: 'registerNumber' },
+        { header: 'Phone', accessor: 'phoneNumber' },
         { header: 'Department', accessor: 'department' },
         { header: 'Passout Year', accessor: 'batch' },
         {

@@ -27,7 +27,11 @@ const MentorshipChatList = () => {
         try {
             const res = await api.get('/api/mentorship/requests');
             // Filter only accepted mentorships for the chat list
-            const activeChats = res.data.filter(chat => chat.status === 'accepted');
+            // Filter only accepted mentorships for the chat list and ensure partner exists
+            const activeChats = res.data.filter(chat => {
+                const partner = user.role === 'student' ? chat.alumni : chat.student;
+                return (chat.status === 'accepted' || chat.status === 'Active') && partner;
+            });
             setChats(activeChats);
         } catch (err) {
             console.error('Error fetching chat list:', err);
@@ -52,6 +56,7 @@ const MentorshipChatList = () => {
 
     const filteredChats = chats.filter(chat => {
         const partner = getPartner(chat);
+        if (!partner || !partner.name) return false;
         return partner.name.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
@@ -133,7 +138,7 @@ const MentorshipChatList = () => {
                                     {/* Avatar */}
                                     <div className="relative flex-shrink-0">
                                         <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-md">
-                                            {partner.name?.charAt(0).toUpperCase()}
+                                            {partner?.name?.charAt(0).toUpperCase() || 'U'}
                                         </div>
                                         {/* Online indicator */}
                                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>

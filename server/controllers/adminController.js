@@ -40,14 +40,18 @@ exports.getSystemStats = async (req, res) => {
             { $group: { _id: "$status", count: { $sum: 1 } } }
         ]);
         const mentorshipActivity = {
-            pending: 0,
-            accepted: 0,
-            rejected: 0,
-            removed: 0
+            Pending: 0,
+            Active: 0,
+            Rejected: 0,
+            Removed: 0
         };
         mentorshipStats.forEach(stat => {
             if (mentorshipActivity.hasOwnProperty(stat._id)) {
                 mentorshipActivity[stat._id] = stat.count;
+            } else if (stat._id === 'accepted') {
+                mentorshipActivity.Active += stat.count;
+            } else if (stat._id === 'pending') {
+                mentorshipActivity.Pending += stat.count;
             }
         });
 
@@ -88,7 +92,7 @@ exports.getSystemStats = async (req, res) => {
         ]);
 
         // 5. Insights / Alerts
-        const activeMentorships = mentorshipActivity.accepted;
+        const activeMentorships = mentorshipActivity.Active;
         const studentsWithoutMentor = await User.countDocuments({
             role: 'student',
             // In a more complex system, we'd check if they have an active Mentorship record
@@ -106,7 +110,12 @@ exports.getSystemStats = async (req, res) => {
             totalJobs,
             activeMentorships,
             userDistribution,
-            mentorshipActivity,
+            mentorshipActivity: {
+                pending: mentorshipActivity.Pending,
+                accepted: mentorshipActivity.Active,
+                rejected: mentorshipActivity.Rejected,
+                removed: mentorshipActivity.Removed
+            },
             registrationTrend,
             jobTrend,
             insights: {
@@ -389,7 +398,7 @@ exports.getStudents = async (req, res) => {
 
         if (department) query.department = department;
         if (batch) query.batch = batch;
-        if (status) query.status = status;
+        if (status) query.accountStatus = status;
 
         const students = await User.find(query)
             .select('-password')
@@ -424,15 +433,16 @@ exports.updateStudentStatus = async (req, res) => {
             return res.status(400).json({ msg: 'Invalid status' });
         }
 
-        const student = await User.findByIdAndUpdate(
-            req.params.id,
-            { accountStatus: status },
-            { new: true }
-        ).select('-password');
-
+        const student = await User.findById(req.params.id);
         if (!student) return res.status(404).json({ msg: 'Student not found' });
 
-        res.json({ msg: `Student account ${status} successfully`, student });
+        student.accountStatus = status;
+        await student.save();
+
+        const studentData = student.toObject();
+        delete studentData.password;
+
+        res.json({ msg: `Student account ${status} successfully`, student: studentData });
     } catch (err) {
         console.error('Update Status Error:', err.message);
         res.status(500).send('Server Error');
@@ -442,15 +452,16 @@ exports.updateStudentStatus = async (req, res) => {
 // Update student details
 exports.updateStudent = async (req, res) => {
     try {
-        const student = await User.findByIdAndUpdate(
-            req.params.id,
-            { $set: req.body },
-            { new: true }
-        ).select('-password');
-
+        const student = await User.findById(req.params.id);
         if (!student) return res.status(404).json({ msg: 'Student not found' });
 
-        res.json({ msg: 'Student details updated successfully', student });
+        Object.assign(student, req.body);
+        await student.save();
+
+        const studentData = student.toObject();
+        delete studentData.password;
+
+        res.json({ msg: 'Student details updated successfully', student: studentData });
     } catch (err) {
         console.error('Update Student Error:', err.message);
         res.status(500).send('Server Error');
@@ -560,7 +571,7 @@ exports.getStudentMentorship = async (req, res) => {
     try {
         const mentorship = await Mentorship.findOne({
             student: req.params.id,
-            status: 'accepted'
+            status: 'Active'
         })
             .populate('alumni', 'name email profile currentCompany jobRole')
             .populate('student', 'name email department batch');

@@ -40,7 +40,7 @@ const StudentDashboard = () => {
             setTotalJobsCount(jobsRes.data.length);
             setJobs(jobsRes.data.slice(0, 3));
             setStats(statsRes.data);
-            const active = requestsRes.data.find(r => r.status === 'accepted');
+            const active = requestsRes.data.find(r => r.status === 'accepted' || r.status === 'Active');
             setActiveMentorship(active);
         } catch (err) {
             console.error('Error fetching dashboard data:', err);
@@ -151,7 +151,7 @@ const StudentDashboard = () => {
                     {activeMentorship && (
                         <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl border-2 border-indigo-100 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                             {/* Header with gradient */}
-                            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+                            <div className="bg-purple-500 px-6 py-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -198,7 +198,7 @@ const StudentDashboard = () => {
                                 {/* Mentorship Topic */}
                                 <div className="bg-white rounded-xl p-3 mb-4 border border-indigo-100">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Target size={14} className="text-indigo-600" />
+                                        <Target size={14} className="text-indigo-500" />
                                         <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Focus Area</span>
                                     </div>
                                     <p className="text-sm font-semibold text-gray-900">{activeMentorship.mentorshipTopic || 'Career Guidance'}</p>
