@@ -174,17 +174,17 @@ const JobList = () => {
             <div className="bg-white border-b border-gray-200 -mx-8 -mt-8 px-8 py-10 mb-8">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                        <h1 className="text-3xl font-extrabold text-gray-900 text-center tracking-tight">
                             Career Opportunities
                         </h1>
-                        <p className="text-gray-500 mt-1 text-lg">
+                        <p className="text-gray-500 mt-1 text-center text-lg">
                             Explore jobs and internships shared by your alumni network
                         </p>
                     </div>
                     {user?.role === 'alumni' && (
                         <Link
                             to="/jobs/create"
-                            className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95"
+                            className="inline-flex items-center  gap-2 bg-blue-600 text-white px-6 py-3 mb-4 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95"
                         >
                             <Plus size={20} />
                             Post Opportunity
@@ -193,8 +193,9 @@ const JobList = () => {
                 </div>
 
                 <form onSubmit={handleSearch} className="mt-10 max-w-4xl flex gap-3">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <div className='w-full flex justify-center'>
+                    <div>
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                         <input
                             type="text"
                             placeholder="Search by title, company, or skills..."
@@ -202,6 +203,7 @@ const JobList = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                        </div>
                     </div>
                     <button type="submit" className="bg-gray-900 text-white px-8 rounded-2xl font-bold hover:bg-black transition-colors">
                         Search

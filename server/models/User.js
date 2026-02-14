@@ -38,6 +38,11 @@ const userSchema = new mongoose.Schema({
     department: String,
     batch: String,
     passedOutYear: String,
+    currentLocation: String,
+    yearsOfExperience: String,
+    companyWebsite: String,
+    oldCompany: String,
+    yearOfStudy: String,
     currentCompany: String,
     company_name: String, // Explicit mapping from request
     jobRole: String,
@@ -81,7 +86,12 @@ const userSchema = new mongoose.Schema({
         linkedin: String,
         github: String,
         resumeUrl: String,
-        cgpa: String
+        cgpa: String,
+        yearOfStudy: String,
+        currentLocation: String,
+        yearsOfExperience: String,
+        companyWebsite: String,
+        oldCompany: String
     }
 }, { timestamps: true });
 
@@ -110,6 +120,11 @@ userSchema.pre('save', async function () {
 
     if (this.department) this.profile.department = this.department;
     if (this.batch) this.profile.batch = this.batch;
+    if (this.yearOfStudy) this.profile.yearOfStudy = this.yearOfStudy;
+    if (this.currentLocation) this.profile.currentLocation = this.currentLocation;
+    if (this.yearsOfExperience) this.profile.yearsOfExperience = this.yearsOfExperience;
+    if (this.companyWebsite) this.profile.companyWebsite = this.companyWebsite;
+    if (this.oldCompany) this.profile.oldCompany = this.oldCompany;
 
     if (this.phoneNumber) this.phone_number = this.phoneNumber;
     else if (this.phone_number) this.phoneNumber = this.phone_number;

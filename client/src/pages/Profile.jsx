@@ -18,7 +18,12 @@ const Profile = () => {
             designation: '',
             skills: '',
             linkedin: '',
-            github: ''
+            github: '',
+            yearOfStudy: '',
+            currentLocation: '',
+            yearsOfExperience: '',
+            companyWebsite: '',
+            oldCompany: ''
         },
         isMentor: false,
         mentorSettings: {
@@ -46,7 +51,12 @@ const Profile = () => {
                     designation: user.profile?.designation || '',
                     skills: user.profile?.skills?.join(', ') || '',
                     linkedin: user.profile?.linkedin || '',
-                    github: user.profile?.github || ''
+                    github: user.profile?.github || '',
+                    yearOfStudy: user.profile?.yearOfStudy || '',
+                    currentLocation: user.profile?.currentLocation || '',
+                    yearsOfExperience: user.profile?.yearsOfExperience || '',
+                    companyWebsite: user.profile?.companyWebsite || '',
+                    oldCompany: user.profile?.oldCompany || ''
                 },
                 isMentor: user.isMentor || false,
                 mentorSettings: {
@@ -200,31 +210,54 @@ const Profile = () => {
 
                         <div className="form-group">
                             <label className="form-label">Batch/Year *</label>
-                            <input
-                                type="text"
+                            <select
                                 name="batch"
                                 value={formData.profile.batch}
                                 onChange={handleChange}
                                 className="form-input"
-                                placeholder="e.g., 2020"
-                            />
+                                required
+                            >
+                                <option value="">Select Batch</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                            </select>
                         </div>
 
                         {user?.role === 'student' && (
-                            <div className="form-group">
-                                <label className="form-label">CGPA (0-10)</label>
-                                <input
-                                    type="number"
-                                    name="cgpa"
-                                    value={formData.profile.cgpa}
-                                    onChange={handleChange}
-                                    className="form-input"
-                                    placeholder="e.g., 8.5"
-                                    min="0"
-                                    max="10"
-                                    step="0.01"
-                                />
-                            </div>
+                            <>
+                                <div className="form-group">
+                                    <label className="form-label">Year of Study</label>
+                                    <select
+                                        name="yearOfStudy"
+                                        value={formData.profile.yearOfStudy}
+                                        onChange={handleChange}
+                                        className="form-input"
+                                    >
+                                        <option value="">Select Year</option>
+                                        <option value="1st Year">1st Year</option>
+                                        <option value="2nd Year">2nd Year</option>
+                                        <option value="3rd Year">3rd Year</option>
+                                        <option value="Final Year">Final Year</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">CGPA (0-10)</label>
+                                    <input
+                                        type="number"
+                                        name="cgpa"
+                                        value={formData.profile.cgpa}
+                                        onChange={handleChange}
+                                        className="form-input"
+                                        placeholder="e.g., 8.5"
+                                        min="0"
+                                        max="10"
+                                        step="0.01"
+                                    />
+                                </div>
+                            </>
                         )}
 
                         {/* Professional Information (for Alumni) */}
@@ -252,6 +285,50 @@ const Profile = () => {
                                         onChange={handleChange}
                                         className="form-input"
                                         placeholder="e.g., Software Engineer"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Current Location</label>
+                                    <input
+                                        type="text"
+                                        name="currentLocation"
+                                        value={formData.profile.currentLocation}
+                                        onChange={handleChange}
+                                        className="form-input"
+                                        placeholder="City, Country"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Years of Experience</label>
+                                    <input
+                                        type="number"
+                                        name="yearsOfExperience"
+                                        value={formData.profile.yearsOfExperience}
+                                        onChange={handleChange}
+                                        className="form-input"
+                                        placeholder="e.g., 5"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Company Website</label>
+                                    <input
+                                        type="url"
+                                        name="companyWebsite"
+                                        value={formData.profile.companyWebsite}
+                                        onChange={handleChange}
+                                        className="form-input"
+                                        placeholder="https://..."
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Old Company</label>
+                                    <input
+                                        type="text"
+                                        name="oldCompany"
+                                        value={formData.profile.oldCompany}
+                                        onChange={handleChange}
+                                        className="form-input"
+                                        placeholder="Previous workplace"
                                     />
                                 </div>
                             </>

@@ -18,12 +18,8 @@ const logToFile = (msg) => {
 exports.register = async (req, res) => {
     try {
         const {
-            name, email, password, role, registerNumber,
-            phoneNumber, phone_number,
-            passedOutYear,
-            currentCompany, company_name,
-            jobRole, designation,
-            department, batch,
+            department, batch, yearOfStudy,
+            currentLocation, yearsOfExperience, companyWebsite, oldCompany,
             profile_image, resume
         } = req.body;
 
@@ -60,12 +56,18 @@ exports.register = async (req, res) => {
                 department: department || 'N/A',
                 batch: batch || passedOutYear || req.body.graduationYear || 'N/A',
                 company: currentCompany || company_name || 'N/A',
-                designation: jobRole || designation || 'N/A'
+                designation: jobRole || designation || 'N/A',
+                yearOfStudy: yearOfStudy || 'N/A',
+                currentLocation: currentLocation || 'N/A',
+                yearsOfExperience: yearsOfExperience || 'N/A',
+                companyWebsite: companyWebsite || 'N/A',
+                oldCompany: oldCompany || 'N/A'
             }
         };
 
         if (userData.role === 'student') {
             userData.registerNumber = registerNumber;
+            userData.yearOfStudy = yearOfStudy;
             userData.approvalStatus = 'approved';
         } else if (userData.role === 'alumni') {
             userData.passedOutYear = userData.batch;
@@ -73,6 +75,10 @@ exports.register = async (req, res) => {
             userData.company_name = company_name || currentCompany;
             userData.jobRole = jobRole || designation;
             userData.designation = designation || jobRole;
+            userData.currentLocation = currentLocation;
+            userData.yearsOfExperience = yearsOfExperience;
+            userData.companyWebsite = companyWebsite;
+            userData.oldCompany = oldCompany;
             userData.approvalStatus = 'pending';
         }
 
