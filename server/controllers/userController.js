@@ -59,6 +59,11 @@ exports.updateProfile = async (req, res) => {
             if (profile.linkedin) user.profile.linkedin = profile.linkedin;
             if (profile.github) user.profile.github = profile.github;
             if (profile.resumeUrl) user.profile.resumeUrl = profile.resumeUrl;
+            if (profile.yearOfStudy) user.profile.yearOfStudy = profile.yearOfStudy;
+            if (profile.currentLocation) user.profile.currentLocation = profile.currentLocation;
+            if (profile.yearsOfExperience) user.profile.yearsOfExperience = profile.yearsOfExperience;
+            if (profile.companyWebsite) user.profile.companyWebsite = profile.companyWebsite;
+            if (profile.oldCompany) user.profile.oldCompany = profile.oldCompany;
 
             // Handle skills array explicitly
             if (profile.skills) {

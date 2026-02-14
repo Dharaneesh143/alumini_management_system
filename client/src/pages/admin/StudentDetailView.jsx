@@ -17,9 +17,10 @@ import {
     Download,
     FileText,
     UserMinus,
-    Users
+    Users,
+    Eye
 } from 'lucide-react';
-import api from '../../config/api';
+import api, { API_BASE_URL } from '../../config/api';
 
 const StudentDetailView = () => {
     const { id } = useParams();
@@ -181,7 +182,7 @@ const StudentDetailView = () => {
                             <span className="badge badge-info">STUDENT</span>
                         </div>
                     </div>
-                    
+
                     <div className="card space-y-4">
                         <h3 className="font-bold flex items-center gap-2 border-b pb-2 text-primary">
                             <Shield size={18} />
@@ -349,12 +350,36 @@ const StudentDetailView = () => {
                             </div>
                             <div className="bg-gray-50 p-4 rounded-lg">
                                 <h5 className="text-sm font-bold flex items-center gap-2 mb-2">
-                                    <FileText size={16} /> Documents
+                                    <FileText size={16} /> Resume / Documents
                                 </h5>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium">Resume.pdf</span>
-                                    <button className="text-primary hover:text-primary-dark"><Download size={14} /></button>
-                                </div>
+                                {(student?.profile?.resumeUrl || student?.resumeUrl) ? (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-medium">
+                                                {(student?.profile?.resumeUrl || student?.resumeUrl).split('/').pop()}
+                                            </span>
+                                            <a
+                                                href={`${API_BASE_URL}${student?.profile?.resumeUrl || student?.resumeUrl}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-primary hover:text-primary-dark"
+                                                title="View Resume"
+                                            >
+                                                <Download size={14} />
+                                            </a>
+                                        </div>
+                                        <a
+                                            href={`${API_BASE_URL}${student?.profile?.resumeUrl || student?.resumeUrl}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-sm btn-outline w-full flex items-center justify-center gap-2"
+                                        >
+                                            <Eye size={14} /> View Resume
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-secondary italic">No resume uploaded</div>
+                                )}
                             </div>
                         </div>
                     </form>

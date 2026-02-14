@@ -677,6 +677,47 @@ a:hover {
 .mb-8 {
   margin-bottom: var(--spacing-xl);
 }
+.pr-1 { padding-right: 0.0625rem; }
+.pr-2 { padding-right: 0.125rem; }
+.pr-3 { padding-right: 0.1875rem; }
+.pr-4 { padding-right: 0.25rem; }
+.pr-5 { padding-right: 0.3125rem; }
+.pr-6 { padding-right: 0.375rem; }
+.pr-7 { padding-right: 0.4375rem; }
+.pr-8 { padding-right: 0.5rem; }
+.pr-9 { padding-right: 0.5625rem; }
+.pr-10 { padding-right: 0.625rem; }
+.pr-11 { padding-right: 0.6875rem; }
+.pr-12 { padding-right: 0.75rem; }
+.pr-13 { padding-right: 0.8125rem; }
+.pr-14 { padding-right: 0.875rem; }
+.pr-15 { padding-right: 0.9375rem; }
+.pr-16 { padding-right: 1rem; }
+.pr-17 { padding-right: 1.0625rem; }
+.pr-18 { padding-right: 1.125rem; }
+.pr-19 { padding-right: 1.1875rem; }
+.pr-20 { padding-right: 1.25rem; }
+.pl-1 { padding-left: 0.0625rem; }
+.pl-2 { padding-left: 0.125rem; }
+.pl-3 { padding-left: 0.1875rem; }
+.pl-4 { padding-left: 0.25rem; }
+.pl-5 { padding-left: 0.3125rem; }
+.pl-6 { padding-left: 0.375rem; }
+.pl-7 { padding-left: 0.4375rem; }
+.pl-8 { padding-left: 0.5rem; }
+.pl-9 { padding-left: 0.5625rem; }
+.pl-10 { padding-left: 0.625rem; }
+.pl-11 { padding-left: 0.6875rem; }
+.pl-12 { padding-left: 0.75rem; }
+.pl-13 { padding-left: 0.8125rem; }
+.pl-14 { padding-left: 0.875rem; }
+.pl-15 { padding-left: 0.9375rem; }
+.pl-16 { padding-left: 1rem; }
+.pl-17 { padding-left: 1.0625rem; }
+.pl-18 { padding-left: 1.125rem; }
+.pl-19 { padding-left: 1.1875rem; }
+.pl-20 { padding-left: 1.25rem; }
+
 
 .p-2{
   padding: 0.625rem;
