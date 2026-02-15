@@ -293,7 +293,7 @@ const Register = () => {
                                             className={`block w-full px-3 py-2.5 border border-gray-300 rounded-lg ${currentTheme.focus} placeholder-gray-400 text-gray-900`}
                                             value={formData.registerNumber}
                                             onChange={onChange}
-                                            placeholder="2023XXXXX"
+                                            placeholder="73762XXXXXXX"
                                         />
                                     </div>
 

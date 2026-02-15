@@ -193,9 +193,8 @@ const JobList = () => {
                 </div>
 
                 <form onSubmit={handleSearch} className="mt-10 max-w-4xl flex gap-3">
-                <div className='w-full flex justify-center'>
-                    <div>
-                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                         <input
                             type="text"
                             placeholder="Search by title, company, or skills..."
@@ -203,7 +202,6 @@ const JobList = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        </div>
                     </div>
                     <button type="submit" className="bg-gray-900 text-white px-8 rounded-2xl font-bold hover:bg-black transition-colors">
                         Search
