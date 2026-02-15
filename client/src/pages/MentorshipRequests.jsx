@@ -41,13 +41,21 @@ const MentorshipRequests = () => {
     };
 
     const handleRespond = async (status, quickRequest = null) => {
-        const requestId = quickRequest ? quickRequest._id : respondingTo._id;
+        const mentorshipId = quickRequest ? quickRequest._id : respondingTo._id;
+        console.log('handleRespond called with:', { status, mentorshipId, quickRequest: !!quickRequest });
+
         try {
-            await api.post(API_ENDPOINTS.RESPOND_MENTORSHIP, {
-                requestId,
+            const payload = {
+                mentorshipId,
                 status,
                 response: quickRequest ? (status === 'removed' ? endFeedback : 'Mentorship ended by Alumni') : responseMessage
-            });
+            };
+
+            console.log('Sending payload:', payload);
+
+            const res = await api.post(API_ENDPOINTS.RESPOND_MENTORSHIP, payload);
+            console.log('Response received:', res.data);
+
             setRespondingTo(null);
             setResponseMessage('');
             setShowEndModal(false);
@@ -55,6 +63,8 @@ const MentorshipRequests = () => {
             setSelectedRequestForEnd(null);
             fetchRequests();
         } catch (err) {
+            console.error('Error in handleRespond:', err);
+            console.error('Error response:', err.response?.data);
             alert(err.response?.data?.msg || 'Failed to update request');
         }
     };
