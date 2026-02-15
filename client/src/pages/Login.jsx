@@ -26,37 +26,43 @@ const Login = () => {
 
     const roleColors = {
         student: {
-            bg: 'from-blue-50 to-indigo-50',
+            bg: 'from-blue-50 via-indigo-50 to-sky-50',
+            cardBg: 'bg-white',
             primary: 'bg-blue-600 hover:bg-blue-700',
-            border: 'border-blue-200',
             text: 'text-blue-600',
             focus: 'focus:ring-blue-500 focus:border-blue-500',
-            icon: <GraduationCap className="w-5 h-5" />
+            border: 'border-blue-100',
+            icon: <GraduationCap className="w-5 h-5" />,
+            selectedBg: 'bg-blue-50 border-blue-500',
+            selectedText: 'text-blue-700'
         },
         alumni: {
-            bg: 'from-emerald-50 to-teal-50',
+            bg: 'from-emerald-50 via-teal-50 to-green-50',
+            cardBg: 'bg-white',
             primary: 'bg-emerald-600 hover:bg-emerald-700',
-            border: 'border-emerald-200',
             text: 'text-emerald-600',
             focus: 'focus:ring-emerald-500 focus:border-emerald-500',
-            icon: <Briefcase className="w-5 h-5" />
+            border: 'border-emerald-100',
+            icon: <Briefcase className="w-5 h-5" />,
+            selectedBg: 'bg-emerald-50 border-emerald-500',
+            selectedText: 'text-emerald-700'
         }
     };
 
     const currentTheme = roleColors[formData.role];
 
     return (
-        <div className={`min-h-screen bg-gradient-to-br ${currentTheme.bg} flex items-center justify-center p-4 transition-all duration-300`}>
+        <div className={`min-h-screen bg-gradient-to-br ${currentTheme.bg} flex items-center justify-center p-4 transition-all duration-500`}>
             <div className="w-full max-w-md">
                 {/* Card */}
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <div className={`${currentTheme.cardBg} backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden`}>
                     {/* Header */}
                     <div className="px-8 pt-8 pb-6 text-center">
-                        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${currentTheme.bg} ${currentTheme.text} mb-4`}>
+                        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br ${currentTheme.bg} ${currentTheme.text} mb-4 border-2 ${currentTheme.border}`}>
                             {currentTheme.icon}
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-                        <p className="text-gray-600 text-sm">Sign in to your account to continue</p>
+                        <p className="text-gray-600 text-sm">Sign in to your account</p>
                     </div>
 
                     {/* Form */}
@@ -77,9 +83,9 @@ const Login = () => {
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, role: 'student' })}
-                                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${formData.role === 'student'
-                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all duration-200 ${formData.role === 'student'
+                                        ? 'bg-blue-50 border-blue-500 text-blue-700'
+                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                                         }`}
                                 >
                                     <GraduationCap className="w-4 h-4" />
@@ -88,9 +94,9 @@ const Login = () => {
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, role: 'alumni' })}
-                                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${formData.role === 'alumni'
-                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all duration-200 ${formData.role === 'alumni'
+                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700'
+                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                                         }`}
                                 >
                                     <Briefcase className="w-4 h-4" />
@@ -111,7 +117,7 @@ const Login = () => {
                                 <input
                                     type="email"
                                     required
-                                    className={`block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg ${currentTheme.focus} placeholder-gray-400 text-gray-900 transition-all`}
+                                    className={`block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-300 rounded-lg ${currentTheme.focus} placeholder-gray-400 text-gray-900 transition-colors hover:bg-gray-100`}
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                                     placeholder="name@example.com"
@@ -131,7 +137,7 @@ const Login = () => {
                                 <input
                                     type="password"
                                     required
-                                    className={`block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg ${currentTheme.focus} placeholder-gray-400 text-gray-900 transition-all`}
+                                    className={`block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-300 rounded-lg ${currentTheme.focus} placeholder-gray-400 text-gray-900 transition-colors hover:bg-gray-100`}
                                     value={formData.password}
                                     onChange={e => setFormData({ ...formData, password: e.target.value })}
                                     placeholder="••••••••"
@@ -143,7 +149,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full ${currentTheme.primary} text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`w-full ${currentTheme.primary} text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {loading ? 'Signing in...' : 'Sign In'}
                         </button>
@@ -152,7 +158,7 @@ const Login = () => {
                         <div className="text-center pt-2">
                             <p className="text-sm text-gray-600">
                                 Don't have an account?{' '}
-                                <Link to="/register" className={`font-medium ${currentTheme.text} hover:underline`}>
+                                <Link to="/register" className={`font-medium ${currentTheme.text} hover:underline transition-colors`}>
                                     Create Account
                                 </Link>
                             </p>
@@ -162,7 +168,7 @@ const Login = () => {
 
                 {/* Admin Link */}
                 <div className="text-center mt-6">
-                    <Link to="/admin/login" className="text-sm text-gray-500 hover:text-gray-700">
+                    <Link to="/admin/login" className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
                         Admin Access →
                     </Link>
                 </div>

@@ -449,30 +449,65 @@ exports.updateJob = async (req, res) => {
 };
 
 
-
 // @route   DELETE api/jobs/:id
+// @desc    Permanently delete a job
+// @access  Private (Admin or Owner Alumni)
+
 exports.deleteJob = async (req, res) => {
     try {
+        console.log("🗑 HARD DELETE REQUEST:", req.params.id);
+
         const job = await Job.findById(req.params.id);
-        if (!job) return res.status(404).json({ msg: 'Job not found' });
 
-        // RBAC Check
-        if (req.user.role !== 'admin' && job.postedBy.toString() !== req.user.id) {
-            return res.status(403).json({ msg: 'Not authorized to delete this job' });
+        if (!job) {
+            return res.status(404).json({ msg: 'Job not found' });
         }
 
-        if (req.user.role === 'admin') {
-            job.status = 'deleted_by_admin';
-        } else {
-            job.status = 'closed';
+        // ===============================
+        // RBAC CHECK
+        // ===============================
+        if (
+            req.user.role !== 'admin' &&
+            job.postedBy.toString() !== req.user.id.toString()
+        ) {
+            return res.status(403).json({
+                msg: 'Not authorized to delete this job'
+            });
         }
-        await job.save();
-        res.json({ msg: 'Job status updated', status: job.status });
+
+        // ===============================
+        // DELETE RELATED APPLICATIONS
+        // ===============================
+        await Application.deleteMany({ jobId: job._id });
+
+        // ===============================
+        // DELETE RELATED NOTIFICATIONS
+        // ===============================
+        await Notification.deleteMany({
+            $or: [
+                { link: `/jobs/${job._id}` },
+                { link: `/jobs/${job._id}/applicants` }
+            ]
+        });
+
+        // ===============================
+        // HARD DELETE JOB
+        // ===============================
+        await Job.findByIdAndDelete(job._id);
+
+        res.json({
+            msg: 'Job permanently deleted successfully'
+        });
+
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("HARD DELETE ERROR:", err.message);
+        res.status(500).json({
+            msg: 'Server Error',
+            error: err.message
+        });
     }
 };
+
 
 // @route   PATCH api/jobs/:id/approve
 exports.approveJob = async (req, res) => {

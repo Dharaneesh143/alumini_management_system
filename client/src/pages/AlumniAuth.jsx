@@ -74,9 +74,9 @@ const AlumniAuth = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4 py-12">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-emerald-900 transition-all duration-500 flex items-center justify-center p-4 py-12">
             <div className="w-full max-w-2xl">
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
                     <div className="px-8 pt-8 pb-6 text-center">
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
                             <img src={alumniLogo} alt="Alumni Logo" style={{ width: '80px', height: '80px', objectFit: 'contain', borderRadius: '50%' }} />
@@ -93,7 +93,7 @@ const AlumniAuth = () => {
                     <form onSubmit={onSubmit} className="px-8 pb-8 space-y-5">
                         {/* Error Message */}
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                            <div className="bg-red-500/10 border border-red-500/50 text-red-300 backdrop-blur-sm px-4 py-3 rounded-lg text-sm">
                                 {error}
                             </div>
                         )}
@@ -111,7 +111,7 @@ const AlumniAuth = () => {
                                             type="email"
                                             name="email"
                                             required
-                                            className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                            className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                             value={formData.email}
                                             onChange={onChange}
                                             placeholder="alumni@example.com"
@@ -129,7 +129,7 @@ const AlumniAuth = () => {
                                             type="password"
                                             name="password"
                                             required
-                                            className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                            className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                             value={formData.password}
                                             onChange={onChange}
                                             placeholder="••••••••"
@@ -151,7 +151,7 @@ const AlumniAuth = () => {
                                                 type="text"
                                                 name="name"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.name}
                                                 onChange={onChange}
                                                 placeholder="John Doe"
@@ -170,7 +170,7 @@ const AlumniAuth = () => {
                                                 type="email"
                                                 name="email"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.email}
                                                 onChange={onChange}
                                                 placeholder="alumni@example.com"
@@ -190,7 +190,7 @@ const AlumniAuth = () => {
                                                 type="tel"
                                                 name="phoneNumber"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.phoneNumber}
                                                 onChange={onChange}
                                                 placeholder="+91 98765 43210"
@@ -207,7 +207,7 @@ const AlumniAuth = () => {
                                             <select
                                                 name="department"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 transition-colors hover:bg-gray-100"
                                                 value={formData.department}
                                                 onChange={onChange}
                                             >
@@ -233,7 +233,7 @@ const AlumniAuth = () => {
                                                 type="number"
                                                 name="passedOutYear"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.passedOutYear}
                                                 onChange={onChange}
                                                 placeholder="2020"
@@ -253,7 +253,7 @@ const AlumniAuth = () => {
                                                 type="text"
                                                 name="currentCompany"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.currentCompany}
                                                 onChange={onChange}
                                                 placeholder="Google"
@@ -273,7 +273,7 @@ const AlumniAuth = () => {
                                                 type="text"
                                                 name="jobRole"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.jobRole}
                                                 onChange={onChange}
                                                 placeholder="Software Engineer"
@@ -290,7 +290,7 @@ const AlumniAuth = () => {
                                             <input
                                                 type="text"
                                                 name="currentLocation"
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.currentLocation}
                                                 onChange={onChange}
                                                 placeholder="Bangalore, India"
@@ -305,7 +305,7 @@ const AlumniAuth = () => {
                                         <input
                                             type="number"
                                             name="yearsOfExperience"
-                                            className="block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                            className="block w-full px-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                             value={formData.yearsOfExperience}
                                             onChange={onChange}
                                             placeholder="3"
@@ -322,7 +322,7 @@ const AlumniAuth = () => {
                                             <input
                                                 type="url"
                                                 name="companyWebsite"
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.companyWebsite}
                                                 onChange={onChange}
                                                 placeholder="https://company.com"
@@ -340,7 +340,7 @@ const AlumniAuth = () => {
                                         <input
                                             type="text"
                                             name="oldCompany"
-                                            className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                            className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                             value={formData.oldCompany}
                                             onChange={onChange}
                                             placeholder="Microsoft"
@@ -358,7 +358,7 @@ const AlumniAuth = () => {
                                             <input
                                                 type="url"
                                                 name="linkedin"
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.linkedin}
                                                 onChange={onChange}
                                                 placeholder="https://linkedin.com/in/username"
@@ -375,7 +375,7 @@ const AlumniAuth = () => {
                                             <input
                                                 type="url"
                                                 name="github"
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.github}
                                                 onChange={onChange}
                                                 placeholder="https://github.com/username"
@@ -395,7 +395,7 @@ const AlumniAuth = () => {
                                                 type="password"
                                                 name="password"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.password}
                                                 onChange={onChange}
                                                 placeholder="••••••••"
@@ -413,7 +413,7 @@ const AlumniAuth = () => {
                                                 type="password"
                                                 name="confirmPassword"
                                                 required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400 text-gray-900"
+                                                className="block w-full pl-10 pr-3 py-2.5 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-emerald-400 focus:border-emerald-400 placeholder-gray-400 text-white transition-all duration-300 hover:bg-gray-700/70"
                                                 value={formData.confirmPassword}
                                                 onChange={onChange}
                                                 placeholder="••••••••"
@@ -429,19 +429,19 @@ const AlumniAuth = () => {
                             type="submit"
                             disabled={loading}
                             
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 px-4 mt-4 rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/20 hover:scale-\[1.02\] disabled:hover:scale-100 text-white font-medium py-2.5 px-4 mt-4 rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (isLogin ? 'Signing in...' : 'Creating Account...') : (isLogin ? 'Sign In' : 'Create Account')}
                         </button>
 
                         {/* Toggle Link */}
                         <div className="text-center pt-2 mt-2">
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-400">
                                 {isLogin ? "Don't have an account? " : 'Already have an account? '}
                                 <button
                                     type="button"
                                     onClick={() => setIsLogin(!isLogin)}
-                                    className="font-medium text-emerald-600 hover:underline"
+                                    className="font-medium text-emerald-600 hover:underline transition-colors"
                                 >
                                     {isLogin ? 'Create Account' : 'Sign In'}
                                 </button>
@@ -452,7 +452,7 @@ const AlumniAuth = () => {
 
                 {/* Back Link */}
                 <div className="text-center mt-6">
-                    <Link to="/login" className="text-sm text-gray-500 hover:text-gray-700">
+                    <Link to="/login" className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
                         ← Back to Main Login
                     </Link>
                 </div>
@@ -462,3 +462,4 @@ const AlumniAuth = () => {
 };
 
 export default AlumniAuth;
+
