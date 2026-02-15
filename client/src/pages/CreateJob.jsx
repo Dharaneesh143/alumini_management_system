@@ -115,7 +115,14 @@ const CreateJob = () => {
         setSubmitting(true);
 
         const data = new FormData();
+
+        // Fields that should NEVER be sent in updates
+        const protectedFields = ['postedBy', 'postedByRole', 'createdAt', 'updatedAt', 'applicants', '_id', '__v', 'approvalStatus', 'status'];
+
         Object.keys(formData).forEach(key => {
+            // Skip protected fields
+            if (protectedFields.includes(key)) return;
+
             if (Array.isArray(formData[key])) {
                 data.append(key, formData[key].join(','));
             } else {
@@ -139,7 +146,8 @@ const CreateJob = () => {
             }
             navigate('/jobs');
         } catch (err) {
-            alert(err.response?.data?.msg || 'Error saving opportunity');
+            console.error('Submit error:', err);
+            alert(err.response?.data?.msg || err.response?.data?.error || 'Error saving opportunity');
         } finally {
             setSubmitting(false);
         }

@@ -94,6 +94,8 @@ exports.getJobs = async (req, res) => {
             if (pendingOnly === 'true') {
                 query.approvalStatus = 'pending';
             }
+            // Admins don't see deleted jobs by default
+            query.status = { $nin: ['deleted_by_admin', 'closed'] };
         } else {
             // Non-admins see approved jobs OR their own postings
             let eligibilityFilter = {};
@@ -112,13 +114,16 @@ exports.getJobs = async (req, res) => {
             }
 
             query = {
-                status: 'active', // Fixed typo from $status
                 $or: [
                     {
+                        status: 'active',
                         approvalStatus: 'approved',
                         ...eligibilityFilter
                     },
-                    { postedBy: req.user.id }
+                    {
+                        postedBy: req.user.id,
+                        status: { $nin: ['deleted_by_admin', 'closed'] }
+                    }
                 ]
             };
         }
@@ -150,7 +155,6 @@ exports.getJobs = async (req, res) => {
 
         if (req.user.role === 'student') {
             const studentId = req.user.id;
-            // Fetch all applications for this student to map efficiently
             const applications = await Application.find({ studentId }).select('jobId');
             const appliedJobIds = new Set(applications.map(app => app.jobId.toString()));
 
@@ -224,7 +228,7 @@ exports.applyJob = async (req, res) => {
         });
         await application.save();
 
-        // Sync with Job.applicants (Optional but good for analytics)
+        // Sync with Job.applicants
         job.applicants.push({
             user: req.user.id,
             resumeUrl: `/uploads/resumes/${req.file.filename}`
@@ -249,7 +253,6 @@ exports.applyJob = async (req, res) => {
     }
 };
 
-
 // @route   GET api/jobs/:id/applicants
 exports.getJobApplicants = async (req, res) => {
     try {
@@ -267,7 +270,7 @@ exports.getJobApplicants = async (req, res) => {
 // @route   PATCH api/jobs/applications/:id/status
 exports.updateApplicationStatus = async (req, res) => {
     try {
-        const { status } = req.body; // 'Shortlisted', 'Rejected'
+        const { status } = req.body;
         const application = await Application.findById(req.params.id).populate('jobId');
 
         if (!application) return res.status(404).json({ msg: 'Application not found' });
@@ -295,21 +298,157 @@ exports.updateApplicationStatus = async (req, res) => {
 // @route   PUT api/jobs/:id
 exports.updateJob = async (req, res) => {
     try {
+        console.log('📝 UPDATE JOB REQUEST:', {
+            jobId: req.params.id,
+            userRole: req.user.role,
+            userId: req.user.id,
+            bodyKeys: Object.keys(req.body)
+        });
+
         let job = await Job.findById(req.params.id);
         if (!job) return res.status(404).json({ msg: 'Job not found' });
 
-        // RBAC Check
+        // RBAC
         if (req.user.role !== 'admin' && job.postedBy.toString() !== req.user.id) {
             return res.status(403).json({ msg: 'Not authorized to edit this job' });
         }
 
-        job = await Job.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
-        res.json(job);
+        const updateData = { ...req.body };
+
+        // ===============================
+        // FIX ARRAY SINGLE VALUE ISSUE
+        // ===============================
+
+        if (Array.isArray(updateData.opportunityType)) {
+            updateData.opportunityType = updateData.opportunityType[0];
+        }
+
+        if (Array.isArray(updateData.job_type)) {
+            updateData.job_type = updateData.job_type[0];
+        }
+
+        if (Array.isArray(updateData.company)) {
+            updateData.company = updateData.company[0];
+        }
+
+        // ===============================
+        // PROTECT CRITICAL FIELDS (MUST BE FIRST)
+        // ===============================
+
+        // Delete all fields that should never be updated
+        const protectedFields = [
+            'postedBy', 'postedByRole', 'createdAt', 'updatedAt',
+            'applicants', '_id', '__v', 'approvalStatus', 'status'
+        ];
+
+        protectedFields.forEach(field => {
+            delete updateData[field];
+        });
+
+        console.log('🔒 After protection, updateData keys:', Object.keys(updateData));
+
+
+        // ===============================
+        // STRING → ARRAY FIX
+        // ===============================
+
+        if (typeof updateData.requiredSkills === 'string') {
+            updateData.requiredSkills = updateData.requiredSkills
+                .split(',')
+                .map(s => s.trim());
+        }
+
+        if (typeof updateData.skills_required === 'string') {
+            updateData.skills_required = updateData.skills_required
+                .split(',')
+                .map(s => s.trim());
+        }
+
+        if (typeof updateData.departmentsEligible === 'string') {
+            updateData.departmentsEligible = updateData.departmentsEligible
+                .split(',')
+                .map(s => s.trim());
+        }
+
+        // ===============================
+        // BOOLEAN FIX
+        // ===============================
+
+        if (updateData.referralAvailable !== undefined) {
+            updateData.referralAvailable =
+                updateData.referralAvailable === 'true' ||
+                updateData.referralAvailable === true;
+        }
+
+        if (updateData.ppoAvailable !== undefined) {
+            updateData.ppoAvailable =
+                updateData.ppoAvailable === 'true' ||
+                updateData.ppoAvailable === true;
+        }
+
+        // ===============================
+        // DATE SYNC FIX
+        // ===============================
+
+        if (updateData.start_date && !updateData.startDate) {
+            updateData.startDate = updateData.start_date;
+        }
+
+        if (updateData.startDate && !updateData.start_date) {
+            updateData.start_date = updateData.startDate;
+        }
+
+        if (updateData.end_date && !updateData.endDate) {
+            updateData.endDate = updateData.end_date;
+        }
+
+        if (updateData.endDate && !updateData.end_date) {
+            updateData.end_date = updateData.endDate;
+        }
+
+        // ===============================
+        // TYPE BASED CLEANUP (IMPORTANT FIX)
+        // ===============================
+
+        if (updateData.opportunityType === 'Job') {
+            delete updateData.stipend;
+            delete updateData.duration;
+            delete updateData.startDate;
+            delete updateData.start_date;
+            delete updateData.endDate;
+            delete updateData.end_date;
+            delete updateData.ppoAvailable;
+        }
+
+        if (updateData.opportunityType === 'Internship') {
+            delete updateData.salaryRange;
+            delete updateData.salary;
+            delete updateData.employmentType;
+            delete updateData.experienceRequired;
+        }
+
+        // ===============================
+        // SAFE UPDATE
+        // ===============================
+
+        const updatedJob = await Job.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        res.json(updatedJob);
+
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("Update Job Error:", err.message);
+        res.status(500).json({
+            msg: 'Server Error',
+            error: err.message
+        });
     }
 };
+
+
 
 // @route   DELETE api/jobs/:id
 exports.deleteJob = async (req, res) => {
@@ -334,12 +473,13 @@ exports.deleteJob = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
 // @route   PATCH api/jobs/:id/approve
 exports.approveJob = async (req, res) => {
     try {
         if (req.user.role !== 'admin') return res.status(403).json({ msg: 'Admin only' });
 
-        const { status } = req.body; // 'approved' or 'rejected'
+        const { status } = req.body;
         const job = await Job.findById(req.params.id);
         if (!job) return res.status(404).json({ msg: 'Job not found' });
 

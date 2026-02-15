@@ -170,7 +170,7 @@ const StudentAuth = () => {
                                                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 text-gray-900"
                                                 value={formData.registerNumber}
                                                 onChange={onChange}
-                                                placeholder="2023XXXXX"
+                                                placeholder="73762XXXXXXX"
                                             />
                                         </div>
                                     </div>
