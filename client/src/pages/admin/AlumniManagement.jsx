@@ -311,17 +311,6 @@ const AlumniManagement = () => {
                         <option value="verified">Verified Only</option>
                         <option value="pending">Pending Only</option>
                     </select>
-                    <select
-                        name="status"
-                        className="form-input border-gray-200"
-                        value={filters.status}
-                        onChange={handleFilterChange}
-                    >
-                        <option value="">All Account Status</option>
-                        <option value="active">Active</option>
-                        <option value="deactivated">Deactivated</option>
-                        <option value="blocked">Blocked</option>
-                    </select>
                 </div>
             </div>
 

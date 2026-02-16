@@ -26,6 +26,9 @@ import MenteeDetailView from './pages/MenteeDetailView';
 import AlumniManagement from './pages/admin/AlumniManagement';
 import MentorshipManagement from './pages/admin/MentorshipManagement';
 import Events from './pages/Events';
+import BlockedMembers from './pages/admin/BlockedMembers';
+import BlockedStudents from './pages/admin/BlockedStudents';
+import PendingJobs from './pages/admin/PendingJobs';
 
 function App() {
   return (
@@ -93,6 +96,11 @@ function App() {
               <AlumniManagement />
             </Layout>
           } />
+          <Route path="/admin" element={
+            <Layout>
+              <DashboardHelper />
+            </Layout>
+          } />
           <Route path="/admin/mentorships" element={
             <Layout>
               <MentorshipManagement />
@@ -101,6 +109,26 @@ function App() {
           <Route path="/admin/students" element={
             <Layout>
               <StudentManagement />
+            </Layout>
+          } />
+          <Route path="/admin/blocked-members" element={
+            <Layout>
+              <BlockedMembers />
+            </Layout>
+          } />
+          <Route path="/admin/blocked-students" element={
+            <Layout>
+              <BlockedStudents />
+            </Layout>
+          } />
+          <Route path="/admin/pending-approvals" element={
+            <Layout>
+              <PendingJobs />
+            </Layout>
+          } />
+          <Route path="/admin/events" element={
+            <Layout>
+              <Events />
             </Layout>
           } />
           <Route path="/admin/students/:id" element={

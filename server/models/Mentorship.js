@@ -24,6 +24,12 @@ const MentorshipSchema = new mongoose.Schema({
         enum: ['pending', 'accepted', 'rejected', 'removed', 'completed', 'Pending', 'Active', 'Completed'],
         default: 'pending'
     },
+    removedAt: {
+        type: Date
+    },
+    removalReason: {
+        type: String
+    },
     start_date: Date,
     end_date: Date,
     message: {

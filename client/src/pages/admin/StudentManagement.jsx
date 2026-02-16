@@ -227,16 +227,6 @@ const StudentManagement = () => {
                             <option key={year} value={year}>{year}</option>
                         ))}
                     </select>
-                    <select
-                        name="status"
-                        className="form-input"
-                        value={filters.status}
-                        onChange={handleFilterChange}
-                    >
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="blocked">Blocked</option>
-                    </select>
                 </div>
             </div>
 

@@ -91,11 +91,19 @@ exports.getMentorshipRequests = async (req, res) => {
     try {
         let requests;
         if (req.user.role === 'alumni') {
-            requests = await Mentorship.find({ alumni: req.user.id })
+            // ✅ FILTER OUT REMOVED MENTORSHIPS
+            requests = await Mentorship.find({
+                alumni: req.user.id,
+                status: { $ne: 'removed' }
+            })
                 .populate('student', 'name email profile')
                 .sort({ createdAt: -1 });
         } else {
-            requests = await Mentorship.find({ student: req.user.id })
+            // ✅ FILTER OUT REMOVED MENTORSHIPS
+            requests = await Mentorship.find({
+                student: req.user.id,
+                status: { $ne: 'removed' }
+            })
                 .populate('alumni', 'name email profile currentCompany jobRole mentorSettings')
                 .sort({ createdAt: -1 });
         }
@@ -123,43 +131,74 @@ exports.getMentorshipRequests = async (req, res) => {
 };
 
 // Update Request Status (for Alumni)
-exports.updateRequestStatus = async (req, res) => {
+// @route   POST /api/mentorship/respond
+// @desc    Accept / Reject / Remove mentorship
+// @access  Private (Mentor only)
+exports.respondToMentorship = async (req, res) => {
     try {
-        const { requestId, status, response } = req.body;
+        const { mentorshipId, status, response } = req.body;
+
+        console.log("=== MENTORSHIP RESPOND CALLED ===");
+        console.log("Full request body:", JSON.stringify(req.body, null, 2));
+        console.log("STATUS RECEIVED:", status);
+        console.log("MENTORSHIP ID:", mentorshipId);
+        console.log("MENTORSHIP ID TYPE:", typeof mentorshipId);
+        console.log("USER:", req.user.id);
+        console.log("USER ROLE:", req.user.role);
 
         if (req.user.role !== 'alumni' && req.user.role !== 'admin') {
             return res.status(403).json({ msg: 'Only alumni or administrators can update request status' });
         }
 
-        let mentorship = await Mentorship.findById(requestId);
+        const mentorship = await Mentorship.findById(mentorshipId);
+
         if (!mentorship) {
-            return res.status(404).json({ msg: 'Request not found' });
+            console.log('❌ Mentorship not found for ID:', mentorshipId);
+            console.log('Attempted query with:', { _id: mentorshipId });
+            return res.status(404).json({ msg: 'Mentorship not found' });
         }
 
+        console.log('✅ Found mentorship:', { id: mentorship._id, currentStatus: mentorship.status, alumni: mentorship.alumni });
+
+        // ✅ Only mentor can respond
         if (req.user.role !== 'admin' && mentorship.alumni.toString() !== req.user.id) {
+            console.log('Authorization failed:', { mentorshipAlumni: mentorship.alumni.toString(), userId: req.user.id });
             return res.status(403).json({ msg: 'Not authorized' });
         }
 
+        // ===============================
+        // HANDLE REMOVAL
+        // ===============================
+        if (status === 'removed') {
+            console.log('Removing mentorship:', mentorshipId);
+
+            mentorship.status = 'removed';
+            mentorship.removedAt = new Date();
+            mentorship.removalReason = response;
+            mentorship.messages = []; // Clear chat history
+
+            await mentorship.save();
+            console.log('Mentorship ended successfully');
+
+            return res.json({ msg: 'Mentorship ended successfully', mentorship });
+        }
+
+        // ===============================
+        // Other statuses (accept / reject)
+        // ===============================
+        console.log('Updating status from', mentorship.status, 'to', status);
         mentorship.status = status;
         if (response) mentorship.response = response;
 
-        // If status is changed to 'removed', clear all chat messages
-        if (status === 'removed') {
-            mentorship.messages = [];
-            console.log(`Mentorship ${requestId} marked as removed - chat history cleared`);
-        }
-
-        // If status is changed to 'rejected'
-        if (status === 'rejected') {
-            console.log(`Mentorship ${requestId} marked as rejected`);
-        }
-
         await mentorship.save();
-        res.json(mentorship);
+        console.log('Mentorship saved successfully:', { id: mentorship._id, newStatus: mentorship.status });
+
+        res.json({ msg: 'Response updated', mentorship });
 
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Mentorship Respond Error:', err.message);
+        console.error('Stack trace:', err.stack);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -215,13 +254,15 @@ exports.getConversation = async (req, res) => {
 
         if (!mentorship) return res.status(404).json({ msg: 'Mentorship not found' });
 
-        if (mentorship.student._id.toString() !== req.user.id && mentorship.alumni._id.toString() !== req.user.id) {
-            return res.status(401).json({ msg: 'Not authorized' });
+        // ✅ BLOCK CHAT AFTER REMOVAL
+        if (mentorship.status === 'removed') {
+            return res.status(403).json({
+                msg: 'This mentorship has ended.'
+            });
         }
 
-        // Prevent access to removed mentorships
-        if (mentorship.status === 'removed' || mentorship.status === 'Removed') {
-            return res.status(403).json({ msg: 'This mentorship has been ended. Please find a new mentor.' });
+        if (mentorship.student._id.toString() !== req.user.id && mentorship.alumni._id.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
         }
 
         res.json(mentorship);

@@ -16,7 +16,7 @@ router.get('/requests', auth, mentorshipController.getMentorshipRequests);
 // @route   POST api/mentorship/respond
 // @desc    Respond to a mentorship request
 // @access  Private (Alumni)
-router.post('/respond', auth, mentorshipController.updateRequestStatus);
+router.post('/respond', auth, mentorshipController.respondToMentorship);
 
 // @route   GET api/mentorship/conversation/:id
 // @desc    Get conversation details

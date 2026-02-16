@@ -136,6 +136,7 @@ app.use('/api/mentorship', require('./routes/mentorship'));
 app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/college-info', require('./routes/collegeInfoRoutes'));
 
+app.get('/test', (req, res) => res.send('Server working'));
 app.get('/', (req, res) => res.send('Alumni Portal API is Running'));
 
 // Global Error Handler

@@ -41,13 +41,21 @@ const MentorshipRequests = () => {
     };
 
     const handleRespond = async (status, quickRequest = null) => {
-        const requestId = quickRequest ? quickRequest._id : respondingTo._id;
+        const mentorshipId = quickRequest ? quickRequest._id : respondingTo._id;
+        console.log('handleRespond called with:', { status, mentorshipId, quickRequest: !!quickRequest });
+
         try {
-            await api.post(API_ENDPOINTS.RESPOND_MENTORSHIP, {
-                requestId,
+            const payload = {
+                mentorshipId,
                 status,
                 response: quickRequest ? (status === 'removed' ? endFeedback : 'Mentorship ended by Alumni') : responseMessage
-            });
+            };
+
+            console.log('Sending payload:', payload);
+
+            const res = await api.post(API_ENDPOINTS.RESPOND_MENTORSHIP, payload);
+            console.log('Response received:', res.data);
+
             setRespondingTo(null);
             setResponseMessage('');
             setShowEndModal(false);
@@ -55,6 +63,8 @@ const MentorshipRequests = () => {
             setSelectedRequestForEnd(null);
             fetchRequests();
         } catch (err) {
+            console.error('Error in handleRespond:', err);
+            console.error('Error response:', err.response?.data);
             alert(err.response?.data?.msg || 'Failed to update request');
         }
     };
@@ -92,20 +102,22 @@ const MentorshipRequests = () => {
                     ))}
                 </div>
             </div>
-
+            
             <div className="space-y-4">
                 {filteredRequests.length === 0 ? (
-                    <div className="card py-12 text-center text-secondary">
-                        <MessageSquare size={48} className="mx-auto mb-4 opacity-20" />
+                    <div className="card py-12 text-center text-secondary ">
+                       <div className="flex justify-center items-center"> <MessageSquare size={48} className="mx-auto mb-4 opacity-20" />
+                       </div>
                         <p>No requests found in this category.</p>
                     </div>
+                    
                 ) : (
                     filteredRequests.map(req => (
                         <div key={req._id} className="card">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-start gap-4">
                                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-secondary">
-                                        <User size={24} />
+                                        <User size={24} /> 
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">

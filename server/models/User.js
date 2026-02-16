@@ -75,6 +75,12 @@ const userSchema = new mongoose.Schema({
         reason: String,
         requestedAt: Date
     },
+    reports: [{
+        reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        reason: String,
+        timestamp: { type: Date, default: Date.now }
+    }],
+    lastActiveMentor: { type: Date, default: Date.now },
 
     // Common Profile Data
     profile: {

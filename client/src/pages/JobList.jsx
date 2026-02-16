@@ -207,7 +207,7 @@ const JobList = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20">
             {/* Enhanced Header with Gradient */}
-            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 -mx-8 -mt-8 px-8 py-16 mb-10 relative overflow-hidden">
+            <div className="bg-blue-300 mx-8 mt-8 px-8 py-16 mb-10 rounded-lg relative overflow-hidden">
                 {/* Decorative elements */}
                 <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl" />
@@ -230,7 +230,7 @@ const JobList = () => {
                         {user?.role === 'alumni' && (
                             <Link
                                 to="/jobs/create"
-                                className="inline-flex items-center justify-center gap-2 bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold hover:bg-blue-50 transition-all shadow-xl hover:shadow-2xl active:scale-95 hover:scale-105 duration-200"
+                                className="inline-flex items-center justify-center mb-4 gap-2 bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold hover:bg-blue-50 transition-all shadow-xl hover:shadow-2xl active:scale-95 hover:scale-105 duration-200"
                             >
                                 <Plus size={22} strokeWidth={3} />
                                 Post Opportunity
@@ -239,10 +239,10 @@ const JobList = () => {
                     </div>
 
                     {/* Enhanced Search Bar */}
-                    <form onSubmit={handleSearch} className="max-w-5xl mx-auto">
-                        <div className="flex gap-3">
+                    <form onSubmit={handleSearch} className="max-w-5xl mx-auto pl-12">
+                        <div className="flex gap-3 ">
                             <div className="relative flex-1">
-                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={22} />
+                                <Search className="absolute left-5 top-1/2 -translate-y-1/2  text-gray-400" size={22} />
                                 <input
                                     type="text"
                                     placeholder="Search by job title, company, location, or skills..."
@@ -251,6 +251,7 @@ const JobList = () => {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
+        
                             <button
                                 type="submit"
                                 className="bg-gray-900 text-white px-10 py-5 rounded-2xl font-bold hover:bg-black transition-all shadow-xl hover:shadow-2xl active:scale-95 hover:scale-105 duration-200"
@@ -265,7 +266,7 @@ const JobList = () => {
             {/* Content Container */}
             <div className="max-w-7xl mx-auto px-8 pb-16">
                 {/* Enhanced Tabs */}
-                <div className="flex items-center justify-between mb-10 bg-white rounded-2xl p-2 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-10 bg-white rounded-2xl p-4 mt-2 mb-2 shadow-sm border border-gray-100">
                     <div className="flex gap-2">
                         {['All', 'Job', 'Internship'].map((tab) => (
                             <button

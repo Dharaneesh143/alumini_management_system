@@ -18,7 +18,7 @@ import StatCard from '../components/StatCard';
 import api, { API_ENDPOINTS } from '../config/api';
 
 const StudentDashboard = () => {
-    const { user } = useContext(AuthContext);
+    const { user, refreshUser } = useContext(AuthContext);
     const [jobs, setJobs] = useState([]);
     const [totalJobsCount, setTotalJobsCount] = useState(0);
     const [stats, setStats] = useState({ appliedJobs: 0, mentorshipRequests: 0, events: 0 });
@@ -32,6 +32,10 @@ const StudentDashboard = () => {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
+            // Refresh user data to ensure profile completion is accurate
+            if (refreshUser) {
+                await refreshUser();
+            }
             const [jobsRes, statsRes, requestsRes] = await Promise.all([
                 api.get(API_ENDPOINTS.GET_JOBS),
                 api.get('/api/student/stats'),
@@ -51,23 +55,31 @@ const StudentDashboard = () => {
 
     const calculateProfileProgress = () => {
         if (!user) return 0;
+
+        // Define all profile fields to check
         const fields = [
             user.name,
             user.email,
-            user.role,
             user.phoneNumber,
-            user.profile?.department || user.department,
-            user.profile?.batch || user.batch,
+            user.department,
+            user.batch,
             user.profile?.cgpa,
-            user.profile?.skills?.length > 0 ? 'skills' : null,
+            user.profile?.skills && user.profile.skills.length > 0,
             user.profile?.resumeUrl
         ];
-        // Check for null, undefined, or empty string, but allow 0
-        const filled = fields.filter(f => f !== null && f !== undefined && f !== '').length;
-        return Math.round((filled / fields.length) * 100);
+
+        // Filter out null, undefined, empty strings, and false values
+        const filled = fields.filter(f => {
+            if (f === null || f === undefined || f === '' || f === false) return false;
+            if (typeof f === 'number' && f === 0) return true; // Allow 0 as valid
+            return true;
+        });
+
+        return Math.round((filled.length / fields.length) * 100);
     };
 
     const progress = calculateProfileProgress();
+
 
     return (
         <div className="space-y-8 pb-8 mb-8" style={{ paddingBottom: '100px', marginBottom: '50px' }}>

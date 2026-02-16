@@ -5,10 +5,12 @@ import {
     BarElement,
     CategoryScale,
     LinearScale,
+    PointElement,
+    LineElement,
     Tooltip,
     Legend
 } from "chart.js";
-import { Pie, Bar } from "react-chartjs-2";
+import { Pie, Bar, Line } from "react-chartjs-2";
 import { Link, useNavigate } from 'react-router-dom';
 import api, { API_ENDPOINTS } from "../config/api";
 import { AuthContext } from '../context/AuthContext.jsx';
@@ -19,6 +21,8 @@ ChartJS.register(
     BarElement,
     CategoryScale,
     LinearScale,
+    PointElement,
+    LineElement,
     Tooltip,
     Legend
 );
@@ -28,7 +32,6 @@ const AlumniDashboard = () => {
         activeMentees: 0,
         pendingRequests: 0,
         completedSessions: 0,
-        jobReferrals: 0,
         jobReferrals: 0,
         monthlyData: []
     });
@@ -40,14 +43,18 @@ const AlumniDashboard = () => {
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
+                console.log('Fetching alumni stats...');
                 const res = await api.get(API_ENDPOINTS.GET_ALUMNI_STATS);
+                console.log('Stats received:', res.data);
                 setStats(res.data);
 
                 // Fetch Pending Requests
                 const reqRes = await api.get('/api/events/alumni/requests');
+                console.log('Event requests received:', reqRes.data);
                 setAlumniRequests(reqRes.data);
             } catch (err) {
                 console.error('Error fetching alumni stats:', err);
+                if (err.response) console.error('Error response data:', err.response.data);
             } finally {
                 setLoading(false);
             }
@@ -55,9 +62,18 @@ const AlumniDashboard = () => {
         fetchStats();
     }, []);
 
+    React.useEffect(() => {
+        if (!loading) {
+            console.log('Final stats state:', stats);
+            console.log('Safe monthly data:', stats.monthlyData || []);
+        }
+    }, [stats, loading]);
+
     if (loading) {
         return <div className="dashboard-container"><p>Loading dashboard...</p></div>;
     }
+
+    const safeMonthlyData = stats.monthlyData || [];
 
     return (
         <div className="dashboard-container">
@@ -151,14 +167,20 @@ const AlumniDashboard = () => {
                 <div className="chart-card wide">
                     <h3>Monthly Mentorship Sessions</h3>
                     <div style={{ height: '300px', width: '100%' }}>
-                        <Bar
+                        <Line
                             data={{
-                                labels: stats.monthlyData.map(d => d.month),
+                                labels: safeMonthlyData.map(d => d.month),
                                 datasets: [
                                     {
                                         label: "Sessions",
-                                        data: stats.monthlyData.map(d => d.sessions),
-                                        backgroundColor: "#4f46e5"
+                                        data: safeMonthlyData.map(d => d.sessions),
+                                        fill: true,
+                                        borderColor: "#4f46e5",
+                                        backgroundColor: "rgba(79, 70, 229, 0.1)",
+                                        tension: 0.4,
+                                        pointRadius: 4,
+                                        pointBackgroundColor: "#4f46e5",
+                                        borderWidth: 3
                                     }
                                 ]
                             }}
@@ -167,6 +189,23 @@ const AlumniDashboard = () => {
                                 maintainAspectRatio: false,
                                 plugins: {
                                     legend: { display: false }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1
+                                        },
+                                        grid: {
+                                            display: true,
+                                            color: "rgba(0, 0, 0, 0.05)"
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
                                 }
                             }}
                         />

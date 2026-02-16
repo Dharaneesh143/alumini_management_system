@@ -92,14 +92,12 @@ exports.getSystemStats = async (req, res) => {
         ]);
 
         // 5. Insights / Alerts
-        const activeMentorships = mentorshipActivity.Active;
-        const studentsWithoutMentor = await User.countDocuments({
-            role: 'student',
-            // In a more complex system, we'd check if they have an active Mentorship record
-            // For now, let's keep it simple or use a count
-        });
+        const blockedAlumniCount = await User.countDocuments({ role: 'alumni', accountStatus: { $in: ['blocked', 'deactivated'] } });
+        const blockedStudentsCount = await User.countDocuments({ role: 'student', accountStatus: { $in: ['blocked', 'deactivated'] } });
+        const pendingJobsCount = await Job.countDocuments({ approvalStatus: 'pending' });
+        const activeMentorsCount = await User.countDocuments({ role: 'alumni', isMentor: true });
 
-        const activeMentors = await User.countDocuments({ role: 'alumni', isMentor: true });
+        const activeMentorships = mentorshipActivity.Active;
 
         res.json({
             totalUsers: totalAdmins + totalStudents + totalAlumni,
@@ -120,9 +118,11 @@ exports.getSystemStats = async (req, res) => {
             jobTrend,
             insights: {
                 pendingAlumniVerifications: pendingAlumni,
-                inactiveAlumniCount: 0, // Placeholder
+                blockedAlumniCount,
+                blockedStudentsCount,
+                pendingJobsCount,
                 studentsWithoutMentor: Math.max(0, totalStudents - activeMentorships),
-                activeMentorsCount: activeMentors
+                activeMentorsCount
             }
         });
     } catch (err) {
@@ -398,7 +398,13 @@ exports.getStudents = async (req, res) => {
 
         if (department) query.department = department;
         if (batch) query.batch = batch;
-        if (status) query.accountStatus = status;
+
+        // Exclude restricted accounts from main list
+        if (status) {
+            query.accountStatus = status;
+        } else {
+            query.accountStatus = 'active';
+        }
 
         const students = await User.find(query)
             .select('-password')
@@ -494,7 +500,13 @@ exports.getAlumni = async (req, res) => {
         }
 
         if (department) query.department = department;
-        if (status) query.accountStatus = status;
+
+        // Exclude restricted accounts from main list
+        if (status) {
+            query.accountStatus = status;
+        } else {
+            query.accountStatus = 'active';
+        }
 
         if (isVerified === 'true') {
             query.approvalStatus = 'approved';
@@ -636,6 +648,88 @@ exports.getAllMentorships = async (req, res) => {
         res.json(mentorships);
     } catch (err) {
         console.error('Get All Mentorships Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// --- New Management Controllers (Refined Categories) ---
+
+// Get blocked alumni members
+exports.getBlockedAlumni = async (req, res) => {
+    try {
+        const blockedAlumni = await User.find({
+            role: 'alumni',
+            accountStatus: { $in: ['blocked', 'deactivated'] }
+        }).select('-password').sort({ updatedAt: -1 });
+
+        res.json(blockedAlumni);
+    } catch (err) {
+        console.error('Get Blocked Alumni Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// Get blocked students
+exports.getBlockedStudents = async (req, res) => {
+    try {
+        const blockedStudents = await User.find({
+            role: 'student',
+            accountStatus: { $in: ['blocked', 'deactivated'] }
+        }).select('-password').sort({ updatedAt: -1 });
+
+        res.json(blockedStudents);
+    } catch (err) {
+        console.error('Get Blocked Students Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// Get jobs pending approval
+exports.getPendingJobs = async (req, res) => {
+    try {
+        const pendingJobs = await Job.find({
+            approvalStatus: 'pending'
+        }).populate('postedBy', 'name email').sort({ createdAt: -1 });
+
+        res.json(pendingJobs);
+    } catch (err) {
+        console.error('Get Pending Jobs Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// Resolve a report (dismiss or take action)
+exports.resolveReport = async (req, res) => {
+    try {
+        const { targetId, targetType, action } = req.body; // targetType: 'user' or 'job', action: 'dismiss' or 'block'
+
+        if (targetType === 'user') {
+            const user = await User.findById(targetId);
+            if (!user) return res.status(404).json({ msg: 'User not found' });
+
+            if (action === 'dismiss') {
+                user.reports = [];
+            } else if (action === 'block') {
+                user.accountStatus = 'blocked';
+                user.reports = [];
+            }
+            await user.save();
+        } else if (targetType === 'job') {
+            const job = await Job.findById(targetId);
+            if (!job) return res.status(404).json({ msg: 'Job not found' });
+
+            if (action === 'dismiss') {
+                job.reports = [];
+            } else if (action === 'block') {
+                job.status = 'deleted_by_admin';
+                job.reports = [];
+            }
+            await job.save();
+        }
+
+        res.json({ msg: 'Report resolved successfully' });
+    } catch (err) {
+        console.error('Resolve Report Error:', err.message);
         res.status(500).send('Server Error');
     }
 };
