@@ -84,4 +84,18 @@ router.get('/mentorships', adminAuth, adminController.getAllMentorships);
 // @access  Admin only
 router.post('/handle-deactivation', adminAuth, adminController.handleDeactivationRequest);
 
+// --- New Management Routes (Refined) ---
+
+// @route   GET api/admin/blocked-alumni
+router.get('/blocked-alumni', adminAuth, adminController.getBlockedAlumni);
+
+// @route   GET api/admin/blocked-students
+router.get('/blocked-students', adminAuth, adminController.getBlockedStudents);
+
+// @route   GET api/admin/pending-jobs
+router.get('/pending-jobs', adminAuth, adminController.getPendingJobs);
+
+// @route   POST api/admin/resolve-report
+router.post('/resolve-report', adminAuth, adminController.resolveReport);
+
 module.exports = router;

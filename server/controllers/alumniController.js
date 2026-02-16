@@ -112,39 +112,58 @@ exports.getJobApplicants = async (req, res) => {
 exports.getAlumniStats = async (req, res) => {
     try {
         const alumniId = req.user.id;
+        let alumniObjectId;
+        try {
+            alumniObjectId = new mongoose.Types.ObjectId(alumniId.toString());
+        } catch (e) {
+            return res.status(400).json({ msg: 'Invalid alumni ID' });
+        }
 
-        // 1. Active Mentees (Accepted mentorships)
+        // 1. Active Mentees
         const activeMenteesCount = await Mentorship.countDocuments({
-            alumni: alumniId,
+            alumni: alumniObjectId,
             status: { $in: ['accepted', 'Active'] }
         });
 
-        // 2. Mentorship Requests (Pending)
+        // 2. Mentorship Requests
         const pendingRequestsCount = await Mentorship.countDocuments({
-            alumni: alumniId,
+            alumni: alumniObjectId,
             status: { $in: ['pending', 'Pending'] }
         });
 
         // 3. Completed Sessions
         const completedSessionsCount = await Mentorship.countDocuments({
-            alumni: alumniId,
+            alumni: alumniObjectId,
             status: { $in: ['completed', 'Completed'] }
         });
 
-        // 4. Job Referrals (Jobs posted by this alumni)
+        // 4. Job Referrals
         const jobReferralsCount = await Job.countDocuments({
-            postedBy: alumniId
+            postedBy: alumniObjectId
         });
 
-        // 5. Monthly Distribution (for the bar chart)
-        // Grouping by month for the last 6 months
+        // 5. Monthly Distribution
+        const monthsData = [];
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        for (let i = 5; i >= 0; i--) {
+            const date = new Date();
+            date.setMonth(date.getMonth() - i);
+            monthsData.push({
+                month: monthNames[date.getMonth()],
+                year: date.getFullYear(),
+                monthNum: date.getMonth() + 1,
+                sessions: 0
+            });
+        }
+
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        sixMonthsAgo.setDate(1);
 
         const monthlyStats = await Mentorship.aggregate([
             {
                 $match: {
-                    alumni: new mongoose.Types.ObjectId(alumniId),
+                    alumni: alumniObjectId,
                     createdAt: { $gte: sixMonthsAgo }
                 }
             },
@@ -156,16 +175,16 @@ exports.getAlumniStats = async (req, res) => {
                     },
                     count: { $sum: 1 }
                 }
-            },
-            { $sort: { "_id.year": 1, "_id.month": 1 } }
+            }
         ]);
 
-        // Format month names
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const formattedMonthlyData = monthlyStats.map(stat => ({
-            month: monthNames[stat._id.month - 1],
-            sessions: stat.count
-        }));
+        const formattedMonthlyData = monthsData.map(m => {
+            const stat = monthlyStats.find(s => s._id.month === m.monthNum && s._id.year === m.year);
+            return {
+                month: m.month,
+                sessions: stat ? stat.count : 0
+            };
+        });
 
         res.json({
             activeMentees: activeMenteesCount,
@@ -176,9 +195,6 @@ exports.getAlumniStats = async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Alumni Stats Error:', err.message);
         res.status(500).send('Server Error');
     }
 };
-
-

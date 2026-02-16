@@ -110,6 +110,11 @@ const jobSchema = new mongoose.Schema({
             enum: ['applied', 'viewed', 'shortlisted', 'rejected'],
             default: 'applied'
         }
+    }],
+    reports: [{
+        reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        reason: String,
+        timestamp: { type: Date, default: Date.now }
     }]
 }, { timestamps: true });
 

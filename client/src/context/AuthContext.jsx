@@ -102,6 +102,24 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const refreshUser = async () => {
+        const role = getActiveRole();
+        const token = localStorage.getItem(`token_${role}`);
+
+        if (token) {
+            try {
+                const res = await api.get(API_ENDPOINTS.GET_ME, {
+                    headers: { 'x-auth-token': token }
+                });
+                setUser({ ...res.data, role: res.data.role });
+                return res.data;
+            } catch (err) {
+                console.error(`Failed to refresh user data:`, err);
+                throw err;
+            }
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -113,7 +131,8 @@ export const AuthProvider = ({ children }) => {
             studentSignup,
             alumniSignup,
             register,
-            logout
+            logout,
+            refreshUser
         }}>
             {children}
         </AuthContext.Provider>

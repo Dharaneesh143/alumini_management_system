@@ -102,20 +102,22 @@ const MentorshipRequests = () => {
                     ))}
                 </div>
             </div>
-
+            
             <div className="space-y-4">
                 {filteredRequests.length === 0 ? (
-                    <div className="card py-12 text-center text-secondary">
-                        <MessageSquare size={48} className="mx-auto mb-4 opacity-20" />
+                    <div className="card py-12 text-center text-secondary ">
+                       <div className="flex justify-center items-center"> <MessageSquare size={48} className="mx-auto mb-4 opacity-20" />
+                       </div>
                         <p>No requests found in this category.</p>
                     </div>
+                    
                 ) : (
                     filteredRequests.map(req => (
                         <div key={req._id} className="card">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-start gap-4">
                                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-secondary">
-                                        <User size={24} />
+                                        <User size={24} /> 
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">

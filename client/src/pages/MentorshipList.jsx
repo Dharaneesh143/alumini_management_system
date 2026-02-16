@@ -91,7 +91,7 @@ const MentorshipList = () => {
                 const active = requests.find(r => r.status === 'accepted' || r.status === 'Active');
                 if (active && active.alumni) {
                     return (
-                        <div className="card text-center py-16 bg-primary-light border-primary/20">
+                        <div className="card text-center py-16 bg-primary-light border-primary/20 flex-col justify-items-center">
                             <GraduationCap size={64} className="mx-auto mb-4 text-primary opacity-50" />
                             <h2 className="text-2xl font-bold mb-2">You have an Active Mentor!</h2>
                             <p className="text-secondary max-w-md mx-auto mb-8">

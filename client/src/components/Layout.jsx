@@ -280,7 +280,7 @@ const Layout = ({ children }) => {
                 </header>
 
                 {/* Page Content */}
-                <main className="content-wrapper" style={{ paddingBottom: '100px' }}>
+                <main className="content-wrapper">
                     {children}
                 </main>
 
