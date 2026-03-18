@@ -12,12 +12,12 @@ const eventSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['Alumni Meet', 'Webinar', 'Workshop', 'Guest Lecture', 'Seminar', 'Placement Drive', 'Other'],
-        default: 'Webinar'
+        enum: ['Hackathon', 'Company', 'College Event', 'Other'],
+        default: 'Other'
     },
     event_type: { // Explicit mapping from request
         type: String,
-        enum: ['Seminar', 'Workshop', 'Placement Drive', 'Other']
+        enum: ['Hackathon', 'Company', 'College Event', 'Other']
     },
     date: {
         type: Date,
@@ -37,9 +37,18 @@ const eventSchema = new mongoose.Schema({
         enum: ['Online', 'Offline'],
         default: 'Online'
     },
-    organized_by: { // Explicit mapping from request: Admin / Alumni
+    organized_by: { // Admin / Alumni
         type: String,
         enum: ['Admin', 'Alumni']
+    },
+    organizer: String, // Company / Alumni Name
+    duration: String,
+    meetingLink: String, // Zoom/Meet
+    imageUrl: String, // Poster image
+    category: {
+        type: String,
+        enum: ['Farewell', 'Guest Lecture', 'Celebration', 'Technical', 'Career', 'Other'],
+        default: 'Other'
     },
     registration_link: String, // Explicit mapping from request
     requestDetails: {
@@ -89,14 +98,20 @@ const eventSchema = new mongoose.Schema({
 
 // Pre-validate to sync fields before Mongoose validation
 eventSchema.pre('validate', function () {
-    if (this.event_type) this.type = this.event_type;
-    else if (this.type && !this.event_type) this.event_type = ['Seminar', 'Workshop', 'Placement Drive'].includes(this.type) ? this.type : 'Other';
+    // Sync event_type and type
+    if (this.event_type && !this.type) {
+        this.type = this.event_type;
+    } else if (this.type) {
+        this.event_type = this.type;
+    }
 
+    // Sync dates
     if (this.event_date && !this.date) this.date = this.event_date;
     else if (this.date && !this.event_date) this.event_date = this.date;
 
-    if (this.organized_by) {
-        // No direct sync needed, but can be derived if necessary
+    // Force Offline for specific categories if they are College Events
+    if (this.type === 'College Event' && ['Farewell', 'Celebration'].includes(this.category)) {
+        this.mode = 'Offline';
     }
 });
 

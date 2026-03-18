@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const auth = require('../middleware/auth');
+const upload = require('../middleware/uploadMiddleware');
 
 // @route   GET api/users/me
 // @desc    Get current user profile
@@ -27,5 +28,10 @@ router.get('/:id', auth, userController.getUserById);
 // @desc    Deactivate current user account
 // @access  Private
 router.post('/deactivate', auth, userController.deactivateMe);
+
+// @route   POST api/users/resume-upload
+// @desc    Upload resume to Cloudinary
+// @access  Private
+router.post('/resume-upload', auth, upload.single('resume'), userController.uploadResume);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
+import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, User, GraduationCap, Briefcase, Phone, MapPin, Building, Linkedin, Github } from 'lucide-react';
 
@@ -41,12 +42,29 @@ const Register = () => {
         linkedin: '',
         github: ''
     });
-    const { studentSignup, alumniSignup } = useContext(AuthContext);
+    const { studentSignup, alumniSignup, googleLogin } = useContext(AuthContext);
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            setError('');
+            setLoading(true);
+            await googleLogin(credentialResponse.credential, role);
+            navigate('/dashboard');
+        } catch (err) {
+            setError(err.response?.data?.msg || 'Google Signup Failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleError = () => {
+        setError('Google Signup Failed');
+    };
 
     const onSubmit = async e => {
         e.preventDefault();
@@ -355,6 +373,28 @@ const Register = () => {
                             >
                                 {loading ? 'Creating Account...' : 'Create Account'}
                             </button>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="relative my-3">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-200"></div>
+                                </div>
+                                <div className="relative flex justify-center text-xs text-gray-400">
+                                    <span className="bg-white px-3">or sign up with</span>
+                                </div>
+                            </div>
+
+                            {/* Google Login */}
+                            <div className="flex justify-center w-full">
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={handleGoogleError}
+                                    useOneTap={false}
+                                    text="signup_with"
+                                    shape="rectangular"
+                                    width="100%"
+                                />
                             </div>
 
                             <p className="text-center text-sm text-gray-500 pt-2">

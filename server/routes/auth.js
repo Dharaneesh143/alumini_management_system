@@ -17,6 +17,11 @@ router.post('/login', authController.login);
 // @access  Public
 router.post('/admin-login', authController.adminLogin);
 
+// @route   POST api/auth/google-login
+// @desc    Google Login
+// @access  Public
+router.post('/google-login', authController.googleLogin);
+
 // @route   GET api/auth/me
 // @desc    Get current user
 // @access  Private

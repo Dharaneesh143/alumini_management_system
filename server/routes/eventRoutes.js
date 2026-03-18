@@ -40,8 +40,8 @@ const upload = multer({
 
 // @route   POST /api/events
 // @desc    Create a new event
-// @access  Admin
-router.post('/', [auth, adminAuth], eventController.createEvent);
+// @access  Admin / Alumni
+router.post('/', auth, eventController.createEvent);
 
 // @route   GET /api/events
 // @desc    Get all events
@@ -82,6 +82,21 @@ router.post('/:id/presentation', [auth, upload.single('presentation')], eventCon
 // @desc    Add feedback
 // @access  Auth
 router.post('/:id/feedback', auth, eventController.addFeedback);
+
+// @route   POST /api/events/:id/invite
+// @desc    Admin invites alumni to an event
+// @access  Admin
+router.post('/:id/invite', [auth, adminAuth], eventController.inviteAlumni);
+
+// @route   GET /api/events/invitations/me
+// @desc    Get current alumni invitations
+// @access  Alumni
+router.get('/invitations/me', auth, eventController.getAlumniInvitations);
+
+// @route   PUT /api/events/invitations/:id
+// @desc    Alumni responds to an invitation
+// @access  Alumni
+router.put('/invitations/:id', auth, eventController.respondToInvitation);
 
 module.exports = router;
 

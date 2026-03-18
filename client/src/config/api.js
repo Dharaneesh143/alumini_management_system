@@ -73,11 +73,13 @@ export const API_ENDPOINTS = {
     STUDENT_SIGNUP: '/api/auth/register',
     ALUMNI_LOGIN: '/api/auth/login',
     ALUMNI_SIGNUP: '/api/auth/register',
+    GOOGLE_LOGIN: '/api/auth/google-login',
 
     // Users
     GET_ME: '/api/users/me',
     GET_USERS: '/api/users',
     UPDATE_PROFILE: '/api/users/profile',
+    RESUME_UPLOAD: '/api/users/resume-upload',
 
     // Jobs
     GET_JOBS: '/api/jobs',

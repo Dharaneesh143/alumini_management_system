@@ -102,6 +102,18 @@ export const AuthProvider = ({ children }) => {
 
     const alumniSignup = async (userData) => {
         const res = await api.post(API_ENDPOINTS.ALUMNI_SIGNUP, { ...userData, role: 'alumni' });
+        localStorage.setItem('token_alumni', res.data.token);
+        sessionStorage.setItem('activeRole', 'alumni');
+        setUser(res.data.user);
+        return res.data;
+    };
+
+    const googleLogin = async (idToken, role) => {
+        const res = await api.post(API_ENDPOINTS.GOOGLE_LOGIN, { idToken, role });
+        const userRole = res.data.user.role;
+        localStorage.setItem(`token_${userRole}`, res.data.token);
+        sessionStorage.setItem('activeRole', userRole);
+        setUser(res.data.user);
         return res.data;
     };
 
@@ -140,6 +152,7 @@ export const AuthProvider = ({ children }) => {
             alumniLogin,
             studentSignup,
             alumniSignup,
+            googleLogin,
             register,
             logout,
             refreshUser
