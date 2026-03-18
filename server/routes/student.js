@@ -30,8 +30,9 @@ router.get('/applications', studentController.getAppliedJobs);
 router.get('/stats', studentController.getDashboardStats);
 router.get('/alumni-discovery', studentController.getVerifiedAlumni);
 
-// Resume (New)
+// Resume
+const userController = require('../controllers/userController');
 const upload = require('../middleware/upload');
-router.post('/resume', upload.single('resume'), studentController.uploadResume);
+router.post('/resume', upload.single('resume'), userController.uploadResume);
 
 module.exports = router;

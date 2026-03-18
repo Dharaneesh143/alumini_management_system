@@ -4,25 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Configure Multer for Chat Media
-const chatStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        let folder = 'uploads/chat/docs';
-        if (file.mimetype.startsWith('image/')) folder = 'uploads/chat/images';
-        else if (file.mimetype.startsWith('audio/')) folder = 'uploads/chat/voice';
-        cb(null, folder);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `chat-${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
-
-const uploadChat = multer({
-    storage: chatStorage,
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
-}).single('file');
-
-exports.uploadChatMiddleware = uploadChat;
+const upload = require('../middleware/upload');
+exports.uploadChatMiddleware = upload.single('file');
 
 // Request Mentorship
 exports.requestMentorship = async (req, res) => {

@@ -251,7 +251,7 @@ exports.uploadPresentation = async (req, res) => {
 
         event.presentations.push({
             fileName: req.file.originalname,
-            fileUrl: `/uploads/events/${req.file.filename}`,
+            fileUrl: req.file.path,
             uploadedBy: req.user.id
         });
 

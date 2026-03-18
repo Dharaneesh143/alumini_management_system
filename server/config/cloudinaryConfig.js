@@ -9,10 +9,23 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'resumes',
-    allowed_formats: ['pdf', 'doc', 'docx'],
-    resource_type: 'raw', // Use raw for non-image files like PDFs
+  params: async (req, file) => {
+    let folder = 'general';
+    let resource_type = 'auto';
+
+    if (file.fieldname === 'resume') folder = 'resumes';
+    else if (file.fieldname === 'presentation') folder = 'events';
+    else if (file.fieldname === 'file') {
+      if (file.mimetype.startsWith('image/')) folder = 'chat/images';
+      else if (file.mimetype.startsWith('audio/')) folder = 'chat/voice';
+      else folder = 'chat/docs';
+    }
+
+    return {
+      folder: `alumni_portal/${folder}`,
+      allowed_formats: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'jpg', 'png', 'mp3', 'wav'],
+      resource_type: 'auto',
+    };
   },
 });
 

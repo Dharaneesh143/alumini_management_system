@@ -159,8 +159,9 @@ exports.uploadResume = async (req, res) => {
             return res.status(404).json({ msg: 'Student not found' });
         }
 
-        const resumeUrl = `/uploads/resumes/${req.file.filename}`;
+        const resumeUrl = req.file.path;
         student.profile.resumeUrl = resumeUrl;
+        student.resume = resumeUrl; // Sync top-level field too
         await student.save();
 
         res.json({ msg: 'Resume uploaded successfully', resumeUrl });
