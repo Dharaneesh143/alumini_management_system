@@ -51,6 +51,22 @@ exports.updateProfile = async (req, res) => {
     }
 };
 
+// Dismiss the "Enable Mentorship" banner (stored in DB, not localStorage)
+exports.dismissMentorshipBanner = async (req, res) => {
+    try {
+        const alumni = await User.findByIdAndUpdate(
+            req.user.id,
+            { $set: { mentorshipBannerDismissed: true } },
+            { new: true, select: '-password' }
+        );
+        if (!alumni) return res.status(404).json({ msg: 'User not found' });
+        res.json({ mentorshipBannerDismissed: alumni.mentorshipBannerDismissed });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 // Post a Job
 exports.postJob = async (req, res) => {
     try {

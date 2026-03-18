@@ -70,8 +70,10 @@ body {
   /* Application Colors */
   --primary: var(--primary-600);
   --primary-hover: var(--primary-700);
-  --background: var(--gray-50);
+  --background: #eef2f9;
+  --background-alt: #f4f7ff;
   --surface: #ffffff;
+  --surface-alt: #f8faff;
   --text-main: var(--gray-900);
   --text-secondary: var(--gray-600);
   --text-muted: var(--gray-500);
@@ -179,7 +181,7 @@ a:hover {
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background: var(--background);
+  background: linear-gradient(135deg, #eef2f9 0%, #f0f4ff 50%, #e8edf8 100%);
 }
 
 .main-content {
@@ -195,6 +197,8 @@ a:hover {
   margin: 0 auto;
   min-height: calc(100vh - var(--topbar-height));
   position: relative;
+  /* Matches the body background so pages blend seamlessly */
+  background: transparent;
 }
 
 

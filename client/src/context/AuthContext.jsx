@@ -12,31 +12,41 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const getActiveRole = () => {
+        // Always check sessionStorage first — set at login/signup time
+        const stored = sessionStorage.getItem('activeRole');
+        if (stored) return stored;
+
+        // Fallback to URL path only for auth-specific pages
         const path = window.location.pathname;
         if (path.startsWith('/admin')) return 'admin';
-        if (path.startsWith('/auth/student') || path.includes('student')) return 'student';
-        if (path.startsWith('/auth/alumni') || path.includes('alumni')) return 'alumni';
-        return sessionStorage.getItem('activeRole') || 'student';
+        if (path.startsWith('/auth/student')) return 'student';
+        if (path.startsWith('/auth/alumni')) return 'alumni';
+
+        return 'student'; // Final fallback
     };
 
     const checkUserLoggedIn = async () => {
-        const role = getActiveRole();
-        const token = localStorage.getItem(`token_${role}`);
+        // Try all roles — sessionStorage may be empty after fresh browser open
+        const rolesToTry = ['alumni', 'student', 'admin'];
 
-        if (token) {
+        for (const role of rolesToTry) {
+            const token = localStorage.getItem(`token_${role}`);
+            if (!token) continue;
+
             try {
-                // Temporarily set token in localStorage for the API interceptor if needed
-                // though we will update api.js to handle this better
                 const res = await api.get(API_ENDPOINTS.GET_ME, {
                     headers: { 'x-auth-token': token }
                 });
                 setUser({ ...res.data, role: res.data.role });
                 sessionStorage.setItem('activeRole', res.data.role);
+                setLoading(false);
+                return; // Stop on first successful auth
             } catch (err) {
-                console.error(`Auth check failed for ${role}:`, err);
+                // Token invalid/expired — clean it up
                 localStorage.removeItem(`token_${role}`);
             }
         }
+
         setLoading(false);
     };
 

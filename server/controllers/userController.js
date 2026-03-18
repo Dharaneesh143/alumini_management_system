@@ -50,20 +50,20 @@ exports.updateProfile = async (req, res) => {
             // Ensure profile object exists
             if (!user.profile) user.profile = {};
 
-            // Explicitly update fields to ensure Mongoose change tracking works
-            if (profile.department) user.profile.department = profile.department;
-            if (profile.batch) user.profile.batch = profile.batch;
-            if (profile.cgpa) user.profile.cgpa = profile.cgpa;
-            if (profile.company) user.profile.company = profile.company;
-            if (profile.designation) user.profile.designation = profile.designation;
-            if (profile.linkedin) user.profile.linkedin = profile.linkedin;
-            if (profile.github) user.profile.github = profile.github;
-            if (profile.resumeUrl) user.profile.resumeUrl = profile.resumeUrl;
-            if (profile.yearOfStudy) user.profile.yearOfStudy = profile.yearOfStudy;
-            if (profile.currentLocation) user.profile.currentLocation = profile.currentLocation;
-            if (profile.yearsOfExperience) user.profile.yearsOfExperience = profile.yearsOfExperience;
-            if (profile.companyWebsite) user.profile.companyWebsite = profile.companyWebsite;
-            if (profile.oldCompany) user.profile.oldCompany = profile.oldCompany;
+            // Always update sent fields (don't use 'if' — that skips empty string clears)
+            if ('department' in profile) user.profile.department = profile.department;
+            if ('batch' in profile) user.profile.batch = profile.batch;
+            if ('cgpa' in profile) user.profile.cgpa = profile.cgpa;
+            if ('company' in profile) user.profile.company = profile.company;
+            if ('designation' in profile) user.profile.designation = profile.designation;
+            if ('linkedin' in profile) user.profile.linkedin = profile.linkedin;
+            if ('github' in profile) user.profile.github = profile.github;
+            if ('resumeUrl' in profile) user.profile.resumeUrl = profile.resumeUrl;
+            if ('yearOfStudy' in profile) user.profile.yearOfStudy = profile.yearOfStudy;
+            if ('currentLocation' in profile) user.profile.currentLocation = profile.currentLocation;
+            if ('yearsOfExperience' in profile) user.profile.yearsOfExperience = profile.yearsOfExperience;
+            if ('companyWebsite' in profile) user.profile.companyWebsite = profile.companyWebsite;
+            if ('oldCompany' in profile) user.profile.oldCompany = profile.oldCompany;
 
             // Handle skills array explicitly
             if (profile.skills) {
@@ -72,14 +72,17 @@ exports.updateProfile = async (req, res) => {
                     : profile.skills.split(',').map(s => s.trim());
             }
 
-            // Sync top-level fields for convenience/legacy
+            // Sync top-level fields — both student and alumni
+            if ('department' in profile) user.department = profile.department;
+            if ('batch' in profile) {
+                user.batch = profile.batch;
+                if (user.role === 'alumni') user.passedOutYear = profile.batch;
+            }
             if (user.role === 'alumni') {
-                if (profile.batch) user.passedOutYear = profile.batch;
-                if (profile.company) user.currentCompany = profile.company;
-                if (profile.designation) user.jobRole = profile.designation;
+                if ('company' in profile) user.currentCompany = profile.company;
+                if ('designation' in profile) user.jobRole = profile.designation;
             } else if (user.role === 'student') {
-                if (profile.department) user.department = profile.department;
-                if (profile.batch) user.batch = profile.batch;
+                if ('yearOfStudy' in profile) user.yearOfStudy = profile.yearOfStudy;
             }
         }
 
