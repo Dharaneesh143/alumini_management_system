@@ -20,7 +20,7 @@ import {
     Users,
     Eye
 } from 'lucide-react';
-import api, { API_BASE_URL } from '../../config/api';
+import api, { API_BASE_URL, getFileUrl } from '../../config/api';
 
 const StudentDetailView = () => {
     const { id } = useParams();
@@ -359,7 +359,7 @@ const StudentDetailView = () => {
                                                 {(student?.profile?.resumeUrl || student?.resumeUrl).split('/').pop()}
                                             </span>
                                             <a
-                                                href={`${API_BASE_URL}${student?.profile?.resumeUrl || student?.resumeUrl}`}
+                                                href={getFileUrl(student?.profile?.resumeUrl || student?.resumeUrl)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-primary hover:text-primary-dark"
@@ -369,7 +369,7 @@ const StudentDetailView = () => {
                                             </a>
                                         </div>
                                         <a
-                                            href={`${API_BASE_URL}${student?.profile?.resumeUrl || student?.resumeUrl}`}
+                                            href={getFileUrl(student?.profile?.resumeUrl || student?.resumeUrl)}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="btn btn-sm btn-outline w-full flex items-center justify-center gap-2"

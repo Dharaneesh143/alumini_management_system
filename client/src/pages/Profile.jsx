@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import api, { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, FileText, Download, Upload } from 'lucide-react';
 
@@ -264,6 +264,37 @@ const Profile = () => {
                             </>
                         )}
 
+                        {user?.activeMentorship && user?.role === 'student' && (
+                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-[2rem] border border-indigo-100 shadow-sm">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-indigo-600 font-black text-2xl shadow-sm border border-indigo-200">
+                                            {user.activeMentorship.mentorName?.charAt(0)}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-extrabold text-gray-900 text-lg">{user.activeMentorship.mentorName}</p>
+                                            <p className="text-sm text-gray-600 font-bold">{user.activeMentorship.mentorRole} at {user.activeMentorship.mentorCompany}</p>
+                                        </div>
+                                        <button 
+                                            type="button"
+                                            onClick={() => navigate(`/mentorship/conversation/${user.activeMentorship.mentorshipId}`)}
+                                            className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-md active:scale-95"
+                                        >
+                                            Chat with Mentor
+                                        </button>
+                                    </div>
+                                    <div className="mt-5 pt-5 border-t border-indigo-100/50 flex flex-wrap gap-3">
+                                        <div className="text-[10px] text-indigo-700 bg-indigo-50/50 px-4 py-2 rounded-xl border border-indigo-100 font-black uppercase tracking-wider">
+                                            Topic: <span className="text-gray-900">{user.activeMentorship.mentorshipTopic}</span>
+                                        </div>
+                                        <div className="text-[10px] text-indigo-700 bg-indigo-50/50 px-4 py-2 rounded-xl border border-indigo-100 font-black uppercase tracking-wider">
+                                            Email: <span className="text-gray-900">{user.activeMentorship.mentorEmail}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Professional Information (for Alumni) */}
                         {user?.role === 'alumni' && (
                             <>
@@ -475,7 +506,7 @@ const Profile = () => {
                                                     </div>
                                                 ) : (
                                                     <img
-                                                        src={`${api.defaults.baseURL}${user.profile?.resumeUrl || user.resumeUrl}`}
+                                                        src={getFileUrl(user.profile?.resumeUrl || user.resumeUrl)}
                                                         alt="Resume Preview"
                                                         className="max-h-full object-contain rounded-xl"
                                                         onError={(e) => {
@@ -487,7 +518,7 @@ const Profile = () => {
                                             </div>
 
                                             <a
-                                                href={`${api.defaults.baseURL}${user.profile?.resumeUrl || user.resumeUrl}`}
+                                                href={getFileUrl(user.profile?.resumeUrl || user.resumeUrl)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-2 text-white px-6 py-2 rounded-full font-bold hover:bg-primary-dark transition-all shadow-md"

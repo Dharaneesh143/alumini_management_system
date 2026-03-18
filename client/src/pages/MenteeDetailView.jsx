@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
-import api, { API_BASE_URL } from '../config/api';
+import api, { API_BASE_URL, getFileUrl } from '../config/api';
 import MentorshipConversation from './MentorshipConversation';
 import {
     User,
@@ -19,7 +19,9 @@ import {
     Award,
     Sparkles,
     AlertTriangle,
-    ExternalLink
+    ExternalLink,
+    Globe,
+    X
 } from 'lucide-react';
 
 const MenteeDetailView = () => {
@@ -221,11 +223,11 @@ const MenteeDetailView = () => {
                             </div>
 
                             {/* Resume Download */}
-                            {mentorship.resumeUrl && (
+                            {(student?.profile?.resumeUrl || mentorship.resumeUrl) && (
                                 <>
                                     <div className="border-t border-gray-200"></div>
                                     <a
-                                        href={`${API_BASE_URL}/${mentorship.resumeUrl}`}
+                                        href={getFileUrl(student?.profile?.resumeUrl || mentorship.resumeUrl)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all group"
@@ -294,24 +296,52 @@ const MenteeDetailView = () => {
                         )}
 
                         {activeTab === 'profile' && (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="bg-white rounded-[24px] shadow-xl border border-gray-100 p-8">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                        <FileText size={20} className="text-indigo-600" />
-                                        Student Resume Preview
-                                    </h3>
-                                    {mentorship.resumeUrl ? (
-                                        <div className="aspect-[3/4] w-full border-2 border-gray-200 rounded-2xl overflow-hidden shadow-inner bg-gray-50">
+                            <div className="h-[800px] bg-white rounded-3xl border border-gray-200 overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+                                {/* Header with Actions */}
+                                <div className="p-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
+                                            <FileText size={16} />
+                                        </div>
+                                        <span className="font-black text-gray-900 uppercase tracking-widest text-[10px]">Resume Preview</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <a 
+                                            href={getFileUrl(student?.profile?.resumeUrl || mentorship?.resumeUrl)} 
+                                            target="_blank" 
+                                            rel="noreferrer"
+                                            className="btn btn-sm btn-ghost text-xs flex items-center gap-2 hover:bg-white"
+                                        >
+                                            <Download size={14} /> Download
+                                        </a>
+                                        <button 
+                                            onClick={() => {
+                                                const url = getFileUrl(student?.profile?.resumeUrl || mentorship?.resumeUrl);
+                                                window.open(url, '_blank');
+                                            }}
+                                            className="btn btn-sm btn-primary text-xs flex items-center gap-2 px-4 shadow-lg shadow-indigo-200"
+                                        >
+                                            <Globe size={14} /> Open Fullscreen
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Preview Container */}
+                                <div className="flex-1 bg-gray-100 relative group overflow-auto p-4 md:p-8 flex justify-center">
+                                    {(student?.profile?.resumeUrl || mentorship?.resumeUrl) ? (
+                                        <div className="w-full max-w-4xl bg-white shadow-2xl rounded-sm border border-gray-200 h-full relative group/resume">
                                             <iframe
-                                                src={`${API_BASE_URL}/${mentorship.resumeUrl}`}
-                                                className="w-full h-full border-none"
-                                                title="Resume Viewer"
+                                                src={getFileUrl(student?.profile?.resumeUrl || mentorship?.resumeUrl)}
+                                                className="w-full h-full border-none pointer-events-auto"
+                                                title="Student Resume"
                                             />
                                         </div>
                                     ) : (
-                                        <div className="p-12 text-center text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
-                                            <FileText size={48} className="mx-auto mb-4 text-gray-300" />
-                                            <p className="font-medium`">No resume uploaded for this request.</p>
+                                        <div className="flex flex-col items-center justify-center h-full text-secondary">
+                                            <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4 opacity-40">
+                                                <FileText size={40} />
+                                            </div>
+                                            <p className="font-black uppercase tracking-widest text-xs opacity-50 text-center">No resume uploaded by the student</p>
                                         </div>
                                     )}
                                 </div>

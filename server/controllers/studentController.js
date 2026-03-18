@@ -160,6 +160,7 @@ exports.uploadResume = async (req, res) => {
         }
 
         const resumeUrl = req.file.path;
+        if (!student.profile) student.profile = {};
         student.profile.resumeUrl = resumeUrl;
         student.resume = resumeUrl; // Sync top-level field too
         await student.save();

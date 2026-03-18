@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import api, { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import {
     Plus,
     Calendar as CalendarIcon,

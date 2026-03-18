@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import api, { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import {
     Calendar as CalendarIcon,
     MapPin,
@@ -133,7 +133,7 @@ const Events = () => {
                                 {/* Image / Poster Area */}
                                 <div className="h-56 relative overflow-hidden">
                                     <img
-                                        src={event.imageUrl || 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?w=800&auto=format&fit=crop'}
+                                        src={getFileUrl(event.imageUrl) || 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?w=800&auto=format&fit=crop'}
                                         alt={event.title}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     />
@@ -232,7 +232,7 @@ const Events = () => {
                         {/* Left Side: Visual/Quick Info */}
                         <div className="md:w-[40%] bg-gray-900 relative">
                             <img
-                                src={selectedEvent.imageUrl || 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?w=800&auto=format&fit=crop'}
+                                src={getFileUrl(selectedEvent.imageUrl) || 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?w=800&auto=format&fit=crop'}
                                 alt=""
                                 className="absolute inset-0 w-full h-full object-cover opacity-40"
                             />

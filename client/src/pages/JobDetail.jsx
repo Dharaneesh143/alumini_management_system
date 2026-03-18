@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import api, { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import { AuthContext } from '../context/AuthContext.jsx';
 import {
     MapPin, Building2, Briefcase, Calendar,
@@ -164,7 +164,7 @@ const JobDetail = () => {
                                     {/* Enhanced Company Logo */}
                                     <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg">
                                         {job.companyLogo ? (
-                                            <img src={`${api.defaults.baseURL}${job.companyLogo}`} alt={job.company} className="w-full h-full object-contain p-3" />
+                                            <img src={getFileUrl(job.companyLogo)} alt={job.company} className="w-full h-full object-contain p-3" />
                                         ) : (
                                             <Building2 className="w-14 h-14 text-blue-500" />
                                         )}
@@ -308,7 +308,7 @@ const JobDetail = () => {
                                         </div>
                                     </div>
                                     <a
-                                        href={`${api.defaults.baseURL}${job.jdPdf}`}
+                                        href={getFileUrl(job.jdPdf)}
                                         target="_blank"
                                         rel="noreferrer"
                                         className="bg-white text-blue-600 px-8 py-4 rounded-2xl font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-3 border-2 border-blue-200 hover:border-blue-300 hover:scale-105"

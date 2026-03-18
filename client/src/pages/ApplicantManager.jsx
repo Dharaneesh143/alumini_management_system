@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api, { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import {
     User, FileText, Download, CheckCircle,
     XCircle, Phone, Globe, MessageSquare,
     ArrowLeft, Calendar, Mail, Search,
-    Filter, ChevronRight, Briefcase
+    Filter, ChevronRight, Briefcase, Eye, X
 } from 'lucide-react';
 
 const ApplicantManager = () => {
@@ -16,6 +16,7 @@ const ApplicantManager = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
+    const [viewingResumeUrl, setViewingResumeUrl] = useState(null);
 
     useEffect(() => {
         fetchData();
@@ -140,6 +141,14 @@ const ApplicantManager = () => {
                                                     <Calendar size={14} className="text-blue-500" />
                                                     Applied {new Date(app.appliedAt).toLocaleDateString()}
                                                 </p>
+                                                {app.studentId?.activeMentorship && (
+                                                    <div className="mt-2 flex items-center gap-2 px-3 py-1 bg-purple-50 text-purple-600 rounded-lg border border-purple-100 w-fit">
+                                                        <User size={12} className="text-purple-500" />
+                                                        <span className="text-[11px] font-bold">
+                                                            Mentored by {app.studentId.activeMentorship.mentorName} ({app.studentId.activeMentorship.mentorCompany})
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -172,27 +181,33 @@ const ApplicantManager = () => {
 
                                         <div className="flex flex-col justify-center gap-3">
                                             {/* Preview & Download */}
-                                            <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100 flex items-center justify-center h-20 overflow-hidden mb-1">
+                                            <div 
+                                                onClick={() => setViewingResumeUrl(getFileUrl(app.resumeUrl))}
+                                                className="bg-gray-50 rounded-2xl p-3 border border-gray-100 flex items-center justify-center h-20 overflow-hidden mb-1 group/preview relative cursor-zoom-in"
+                                            >
                                                 {app.resumeUrl?.toLowerCase().endsWith('.pdf') ? (
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 transition-transform duration-300 group-hover/preview:scale-110">
                                                         <FileText size={20} className="text-red-500" />
                                                         <span className="text-[10px] font-bold text-gray-500 uppercase">PDF Resume</span>
                                                     </div>
                                                 ) : (
                                                     <img
-                                                        src={`${api.defaults.baseURL}${app.resumeUrl}`}
+                                                        src={getFileUrl(app.resumeUrl)}
                                                         alt="Candidate Resume"
-                                                        className="max-h-full object-contain rounded-lg shadow-sm"
+                                                        className="max-h-full object-contain rounded-lg shadow-sm transition-all duration-500 group-hover/preview:scale-125 group-hover/preview:rotate-1"
                                                         onError={(e) => {
                                                             e.target.onerror = null;
                                                             e.target.src = 'https://via.placeholder.com/100?text=Preview';
                                                         }}
                                                     />
                                                 )}
+                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity duration-300 backdrop-blur-[2px]">
+                                                    <Eye size={20} className="text-white drop-shadow-lg" />
+                                                </div>
                                             </div>
 
                                             <a
-                                                href={`${api.defaults.baseURL}${app.resumeUrl}`}
+                                                href={getFileUrl(app.resumeUrl)}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 className="flex items-center justify-center gap-2 py-3 bg-gray-900 text-white rounded-2xl font-bold hover:bg-black transition-all shadow-md active:scale-95 text-xs"
@@ -241,6 +256,59 @@ const ApplicantManager = () => {
                     )}
                 </div>
             </main>
+
+            {/* Resume Viewer Modal */}
+            {viewingResumeUrl && (
+                <div 
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] p-4 flex items-center justify-center animate-in fade-in duration-300"
+                    onClick={() => setViewingResumeUrl(null)}
+                >
+                    <div 
+                        className="bg-white rounded-[2.5rem] w-full max-w-5xl h-[90vh] overflow-hidden flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                                    <FileText size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-gray-900 leading-none mb-1 uppercase tracking-widest text-xs">Applicant Resume</h3>
+                                    <p className="text-gray-500 text-[10px] font-bold">Reviewing candidate documentation</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <a 
+                                    href={viewingResumeUrl} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="btn btn-sm btn-outline border-gray-200 text-gray-600 hover:bg-white"
+                                >
+                                    <Download size={14} /> Download
+                                </a>
+                                <button 
+                                    onClick={() => setViewingResumeUrl(null)}
+                                    className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 bg-gray-100 flex justify-center p-4 md:p-8 overflow-auto">
+                            <div className="w-full max-w-4xl bg-white shadow-2xl h-full border border-gray-200 rounded-sm">
+                                <iframe 
+                                    src={viewingResumeUrl}
+                                    className="w-full h-full border-none"
+                                    title="Resume Preview"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

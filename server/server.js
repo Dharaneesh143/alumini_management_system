@@ -138,6 +138,10 @@ app.use('/api/college-info', require('./routes/collegeInfoRoutes'));
 
 app.get('/test', (req, res) => res.send('Server working'));
 app.get('/', (req, res) => res.send('Alumni Portal API is Running'));
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
+    res.setHeader('Content-Security-Policy', "default-src 'self'");
+    res.status(404).json({ msg: 'Not supported' });
+});
 
 // Global Error Handler
 app.use((err, req, res, next) => {
