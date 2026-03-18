@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { Link } from 'react-router-dom';
-import api, { API_ENDPOINTS, API_BASE_URL } from '../config/api';
+import api, { API_ENDPOINTS, API_BASE_URL, getFileUrl } from '../config/api';
 import {
     Clock,
     CheckCircle,
@@ -22,6 +22,7 @@ const MentorshipRequests = () => {
     const [selectedRequestForEnd, setSelectedRequestForEnd] = useState(null);
     const [endFeedback, setEndFeedback] = useState('');
     const [viewingRequest, setViewingRequest] = useState(null);
+    const [viewingResumeUrl, setViewingResumeUrl] = useState(null);
     const [respondingTo, setRespondingTo] = useState(null);
     const [responseMessage, setResponseMessage] = useState('');
 
@@ -137,7 +138,7 @@ const MentorshipRequests = () => {
                                         <div className="flex items-center gap-4 text-sm text-secondary mb-3">
                                             <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(req.createdAt).toLocaleDateString()}</span>
                                             {user.role === 'alumni' && (
-                                                <span>🎓 {req.student?.department} • {req.student?.graduationYear}</span>
+                                                <span>🎓 {req.student?.department} • {req.student?.profile?.batch || req.student?.graduationYear}</span>
                                             )}
                                             {user.role === 'student' && (
                                                 <span>💼 {req.alumni?.currentCompany} • {req.alumni?.jobRole}</span>
@@ -145,21 +146,18 @@ const MentorshipRequests = () => {
                                             <span className="badge badge-outline text-[10px]">{req.mentorshipTopic}</span>
                                         </div>
 
-                                        {/* Interaction Section (Post-Acceptance) */}
-                                        {(req.status === 'accepted' || req.status === 'Active') && (
-                                            <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                                        {/* Interaction Section */}
+                                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
                                                 <div className="flex items-center gap-4">
                                                     {user.role === 'alumni' && (
                                                         <div className="flex items-center gap-3">
-                                                            {req.student?.resumeUrl && (
-                                                                <a
-                                                                    href={`${API_BASE_URL}${req.student.resumeUrl}`}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
+                                                            {(req.student?.profile?.resumeUrl || req.resumeUrl) && (
+                                                                <button
+                                                                    onClick={() => setViewingResumeUrl(getFileUrl(req.student?.profile?.resumeUrl || req.resumeUrl))}
                                                                     className="btn btn-sm btn-outline flex items-center gap-2"
                                                                 >
-                                                                    <Eye size={14} /> Resume
-                                                                </a>
+                                                                    <Eye size={14} /> View Resume
+                                                                </button>
                                                             )}
                                                             {req.student?.profile?.linkedin && (
                                                                 <a
@@ -185,18 +183,21 @@ const MentorshipRequests = () => {
                                                             )}
                                                         </div>
                                                     )}
-                                                    <Link
-                                                        to={`/mentorship/conversation/${req._id}`}
-                                                        className="btn btn-sm btn-primary flex items-center gap-2"
-                                                    >
-                                                        <MessageSquare size={14} /> Open Conversation
-                                                    </Link>
+                                                    {(req.status === 'accepted' || req.status === 'Active') && (
+                                                        <Link
+                                                            to={`/mentorship/conversation/${req._id}`}
+                                                            className="btn btn-sm btn-primary flex items-center gap-2"
+                                                        >
+                                                            <MessageSquare size={14} /> Open Conversation
+                                                        </Link>
+                                                    )}
                                                 </div>
-                                                <div className="bg-primary-light p-3 rounded text-xs text-primary">
-                                                    <strong>Mentorship active:</strong> You can now view the resume and start a conversation.
-                                                </div>
+                                                {(req.status === 'accepted' || req.status === 'Active') && (
+                                                    <div className="bg-primary-light p-3 rounded text-xs text-primary">
+                                                        <strong>Mentorship active:</strong> You can now view the resume and start a conversation.
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
 
                                         {req.status !== 'accepted' && req.status !== 'Active' && (
                                             <button
@@ -414,6 +415,59 @@ const MentorshipRequests = () => {
                         >
                             Confirm Removal
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Resume Viewer Modal */}
+            {viewingResumeUrl && (
+                <div 
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] p-4 flex items-center justify-center animate-in fade-in duration-300"
+                    onClick={() => setViewingResumeUrl(null)}
+                >
+                    <div 
+                        className="bg-white rounded-[2.5rem] w-full max-w-5xl h-[90vh] overflow-hidden flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600">
+                                    <FileText size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-gray-900 leading-none mb-1 uppercase tracking-widest text-xs">Resume View</h3>
+                                    <p className="text-gray-500 text-[10px] font-bold">Reviewing student professional document</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <a 
+                                    href={viewingResumeUrl} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="btn btn-sm btn-outline border-gray-200 text-gray-600 hover:bg-white"
+                                >
+                                    <Download size={14} /> Download
+                                </a>
+                                <button 
+                                    onClick={() => setViewingResumeUrl(null)}
+                                    className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 bg-gray-100 flex justify-center p-4 md:p-8 overflow-auto">
+                            <div className="w-full max-w-4xl bg-white shadow-2xl h-full border border-gray-200 rounded-sm">
+                                <iframe 
+                                    src={viewingResumeUrl}
+                                    className="w-full h-full border-none"
+                                    title="Resume Preview"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

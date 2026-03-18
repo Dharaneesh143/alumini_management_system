@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Mentorship = require('../models/Mentorship');
 
 // Get current user profile
 exports.getMe = async (req, res) => {
@@ -16,7 +17,29 @@ exports.getMe = async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
-        res.json(user);
+
+        const userObj = user.toObject();
+
+        if (req.user.role === 'student') {
+            const mentorship = await Mentorship.findOne({
+                student: user._id,
+                status: 'Active'
+            }).populate('alumni', 'name email currentCompany jobRole mentorSettings');
+            
+            if (mentorship) {
+                userObj.activeMentorship = {
+                    mentorshipId: mentorship._id,
+                    mentorId: mentorship.alumni?._id,
+                    mentorName: mentorship.alumni?.name,
+                    mentorCompany: mentorship.alumni?.currentCompany,
+                    mentorRole: mentorship.alumni?.jobRole,
+                    mentorshipTopic: mentorship.mentorshipTopic,
+                    mentorEmail: mentorship.alumni?.email
+                };
+            }
+        }
+
+        res.json(userObj);
     } catch (err) {
         console.error('GetMe Error:', err.message);
         res.status(500).json({ msg: 'Server Error', error: err.message });
@@ -125,7 +148,28 @@ exports.getUserById = async (req, res) => {
             return res.status(403).json({ msg: 'Access denied. You can only view your own profile.' });
         }
 
-        res.json(user);
+        const userObj = user.toObject();
+
+        if (user.role === 'student') {
+            const mentorship = await Mentorship.findOne({
+                student: user._id,
+                status: 'Active'
+            }).populate('alumni', 'name email currentCompany jobRole mentorSettings');
+            
+            if (mentorship) {
+                userObj.activeMentorship = {
+                    mentorshipId: mentorship._id,
+                    mentorId: mentorship.alumni?._id,
+                    mentorName: mentorship.alumni?.name,
+                    mentorCompany: mentorship.alumni?.currentCompany,
+                    mentorRole: mentorship.alumni?.jobRole,
+                    mentorshipTopic: mentorship.mentorshipTopic,
+                    mentorEmail: mentorship.alumni?.email
+                };
+            }
+        }
+
+        res.json(userObj);
     } catch (err) {
         console.error(err.message);
         if (err.kind == 'ObjectId') {
@@ -155,10 +199,15 @@ exports.deactivateMe = async (req, res) => {
 // Upload Resume
 exports.uploadResume = async (req, res) => {
     try {
+        console.log('=== RESUME UPLOAD STARTED ===');
+        if (req.file) console.log('File received:', req.file.path);
+        else console.log('No file received in req.file');
+
         if (!req.file) {
             return res.status(400).json({ msg: 'No file uploaded' });
         }
 
+        console.log('Searching for user:', req.user.id);
         const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
@@ -169,7 +218,9 @@ exports.uploadResume = async (req, res) => {
         if (!user.profile) user.profile = {};
         user.profile.resumeUrl = req.file.path;
 
+        console.log('Saving user profile with resume URL:', req.file.path);
         await user.save();
+        console.log('User saved successfully');
 
         res.json({
             msg: 'Resume uploaded successfully',

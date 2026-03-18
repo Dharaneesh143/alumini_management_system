@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api, { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import { AuthContext } from '../context/AuthContext.jsx';
 import {
     Search, Briefcase, Clock, MapPin,
@@ -77,7 +77,7 @@ const JobList = () => {
                     {/* Enhanced Logo */}
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center border-2 border-blue-100 flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300">
                         {job.companyLogo ? (
-                            <img src={`${api.defaults.baseURL}${job.companyLogo}`} alt={job.company} className="w-full h-full object-contain p-2" />
+                            <img src={getFileUrl(job.companyLogo)} alt={job.company} className="w-full h-full object-contain p-2" />
                         ) : (
                             <Building2 className="w-9 h-9 text-blue-500" />
                         )}

@@ -63,6 +63,24 @@ api.interceptors.response.use(
 
 export default api;
 
+/**
+ * Helper to resolve file URLs correctly.
+ * If the path is already a full URL (Cloudinary), returns it as is.
+ * Otherwise, prepends the API_BASE_URL.
+ */
+export const getFileUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    
+    // Ensure the path starts with a single slash for consistent joining
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    
+    // Remove trailing slash from API_BASE_URL if it exists to avoid double slashes
+    const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+    
+    return `${baseUrl}${cleanPath}`;
+};
+
 // API Endpoints - centralized
 export const API_ENDPOINTS = {
     // Auth

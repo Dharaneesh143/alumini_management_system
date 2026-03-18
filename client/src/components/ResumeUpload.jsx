@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api, { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 
 const ResumeUpload = ({ currentResume, onUploadSuccess }) => {
     const [file, setFile] = useState(null);
@@ -69,7 +69,7 @@ const ResumeUpload = ({ currentResume, onUploadSuccess }) => {
                         <span className="text-sm text-indigo-700 truncate font-medium">Current Resume</span>
                     </div>
                     <a 
-                        href={currentResume} 
+                        href={getFileUrl(currentResume)} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition-colors"

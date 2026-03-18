@@ -13,10 +13,15 @@ const fileFilter = (req, file, cb) => {
             cb(new Error('Only images are allowed for company logo'), false);
         }
     } else if (file.fieldname === 'jdPdf' || file.fieldname === 'resume') {
-        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('image/')) {
+        if (
+            file.mimetype === 'application/pdf' || 
+            file.mimetype.startsWith('image/') ||
+            file.mimetype === 'application/msword' ||
+            file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDF and images are allowed'), false);
+            cb(new Error('Only PDF, Word documents, and images are allowed'), false);
         }
     } else {
         cb(null, true);

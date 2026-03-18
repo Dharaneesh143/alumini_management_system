@@ -33,6 +33,8 @@ router.get('/alumni-discovery', studentController.getVerifiedAlumni);
 // Resume
 const userController = require('../controllers/userController');
 const upload = require('../middleware/upload');
-router.post('/resume', upload.single('resume'), userController.uploadResume);
+router.post('/resume', upload.single('resume'), (req, res, next) => {
+    userController.uploadResume(req, res).catch(next);
+});
 
 module.exports = router;

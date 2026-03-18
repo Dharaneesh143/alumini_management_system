@@ -47,7 +47,8 @@ exports.requestMentorship = async (req, res) => {
         }
 
         const student = await User.findById(studentId);
-        const resumeUrl = student?.profile?.resumeUrl || null;
+        // Capture specific resume URL if exists, else top-level resume
+        const resumeUrl = student?.profile?.resumeUrl || student?.resume || null;
 
         const newRequest = new Mentorship({
             studentId: studentId, // Using standardized field name
@@ -99,10 +100,7 @@ exports.getMentorshipRequests = async (req, res) => {
             })
             .map(reqDoc => {
                 const r = reqDoc.toObject();
-                if (req.user.role === 'alumni' && (r.status === 'Pending' || r.status === 'pending')) {
-                    delete r.resumeUrl;
-                    if (r.student && r.student.profile) delete r.student.profile.resumeUrl;
-                }
+                // Removed privacy block that was hiding resumes from mentors
                 return r;
             });
 

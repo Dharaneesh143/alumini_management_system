@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileText, Download, Play, Check, CheckCheck, Trash2 } from 'lucide-react';
-import { API_BASE_URL } from '../config/api';
+import api, { API_BASE_URL, getFileUrl } from '../config/api';
 
 const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) => {
     const formatTime = (date) => {
@@ -13,14 +13,14 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) 
                 return (
                     <div className="relative group/img">
                         <img
-                            src={`${API_BASE_URL}/${message.fileUrl}`}
+                            src={getFileUrl(message.fileUrl)}
                             alt="Sent image"
                             className="rounded-lg max-w-full max-h-[350px] w-auto h-auto object-contain cursor-pointer hover:opacity-95 transition-opacity mx-auto"
                             onClick={() => {
                                 if (onImageClick) {
-                                    onImageClick(`${API_BASE_URL}/${message.fileUrl}`, message.text);
+                                    onImageClick(getFileUrl(message.fileUrl), message.text);
                                 } else {
-                                    window.open(`${API_BASE_URL}/${message.fileUrl}`, '_blank');
+                                    window.open(getFileUrl(message.fileUrl), '_blank');
                                 }
                             }}
                         />
@@ -40,7 +40,7 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) 
                                 </div>
                                 <span className="text-[10px] text-gray-500 mt-1 block">Voice Message</span>
                             </div>
-                            <audio src={`${API_BASE_URL}/${message.fileUrl}`} className="hidden" />
+                            <audio src={getFileUrl(message.fileUrl)} className="hidden" />
                         </div>
                         {message.transcription && (
                             <div className="p-2 bg-white/50 rounded-lg border border-dashed border-black/10 text-xs italic text-gray-600">
@@ -52,7 +52,7 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) 
             case 'file':
                 return (
                     <a
-                        href={`${API_BASE_URL}/${message.fileUrl}`}
+                        href={getFileUrl(message.fileUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 p-3 bg-white/50 rounded-xl border border-black/10 hover:bg-white/80 transition-colors group"

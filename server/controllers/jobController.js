@@ -2,6 +2,7 @@ const Job = require('../models/Job');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const Application = require('../models/Application');
+const Mentorship = require('../models/Mentorship');
 const sendEmail = require('../utils/emailService');
 
 // @route   POST api/jobs
@@ -264,7 +265,33 @@ exports.getJobApplicants = async (req, res) => {
             .populate('studentId', 'name email profile department batch')
             .sort({ appliedAt: -1 });
 
-        res.json(applications);
+        // Fetch active mentorships for all applicants
+        const studentIds = applications.map(app => app.studentId?._id).filter(id => !!id);
+        const activeMentorships = await Mentorship.find({
+            student: { $in: studentIds },
+            status: 'Active'
+        }).populate('alumni', 'name email currentCompany jobRole');
+
+        // Map mentorships to applications
+        const appsWithMentors = applications.map(app => {
+            const appObj = app.toObject();
+            const mentorship = activeMentorships.find(m => 
+                m.student.toString() === app.studentId?._id?.toString()
+            );
+            
+            if (mentorship) {
+                appObj.studentId.activeMentorship = {
+                    mentorName: mentorship.alumni?.name,
+                    mentorCompany: mentorship.alumni?.currentCompany,
+                    mentorRole: mentorship.alumni?.jobRole,
+                    mentorshipTopic: mentorship.mentorshipTopic
+                };
+            }
+            
+            return appObj;
+        });
+
+        res.json(appsWithMentors);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
