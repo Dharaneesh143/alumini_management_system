@@ -16,6 +16,7 @@ import {
     Clock
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
+import ResumeUpload from '../components/ResumeUpload';
 import api, { API_ENDPOINTS } from '../config/api';
 
 const StudentDashboard = () => {
@@ -242,6 +243,14 @@ const StudentDashboard = () => {
                             </div>
                         </div>
                     )}
+
+                    {/* Resume Upload Section */}
+                    <ResumeUpload 
+                        currentResume={user?.profile?.resumeUrl || user?.resume} 
+                        onUploadSuccess={() => {
+                            if (refreshUser) refreshUser();
+                        }}
+                    />
 
                     {/* Profile Completion */}
                     <div className="card">

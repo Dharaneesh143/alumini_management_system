@@ -91,7 +91,8 @@ const Layout = ({ children }) => {
                 { path: '/admin/alumni', label: 'Alumni', icon: UserCheck },
                 { path: '/admin/mentorships', label: 'Mentorships', icon: Users },
                 { path: '/jobs', label: 'Jobs', icon: Briefcase },
-                { path: '/events', label: 'Events', icon: Calendar }
+                { path: '/events', label: 'Events Hub', icon: Calendar },
+                { path: '/admin/events', label: 'Manage Events', icon: Settings }
             ];
         }
 
@@ -101,7 +102,8 @@ const Layout = ({ children }) => {
                 { path: '/mentorship/requests', label: 'Mentorship Requests', icon: GraduationCap },
                 { path: '/mentorship/chats', label: 'My Students', icon: Users },
                 { path: '/jobs/create', label: 'Post Job', icon: PlusCircle },
-                { path: '/events', label: 'Events', icon: Calendar }
+                { path: '/events', label: 'Events Hub', icon: Calendar },
+                { path: '/alumni/events', label: 'Host Events', icon: UserCheck }
             ];
         }
 
@@ -129,7 +131,7 @@ const Layout = ({ children }) => {
                 });
             }
 
-            studentItems.push({ path: '/events', label: 'Events', icon: Calendar });
+            studentItems.push({ path: '/events', label: 'Events Hub', icon: Calendar });
             return studentItems;
         }
 

@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Helper to log to debug.log
 const logToFile = (msg) => {
@@ -29,6 +31,14 @@ exports.register = async (req, res) => {
             companyWebsite, oldCompany,
             profile_image, resume
         } = req.body;
+
+        // Domain checks
+        if ((role === 'student' || !role) && email && !email.toLowerCase().endsWith('@bitsathy.ac.in')) {
+            return res.status(400).json({ msg: 'Students must use their @bitsathy.ac.in email address' });
+        }
+        if (role === 'alumni' && email && email.toLowerCase().endsWith('@bitsathy.ac.in')) {
+            return res.status(400).json({ msg: 'Alumni must use a Alumni email address (e.g., Gmail), not @bitsathy.ac.in' });
+        }
 
         // Check if user exists
         let user = await User.findOne({ email });
@@ -133,6 +143,14 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
+
+        // Domain checks
+        if (role === 'student' && email && !email.toLowerCase().endsWith('@bitsathy.ac.in')) {
+            return res.status(403).json({ msg: 'Students must use their @bitsathy.ac.in email address' });
+        }
+        if (role === 'alumni' && email && email.toLowerCase().endsWith('@bitsathy.ac.in')) {
+            return res.status(403).json({ msg: 'Alumni must use their personal email to login as an alumni.' });
+        }
 
         let user = await User.findOne({ email });
         if (!user) {
@@ -262,6 +280,112 @@ exports.adminLogin = async (req, res) => {
     } catch (err) {
         console.error('💥 Admin Login Error:', err.message);
         res.status(500).send('Server Error');
+    }
+};
+
+// Google Login
+exports.googleLogin = async (req, res) => {
+    try {
+        const { idToken, role } = req.body;
+
+        if (!idToken) {
+            return res.status(400).json({ msg: 'No Google ID Token provided' });
+        }
+
+        // Verify the Google token
+        const ticket = await client.verifyIdToken({
+            idToken: idToken,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+
+        const payload = ticket.getPayload();
+        const { email, name, picture, sub: googleId } = payload;
+
+        // Domain checks
+        if (role === 'student' && email && !email.toLowerCase().endsWith('@bitsathy.ac.in')) {
+            return res.status(403).json({ msg: 'Students must use their @bitsathy.ac.in email address' });
+        }
+        if (role === 'alumni' && email && email.toLowerCase().endsWith('@bitsathy.ac.in')) {
+            return res.status(403).json({ msg: 'Alumni must use their personal email for Google login.' });
+        }
+
+        // Check if user exists
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Create new user if they don't exist
+            // For Google login, we might not have all fields, so we'll use defaults
+            const userData = {
+                name,
+                email,
+                password: await bcrypt.hash(Math.random().toString(36), 10), // Random password
+                role: role || 'student',
+                profile_image: picture,
+                approvalStatus: (role === 'alumni') ? 'pending' : 'approved',
+                profile: {
+                    department: 'N/A',
+                    batch: 'N/A',
+                    company: 'N/A',
+                    designation: 'N/A'
+                }
+            };
+
+            user = new User(userData);
+            await user.save();
+        } else {
+            // If user exists, optionally update their picture if not set
+            if (!user.profile_image) {
+                user.profile_image = picture;
+                await user.save();
+            }
+
+            // Role Check (if role is provided and doesn't match)
+            if (role && user.role !== role) {
+                return res.status(403).json({ msg: `Account exists but role mismatch. Expected ${role}, found ${user.role}` });
+            }
+        }
+
+        // Standard Login Checks (Block/Pending/Deactivated)
+        if (user.role === 'alumni' && user.approvalStatus !== 'approved') {
+            return res.status(403).json({ msg: 'Your alumni account is waiting for admin approval.' });
+        }
+
+        if (user.accountStatus === 'deactivated' || user.accountStatus === 'blocked') {
+            return res.status(403).json({ msg: 'Your account has been deactivated or blocked.' });
+        }
+
+        // Generate JWT
+        const jwtPayload = {
+            user: {
+                id: user.id,
+                role: user.role
+            }
+        };
+
+        jwt.sign(
+            jwtPayload,
+            process.env.JWT_SECRET,
+            { expiresIn: '5h' },
+            (err, token) => {
+                if (err) throw err;
+                res.json({
+                    token,
+                    user: {
+                        id: user.id,
+                        _id: user._id,
+                        name: user.name,
+                        email: user.email,
+                        role: user.role,
+                        approvalStatus: user.approvalStatus,
+                        profile_image: user.profile_image
+                    }
+                });
+            }
+        );
+
+    } catch (err) {
+        console.error('Google Login Error:', err.message);
+        res.status(500).json({ msg: 'Google Authentication failed', error: err.message });
     }
 };
 

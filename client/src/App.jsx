@@ -13,6 +13,7 @@ import ApplicantManager from './pages/ApplicantManager';
 import Navbar from './components/Navbar';
 import Layout from './components/Layout';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import StudentAuth from './pages/StudentAuth';
 import AlumniAuth from './pages/AlumniAuth';
 import MentorshipList from './pages/MentorshipList';
@@ -26,184 +27,193 @@ import MenteeDetailView from './pages/MenteeDetailView';
 import AlumniManagement from './pages/admin/AlumniManagement';
 import MentorshipManagement from './pages/admin/MentorshipManagement';
 import Events from './pages/Events';
+import AlumniEvents from './pages/AlumniEvents';
+import AdminEvents from './pages/AdminEvents';
 import BlockedMembers from './pages/admin/BlockedMembers';
 import BlockedStudents from './pages/admin/BlockedStudents';
 import PendingJobs from './pages/admin/PendingJobs';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public routes with simple navbar */}
-          <Route path="/" element={
-            <>
-              <Navbar />
-              <Landing />
-            </>
-          } />
-          <Route path="/auth/student" element={
-            <>
-              <Navbar />
-              <StudentAuth />
-            </>
-          } />
-          <Route path="/auth/alumni" element={
-            <>
-              <Navbar />
-              <AlumniAuth />
-            </>
-          } />
-          <Route path="/login" element={
-            <>
-              <Navbar />
-              <Login />
-            </>
-          } />
-          <Route path="/register" element={
-            <>
-              <Navbar />
-              <Register />
-            </>
-          } />
-          <Route path="/admin/login" element={
-            <>
-              <Navbar />
-              <AdminLogin />
-            </>
-          } />
-          <Route path="/auth/admin/login" element={
-            <>
-              <Navbar />
-              <AdminLogin />
-            </>
-          } />
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"}>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            {/* Public routes with simple navbar */}
+            <Route path="/" element={
+              <>
+                <Navbar />
+                <Landing />
+              </>
+            } />
+            <Route path="/auth/student" element={
+              <>
+                <Navbar />
+                <StudentAuth />
+              </>
+            } />
+            <Route path="/auth/alumni" element={
+              <>
+                <Navbar />
+                <AlumniAuth />
+              </>
+            } />
+            <Route path="/login" element={
+              <>
+                <Navbar />
+                <Login />
+              </>
+            } />
+            <Route path="/register" element={
+              <>
+                <Navbar />
+                <Register />
+              </>
+            } />
+            <Route path="/admin/login" element={
+              <>
+                <Navbar />
+                <AdminLogin />
+              </>
+            } />
+            <Route path="/auth/admin/login" element={
+              <>
+                <Navbar />
+                <AdminLogin />
+              </>
+            } />
 
-          {/* Authenticated routes with Layout (sidebar + topbar) */}
-          <Route path="/dashboard" element={
-            <Layout>
-              <DashboardHelper />
-            </Layout>
-          } />
-          {/* Admin Routes */}
-          <Route path="/admin/users" element={
-            <Layout>
-              <DashboardHelper />
-            </Layout>
-          } />
-          <Route path="/admin/alumni" element={
-            <Layout>
-              <AlumniManagement />
-            </Layout>
-          } />
-          <Route path="/admin" element={
-            <Layout>
-              <DashboardHelper />
-            </Layout>
-          } />
-          <Route path="/admin/mentorships" element={
-            <Layout>
-              <MentorshipManagement />
-            </Layout>
-          } />
-          <Route path="/admin/students" element={
-            <Layout>
-              <StudentManagement />
-            </Layout>
-          } />
-          <Route path="/admin/blocked-members" element={
-            <Layout>
-              <BlockedMembers />
-            </Layout>
-          } />
-          <Route path="/admin/blocked-students" element={
-            <Layout>
-              <BlockedStudents />
-            </Layout>
-          } />
-          <Route path="/admin/pending-approvals" element={
-            <Layout>
-              <PendingJobs />
-            </Layout>
-          } />
-          <Route path="/admin/events" element={
-            <Layout>
-              <Events />
-            </Layout>
-          } />
-          <Route path="/admin/students/:id" element={
-            <Layout>
-              <StudentDetailView />
-            </Layout>
-          } />
-          <Route path="/admin/alumni/:id" element={
-            <Layout>
-              <AlumniDetailView />
-            </Layout>
-          } />
-          <Route path="/jobs" element={
-            <Layout>
-              <JobList />
-            </Layout>
-          } />
-          <Route path="/jobs/create" element={
-            <Layout>
-              <CreateJob />
-            </Layout>
-          } />
-          <Route path="/jobs/edit/:id" element={
-            <Layout>
-              <CreateJob />
-            </Layout>
-          } />
-          <Route path="/jobs/:id" element={
-            <Layout>
-              <JobDetail />
-            </Layout>
-          } />
-          <Route path="/jobs/:id/applicants" element={
-            <Layout>
-              <ApplicantManager />
-            </Layout>
-          } />
-          <Route path="/profile" element={
-            <Layout>
-              <Profile />
-            </Layout>
-          } />
-          <Route path="/mentorship" element={
-            <Layout>
-              <MentorshipList />
-            </Layout>
-          } />
-          <Route path="/mentorship/requests" element={
-            <Layout>
-              <MentorshipRequests />
-            </Layout>
-          } />
-          <Route path="/mentorship/chats" element={
-            <Layout>
-              <MentorshipChatList />
-            </Layout>
-          } />
-          <Route path="/mentorship/conversation/:id" element={
-            <Layout>
-              <MentorshipConversation />
-            </Layout>
-          } />
-          <Route path="/mentee/:id" element={
-            <Layout>
-              <MenteeDetailView />
-            </Layout>
-          } />
-          <Route path="/events" element={
-            <Layout>
-              <Events />
-            </Layout>
-          } />
-        </Routes>
-      </Router>
-    </AuthProvider>
+            {/* Authenticated routes with Layout (sidebar + topbar) */}
+            <Route path="/dashboard" element={
+              <Layout>
+                <DashboardHelper />
+              </Layout>
+            } />
+            {/* Admin Routes */}
+            <Route path="/admin/users" element={
+              <Layout>
+                <DashboardHelper />
+              </Layout>
+            } />
+            <Route path="/admin/alumni" element={
+              <Layout>
+                <AlumniManagement />
+              </Layout>
+            } />
+            <Route path="/admin" element={
+              <Layout>
+                <DashboardHelper />
+              </Layout>
+            } />
+            <Route path="/admin/mentorships" element={
+              <Layout>
+                <MentorshipManagement />
+              </Layout>
+            } />
+            <Route path="/admin/students" element={
+              <Layout>
+                <StudentManagement />
+              </Layout>
+            } />
+            <Route path="/admin/blocked-members" element={
+              <Layout>
+                <BlockedMembers />
+              </Layout>
+            } />
+            <Route path="/admin/blocked-students" element={
+              <Layout>
+                <BlockedStudents />
+              </Layout>
+            } />
+            <Route path="/admin/pending-approvals" element={
+              <Layout>
+                <PendingJobs />
+              </Layout>
+            } />
+            <Route path="/admin/events" element={
+              <Layout>
+                <AdminEvents />
+              </Layout>
+            } />
+            <Route path="/admin/students/:id" element={
+              <Layout>
+                <StudentDetailView />
+              </Layout>
+            } />
+            <Route path="/admin/alumni/:id" element={
+              <Layout>
+                <AlumniDetailView />
+              </Layout>
+            } />
+            <Route path="/jobs" element={
+              <Layout>
+                <JobList />
+              </Layout>
+            } />
+            <Route path="/jobs/create" element={
+              <Layout>
+                <CreateJob />
+              </Layout>
+            } />
+            <Route path="/jobs/edit/:id" element={
+              <Layout>
+                <CreateJob />
+              </Layout>
+            } />
+            <Route path="/jobs/:id" element={
+              <Layout>
+                <JobDetail />
+              </Layout>
+            } />
+            <Route path="/jobs/:id/applicants" element={
+              <Layout>
+                <ApplicantManager />
+              </Layout>
+            } />
+            <Route path="/profile" element={
+              <Layout>
+                <Profile />
+              </Layout>
+            } />
+            <Route path="/mentorship" element={
+              <Layout>
+                <MentorshipList />
+              </Layout>
+            } />
+            <Route path="/mentorship/requests" element={
+              <Layout>
+                <MentorshipRequests />
+              </Layout>
+            } />
+            <Route path="/mentorship/chats" element={
+              <Layout>
+                <MentorshipChatList />
+              </Layout>
+            } />
+            <Route path="/mentorship/conversation/:id" element={
+              <Layout>
+                <MentorshipConversation />
+              </Layout>
+            } />
+            <Route path="/mentee/:id" element={
+              <Layout>
+                <MenteeDetailView />
+              </Layout>
+            } />
+            <Route path="/events" element={
+              <Layout>
+                <Events />
+              </Layout>
+            } />
+            <Route path="/alumni/events" element={
+              <Layout>
+                <AlumniEvents />
+              </Layout>
+            } />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

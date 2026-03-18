@@ -152,3 +152,31 @@ exports.deactivateMe = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+// Upload Resume
+exports.uploadResume = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ msg: 'No file uploaded' });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // Update both resume and profile.resumeUrl for safety
+        user.resume = req.file.path; // Cloudinary URL
+        if (!user.profile) user.profile = {};
+        user.profile.resumeUrl = req.file.path;
+
+        await user.save();
+
+        res.json({
+            msg: 'Resume uploaded successfully',
+            resumeUrl: req.file.path
+        });
+    } catch (err) {
+        console.error('Resume Upload Error:', err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
+    }
+};

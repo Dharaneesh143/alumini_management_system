@@ -1,5 +1,7 @@
 const Event = require('../models/Event');
 const User = require('../models/User');
+const Invitation = require('../models/Invitation');
+const EventRegistration = require('../models/EventRegistration');
 
 // @desc    Create a new event
 // @route   POST /api/events
@@ -17,8 +19,21 @@ exports.createEvent = async (req, res) => {
             speaker,
             department,
             maxParticipants,
-            requestDetails
+            requestDetails,
+            organizer,
+            duration,
+            meetingLink,
+            imageUrl,
+            category
         } = req.body;
+
+        // Role-based restrictions
+        if (req.user.role === 'alumni' && !['Hackathon', 'Company'].includes(type)) {
+            return res.status(400).json({ msg: 'Alumni can only create Hackathon or Company events' });
+        }
+        if (req.user.role === 'admin' && type !== 'College Event') {
+            return res.status(400).json({ msg: 'Admin can only create College Events' });
+        }
 
         // If it's a request to alumni, set status to Pending, otherwise Upcoming
         const status = (speaker?.alumniId && !date) ? 'Pending' : 'Upcoming';
@@ -36,6 +51,12 @@ exports.createEvent = async (req, res) => {
             maxParticipants,
             status,
             requestDetails,
+            organizer: organizer || (req.user.role === 'admin' ? 'College Admin' : req.user.name),
+            duration,
+            meetingLink,
+            imageUrl,
+            category,
+            organized_by: req.user.role === 'admin' ? 'Admin' : 'Alumni',
             createdBy: req.user.id
         });
 
@@ -52,16 +73,29 @@ exports.createEvent = async (req, res) => {
 // @access  Private
 exports.getEvents = async (req, res) => {
     try {
-        const { type, department, status, search } = req.query;
+        const { type, category, department, status, search, alumniId } = req.query;
         let query = {};
 
-        if (type) query.type = type;
+        // Use type or category (alias)
+        const eventType = type || category;
+        if (eventType) query.type = eventType;
+        
         if (department) query.department = department;
         if (status) query.status = status;
+        
+        // Validate alumniId to prevent CastError
+        if (alumniId && alumniId !== 'undefined' && alumniId !== 'null') {
+            const mongoose = require('mongoose');
+            if (mongoose.Types.ObjectId.isValid(alumniId)) {
+                query['speaker.alumniId'] = alumniId;
+            }
+        }
+
         if (search) {
             query.$or = [
                 { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
+                { description: { $regex: search, $options: 'i' } },
+                { organizer: { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -150,6 +184,11 @@ exports.registerForEvent = async (req, res) => {
             return res.status(404).json({ msg: 'Event not found' });
         }
 
+        // REFINEMENT: Students can ONLY register for Company events
+        if (req.user.role === 'student' && event.type !== 'Company') {
+            return res.status(403).json({ msg: 'Students can only register for Company events' });
+        }
+
         // Check if user is already registered
         const isRegistered = event.registeredParticipants.some(
             p => p.user.toString() === req.user.id
@@ -164,13 +203,23 @@ exports.registerForEvent = async (req, res) => {
             return res.status(400).json({ msg: 'Event is at full capacity' });
         }
 
+        // 1. Update Event model array (for quick access)
         event.registeredParticipants.push({
             user: req.user.id,
             role: req.user.role
         });
-
         await event.save();
-        res.json({ msg: 'Registration successful', event });
+
+        // 2. Create entry in EventRegistration collection (requirement 5)
+        const registration = new EventRegistration({
+            event_id: event._id,
+            student_id: req.user.id,
+            registration_date: Date.now(),
+            attendance_status: 'Pending'
+        });
+        await registration.save();
+
+        res.json({ msg: 'Registration successful', event, registration_id: registration._id });
     } catch (err) {
         console.error('Event Registration Error:', err.message);
         res.status(500).send('Server Error');
@@ -313,6 +362,83 @@ exports.scheduleEvent = async (req, res) => {
         res.json(event);
     } catch (err) {
         console.error('Schedule Event Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+// @desc    Admin invites alumni to an event
+// @route   POST /api/events/:id/invite
+// @access  Private/Admin
+exports.inviteAlumni = async (req, res) => {
+    try {
+        const { alumniIds } = req.body;
+        const eventId = req.params.id;
+
+        const event = await Event.findById(eventId);
+        if (!event) return res.status(404).json({ msg: 'Event not found' });
+
+        const invitations = alumniIds.map(alumniId => ({
+            eventId,
+            alumniId,
+            status: 'pending'
+        }));
+
+        // Using insertMany with ordered: false to skip duplicates if any
+        await Invitation.insertMany(invitations, { ordered: false }).catch(err => {
+            console.log('Some invitations might be duplicates');
+        });
+
+        res.json({ msg: 'Invitations sent successfully' });
+    } catch (err) {
+        console.error('Invite Alumni Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Get current alumni invitations
+// @route   GET /api/events/invitations/me
+// @access  Private (Alumni)
+exports.getAlumniInvitations = async (req, res) => {
+    try {
+        const invitations = await Invitation.find({ alumniId: req.user.id })
+            .populate('eventId')
+            .sort({ invitedAt: -1 });
+        res.json(invitations);
+    } catch (err) {
+        console.error('Get Invitations Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Alumni responds to an invitation
+// @route   PUT /api/events/invitations/:id
+// @access  Private (Alumni)
+exports.respondToInvitation = async (req, res) => {
+    try {
+        const { status } = req.body; // 'accepted' or 'rejected'
+        if (!['accepted', 'rejected'].includes(status)) {
+            return res.status(400).json({ msg: 'Invalid status' });
+        }
+
+        const invitation = await Invitation.findOne({ _id: req.params.id, alumniId: req.user.id });
+        if (!invitation) return res.status(404).json({ msg: 'Invitation not found' });
+
+        invitation.status = status;
+        invitation.respondedAt = Date.now();
+        await invitation.save();
+
+        if (status === 'accepted') {
+            // Logic for when alumni accepts - maybe add them to some list or update event
+            const event = await Event.findById(invitation.eventId);
+            if (event) {
+                // If the event didn't have a speaker set, we could set it here
+                // or just leave it for the alumni to show up in "My Events"
+                console.log(`Alumni ${req.user.id} accepted invite for ${event.title}`);
+            }
+        }
+
+        res.json(invitation);
+    } catch (err) {
+        console.error('Respond Invitation Error:', err.message);
         res.status(500).send('Server Error');
     }
 };
