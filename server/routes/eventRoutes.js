@@ -7,36 +7,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Configure Multer for presentation uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const dir = './uploads/events';
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        cb(null, dir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `event-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        const filetypes = /pdf|ppt|pptx|doc|docx/;
-        const mimetypes = /application\/pdf|application\/vnd.ms-powerpoint|application\/vnd.openxmlformats-officedocument.presentationml.presentation|application\/msword|application\/vnd.openxmlformats-officedocument.wordprocessingml.document/;
-
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = mimetypes.test(file.mimetype);
-
-        if (extname && mimetype) {
-            return cb(null, true);
-        } else {
-            cb('Error: Only PDF, PPT, and DOC files are allowed!');
-        }
-    }
-});
+const upload = require('../middleware/upload');
 
 // @route   POST /api/events
 // @desc    Create a new event

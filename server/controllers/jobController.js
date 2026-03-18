@@ -46,10 +46,10 @@ exports.createJob = async (req, res) => {
         // Handle File Uploads
         if (req.files) {
             if (req.files.companyLogo) {
-                jobData.companyLogo = `/uploads/logos/${req.files.companyLogo[0].filename}`;
+                jobData.companyLogo = req.files.companyLogo[0].path;
             }
             if (req.files.jdPdf) {
-                jobData.jdPdf = `/uploads/jobs/jd/${req.files.jdPdf[0].filename}`;
+                jobData.jdPdf = req.files.jdPdf[0].path;
             }
         }
 
@@ -227,7 +227,7 @@ exports.applyJob = async (req, res) => {
         const application = new Application({
             jobId: job._id,
             studentId: req.user.id,
-            resumeUrl: `/uploads/resumes/${req.file.filename}`,
+            resumeUrl: req.file.path,
             additionalDetails: { phone, portfolioUrl, coverLetter }
         });
         await application.save();
@@ -235,7 +235,7 @@ exports.applyJob = async (req, res) => {
         // Sync with Job.applicants
         job.applicants.push({
             user: req.user.id,
-            resumeUrl: `/uploads/resumes/${req.file.filename}`
+            resumeUrl: req.file.path
         });
         await job.save();
 
