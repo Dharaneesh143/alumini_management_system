@@ -18,8 +18,15 @@ const logToFile = (msg) => {
 exports.register = async (req, res) => {
     try {
         const {
-            department, batch, yearOfStudy,
-            currentLocation, yearsOfExperience, companyWebsite, oldCompany,
+            name, email, password, role,
+            phoneNumber, phone_number,
+            registerNumber, department,
+            batch, graduationYear, passedOutYear,
+            yearOfStudy,
+            currentCompany, company_name,
+            jobRole, designation,
+            currentLocation, yearsOfExperience,
+            companyWebsite, oldCompany,
             profile_image, resume
         } = req.body;
 
@@ -173,12 +180,23 @@ exports.login = async (req, res) => {
                     token,
                     user: {
                         id: user.id,
+                        _id: user._id,
                         name: user.name,
+                        email: user.email,
                         role: user.role,
+                        approvalStatus: user.approvalStatus,
+                        accountStatus: user.accountStatus,
+                        department: user.department,
+                        batch: user.batch,
+                        passedOutYear: user.passedOutYear,
+                        yearOfStudy: user.yearOfStudy,
+                        isMentor: user.isMentor,
+                        mentorshipBannerDismissed: user.mentorshipBannerDismissed,
                         isVerified: user.approvalStatus === 'approved',
                         phoneNumber: user.phoneNumber,
                         phone_number: user.phone_number,
-                        profile: user.profile
+                        profile: user.profile,
+                        createdAt: user.createdAt
                     }
                 });
             }

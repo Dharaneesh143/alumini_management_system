@@ -102,6 +102,7 @@ export const API_ENDPOINTS = {
 
     // Alumni
     GET_ALUMNI_STATS: '/api/alumni/stats',
+    DISMISS_MENTORSHIP_BANNER: '/api/alumni/dismiss-banner',
 
     // Events
     // Event Requests

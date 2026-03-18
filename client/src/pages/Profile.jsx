@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, FileText, Download, Upload } from 'lucide-react';
 
 const Profile = () => {
-    const { user } = useContext(AuthContext);
+    const { user, refreshUser } = useContext(AuthContext);
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
@@ -40,23 +40,26 @@ const Profile = () => {
     useEffect(() => {
         if (user) {
             console.log('Profile User Data:', JSON.stringify(user, null, 2)); // Debug Log
+            // Helper: treat "N/A" sentinel (set during registration) as blank
+            const clean = (v) => (!v || v === 'N/A' ? '' : v);
+
             setFormData({
                 name: user.name || '',
                 phoneNumber: user.phoneNumber || user.phone_number || '',
                 profile: {
-                    department: user.profile?.department || user.department || '',
-                    batch: user.profile?.batch || user.batch || '',
+                    department: clean(user.profile?.department) || clean(user.department),
+                    batch: clean(user.profile?.batch) || clean(user.batch) || clean(user.passedOutYear),
                     cgpa: (user.profile?.cgpa && !isNaN(user.profile?.cgpa)) ? user.profile.cgpa : '',
-                    company: user.profile?.company || '',
-                    designation: user.profile?.designation || '',
+                    company: clean(user.profile?.company) || clean(user.currentCompany),
+                    designation: clean(user.profile?.designation) || clean(user.jobRole),
                     skills: user.profile?.skills?.join(', ') || '',
                     linkedin: user.profile?.linkedin || '',
                     github: user.profile?.github || '',
                     yearOfStudy: user.profile?.yearOfStudy || '',
-                    currentLocation: user.profile?.currentLocation || '',
-                    yearsOfExperience: user.profile?.yearsOfExperience || '',
-                    companyWebsite: user.profile?.companyWebsite || '',
-                    oldCompany: user.profile?.oldCompany || ''
+                    currentLocation: clean(user.profile?.currentLocation),
+                    yearsOfExperience: clean(user.profile?.yearsOfExperience),
+                    companyWebsite: clean(user.profile?.companyWebsite),
+                    oldCompany: clean(user.profile?.oldCompany)
                 },
                 isMentor: user.isMentor || false,
                 mentorSettings: {
@@ -67,6 +70,7 @@ const Profile = () => {
             });
         }
     }, [user]);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -124,10 +128,10 @@ const Profile = () => {
 
             setMessage('Profile updated successfully!');
 
-            // Refresh page after 1 second
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            // Refresh user context from DB so isMentor/dept/batch are up-to-date
+            await refreshUser();
+            // Brief delay then scroll to top
+            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
         } catch (err) {
             console.error('Error updating profile:', err);
             setMessage(err.response?.data?.msg || 'Failed to update profile');

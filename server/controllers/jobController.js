@@ -95,34 +95,38 @@ exports.getJobs = async (req, res) => {
                 query.approvalStatus = 'pending';
             }
             // Admins don't see deleted jobs by default
-            query.status = { $nin: ['deleted_by_admin', 'closed'] };
+            query.status = { $nin: ['deleted_by_admin', 'closed', 'Closed'] };
         } else {
             // Non-admins see approved jobs OR their own postings
             let eligibilityFilter = {};
             if (req.user.role === 'student') {
                 const currentUser = await User.findById(req.user.id);
-                const userDept = currentUser?.department || 'N/A';
+                const userDept = currentUser?.department || '';
 
                 eligibilityFilter = {
                     $or: [
                         { departmentsEligible: { $exists: false } },
                         { departmentsEligible: { $size: 0 } },
                         { departmentsEligible: 'Any' },
-                        { departmentsEligible: userDept }
+                        { departmentsEligible: '' }
                     ]
                 };
+
+                if (userDept && userDept !== 'N/A') {
+                    eligibilityFilter.$or.push({ departmentsEligible: userDept });
+                }
             }
 
             query = {
                 $or: [
                     {
-                        status: 'active',
+                        status: { $in: ['active', 'Open', 'active'] }, // Support both legacy and new status
                         approvalStatus: 'approved',
                         ...eligibilityFilter
                     },
                     {
                         postedBy: req.user.id,
-                        status: { $nin: ['deleted_by_admin', 'closed'] }
+                        status: { $nin: ['deleted_by_admin', 'closed', 'Closed'] }
                     }
                 ]
             };

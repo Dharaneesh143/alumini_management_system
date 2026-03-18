@@ -15,7 +15,8 @@ import {
     Calendar,
     ChevronRight,
     ArrowRight,
-    Info
+    Info,
+    Search
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api, { API_ENDPOINTS } from '../config/api';
@@ -42,7 +43,8 @@ const Layout = ({ children }) => {
         try {
             if (user?.role === 'student' || user?.role === 'alumni') {
                 const res = await api.get(API_ENDPOINTS.GET_MENTORSHIP_REQUESTS);
-                const active = res.data.find(r => r.status === 'accepted');
+                // Check for both 'accepted' and 'Active' statuses in the Mentorship model
+                const active = res.data.find(r => r.status === 'accepted' || r.status === 'Active');
                 setActiveMentorship(active);
             }
         } catch (err) {
@@ -104,14 +106,31 @@ const Layout = ({ children }) => {
         }
 
         if (user?.role === 'student') {
-            return [
-                ...commonItems,
-                activeMentorship
-                    ? { path: `/mentorship/conversation/${activeMentorship._id}`, label: 'My Mentor', icon: GraduationCap }
-                    : { path: '/mentorship', label: 'Find Mentors', icon: GraduationCap },
-                { path: '/mentorship/requests', label: 'My Requests', icon: Clock },
-                { path: '/events', label: 'Events', icon: Calendar }
-            ];
+            const studentItems = [...commonItems];
+            
+            if (activeMentorship) {
+                // If student has an active mentor, show "My Mentor" and hide discovery links
+                studentItems.push({ 
+                    path: `/mentorship/conversation/${activeMentorship._id}`, 
+                    label: 'My Mentor', 
+                    icon: Users 
+                });
+            } else {
+                // If no active mentor, show "Find Mentors" and "My Requests"
+                studentItems.push({ 
+                    path: '/mentorship', 
+                    label: 'Find Mentors', 
+                    icon: Search 
+                });
+                studentItems.push({ 
+                    path: '/mentorship/requests', 
+                    label: 'My Requests', 
+                    icon: Clock 
+                });
+            }
+
+            studentItems.push({ path: '/events', label: 'Events', icon: Calendar });
+            return studentItems;
         }
 
         return commonItems;

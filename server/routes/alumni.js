@@ -18,6 +18,7 @@ router.use(auth);
 // Profile Routes
 router.get('/profile', alumniController.getProfile);
 router.put('/profile', alumniController.updateProfile);
+router.put('/dismiss-banner', alumniController.dismissMentorshipBanner);
 router.get('/stats', alumniController.getAlumniStats);
 
 

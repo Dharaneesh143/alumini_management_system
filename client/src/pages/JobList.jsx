@@ -67,7 +67,7 @@ const JobList = () => {
 
         return (
             <div
-                className="group bg-white rounded-3xl p-7 shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-100 transition-all duration-300 cursor-pointer relative overflow-hidden"
+                className="group bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-100 transition-all duration-300 cursor-pointer relative overflow-hidden"
                 onClick={() => navigate(`/jobs/${job._id}`)}
             >
                 {/* Gradient accent on hover */}
@@ -266,7 +266,7 @@ const JobList = () => {
             {/* Content Container */}
             <div className="max-w-7xl mx-auto px-8 pb-16">
                 {/* Enhanced Tabs */}
-                <div className="flex items-center justify-between mb-10 bg-white rounded-2xl p-4 mt-2 mb-2 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-10 bg-white rounded-2xl p-4 mt-6 mb-6 shadow-sm border border-gray-100">
                     <div className="flex gap-2">
                         {['All', 'Job', 'Internship'].map((tab) => (
                             <button

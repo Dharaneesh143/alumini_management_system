@@ -14,6 +14,7 @@ import { Pie, Bar, Line } from "react-chartjs-2";
 import { Link, useNavigate } from 'react-router-dom';
 import api, { API_ENDPOINTS } from "../config/api";
 import { AuthContext } from '../context/AuthContext.jsx';
+import { X } from 'lucide-react';
 
 
 ChartJS.register(
@@ -37,8 +38,19 @@ const AlumniDashboard = () => {
     });
     const [alumniRequests, setAlumniRequests] = React.useState([]); // New Request State
     const [loading, setLoading] = React.useState(true);
-    const { user } = React.useContext(AuthContext);
+    const { user, refreshUser } = React.useContext(AuthContext);
     const navigate = useNavigate();
+
+    /* ── Dismiss mentorship banner — persisted in MongoDB, not localStorage ── */
+    const dismissBanner = async () => {
+        try {
+            await api.put(API_ENDPOINTS.DISMISS_MENTORSHIP_BANNER);
+            // Re-fetch user from DB so mentorshipBannerDismissed is updated in context
+            if (refreshUser) await refreshUser();
+        } catch (err) {
+            console.error('Failed to dismiss banner:', err);
+        }
+    };
 
     React.useEffect(() => {
         const fetchStats = async () => {
@@ -85,8 +97,8 @@ const AlumniDashboard = () => {
             </div>
 
             {/* MENTORSHIP STATUS ALERT */}
-            {!user?.isMentor && (
-                <div className="bg-orange-50 border-2 border-orange-100 rounded-[2rem] p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-500">
+            {!user?.isMentor && !user?.mentorshipBannerDismissed && (
+                <div className="bg-orange-50 border-2 border-orange-100 rounded-[2rem] p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-500 relative">
                     <div className="flex items-center gap-6">
                         <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm">
                             💡
@@ -96,12 +108,22 @@ const AlumniDashboard = () => {
                             <p className="text-gray-600 mt-1">You haven't enabled your mentorship profile yet. Students cannot find you for guidance.</p>
                         </div>
                     </div>
-                    <Link
-                        to="/profile"
-                        className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-800 transition-all shadow-lg active:scale-95 whitespace-nowrap"
-                    >
-                        Enable Now
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <Link
+                            to="/profile"
+                            onClick={dismissBanner}
+                            className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-800 transition-all shadow-lg active:scale-95 whitespace-nowrap"
+                        >
+                            Enable Now
+                        </Link>
+                        <button
+                            onClick={dismissBanner}
+                            title="Don't show again"
+                            className="w-10 h-10 rounded-xl bg-white border border-orange-200 flex items-center justify-center text-gray-400 hover:bg-orange-100 hover:text-gray-600 transition-all flex-shrink-0"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             )}
 

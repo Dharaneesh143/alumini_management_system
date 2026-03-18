@@ -65,6 +65,11 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    // Tracks if alumni dismissed the "Enable Mentorship" banner — stored in DB, not localStorage
+    mentorshipBannerDismissed: {
+        type: Boolean,
+        default: false
+    },
     mentorSettings: {
         capacity: { type: Number, default: 3 },
         mentorshipAreas: [String],

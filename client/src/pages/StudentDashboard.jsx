@@ -12,7 +12,8 @@ import {
     User,
     ChevronRight,
     BookOpen,
-    MessageSquare
+    MessageSquare,
+    Clock
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import api, { API_ENDPOINTS } from '../config/api';
@@ -82,7 +83,7 @@ const StudentDashboard = () => {
 
 
     return (
-        <div className="space-y-8 pb-8 mb-8" style={{ paddingBottom: '100px', marginBottom: '50px' }}>
+        <div className="space-y-8 pb-8 mb-8">
             {/* Welcome Section */}
             <div className="mb-6">
                 <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h2>
@@ -270,11 +271,22 @@ const StudentDashboard = () => {
                                 <Search size={18} />
                                 Browse Jobs
                             </Link>
-                            {!activeMentorship && (
-                                <Link to="/mentorship" className="btn btn-outline w-full flex items-center justify-center gap-2">
-                                    <Users size={18} />
-                                    Find Mentor
+                            {activeMentorship ? (
+                                <Link to={`/mentorship/conversation/${activeMentorship._id}`} className="btn btn-outline w-full flex items-center justify-center gap-2">
+                                    <MessageSquare size={18} />
+                                    My Mentor Chat
                                 </Link>
+                            ) : (
+                                <>
+                                    <Link to="/mentorship" className="btn btn-outline w-full flex items-center justify-center gap-2">
+                                        <Users size={18} />
+                                        Find Mentor
+                                    </Link>
+                                    <Link to="/mentorship/requests" className="btn btn-outline w-full flex items-center justify-center gap-2">
+                                        <Clock size={18} />
+                                        My Requests
+                                    </Link>
+                                </>
                             )}
                         </div>
                     </div>
@@ -282,7 +294,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Activity Section */}
-            <div className="mt-8 mb-16" style={{ marginBottom: '100px' }}>
+            <div className="mt-8" >
                 <div className="card">
                     <div className="card-header">
                         <h3 className="card-title">Your Activity</h3>
