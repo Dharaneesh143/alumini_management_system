@@ -84,7 +84,7 @@ const StudentDashboard = () => {
 
 
     return (
-        <div className="space-y-8 pb-8 mb-8">
+        <div className="space-y-8">
             {/* Welcome Section */}
             <div className="mb-6">
                 <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h2>
