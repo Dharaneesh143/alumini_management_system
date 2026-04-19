@@ -299,11 +299,25 @@ const ApplicantManager = () => {
                         {/* Modal Body */}
                         <div className="flex-1 bg-gray-100 flex justify-center p-4 md:p-8 overflow-auto">
                             <div className="w-full max-w-4xl bg-white shadow-2xl h-full border border-gray-200 rounded-sm">
-                                <iframe 
-                                    src={viewingResumeUrl}
-                                    className="w-full h-full border-none"
-                                    title="Resume Preview"
-                                />
+                                {viewingResumeUrl?.toLowerCase().endsWith('.pdf') ? (
+                                    <iframe 
+                                        src={viewingResumeUrl}
+                                        className="w-full h-full border-none"
+                                        title="Resume Preview"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center p-4 overflow-auto">
+                                        <img 
+                                            src={viewingResumeUrl} 
+                                            alt="Resume Preview" 
+                                            className="max-w-full max-h-full object-contain shadow-lg"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = 'https://via.placeholder.com/800x1000?text=Error+Loading+Image';
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

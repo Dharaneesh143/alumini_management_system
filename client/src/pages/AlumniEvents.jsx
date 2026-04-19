@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import {
@@ -15,11 +16,13 @@ import {
     ChevronRight,
     Search,
     Filter,
-    Image as ImageIcon
+    Image as ImageIcon,
+    ArrowRight
 } from 'lucide-react';
 
 const AlumniEvents = () => {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [myEvents, setMyEvents] = useState([]);
     const [invitations, setInvitations] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,8 +33,10 @@ const AlumniEvents = () => {
         category: 'Hackathon', // Use 'category' to map to 'type' in backend
         type: 'Hackathon', // Ensure it matches backend enum
         mode: 'Online',
-        date: '',
-        time: '',
+        startDate: '',
+        endDate: '',
+        startTime: '',
+        endTime: '',
         duration: '60 mins',
         venue: '',
         meetingLink: '',
@@ -138,9 +143,18 @@ const AlumniEvents = () => {
                                                 <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Registered</span>
                                                 <span className="text-sm font-black text-gray-900">{event.registeredParticipants?.length || 0} participants</span>
                                             </div>
-                                            <button className="p-3 bg-gray-50 text-gray-400 hover:text-primary rounded-xl transition-colors">
-                                                <Settings size={20} />
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => navigate(`/events/${event._id}`)}
+                                                    className="p-3 bg-gray-50 text-gray-600 hover:bg-primary hover:text-white rounded-2xl transition-all"
+                                                >
+                                                    <ChevronRight size={20} />
+                                                </button>
+                                                <button className="p-3 bg-gray-50 text-gray-400 hover:text-primary rounded-xl transition-colors">
+                                                    <Settings size={20} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -257,24 +271,43 @@ const AlumniEvents = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">Date</label>
+                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">Start Date</label>
                                     <input 
                                         type="date"
                                         required
                                         className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                        min={new Date().toISOString().split('T')[0]}
-                                        value={formData.date}
-                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                                        value={formData.startDate}
+                                        onChange={(e) => setFormData({...formData, startDate: e.target.value})}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">Time</label>
+                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">End Date</label>
                                     <input 
-                                        type="time" 
+                                        type="date"
                                         required
                                         className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                        value={formData.time}
-                                        onChange={(e) => setFormData({...formData, time: e.target.value})}
+                                        value={formData.endDate}
+                                        onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">Start Time</label>
+                                    <input 
+                                        type="time"
+                                        required
+                                        className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
+                                        value={formData.startTime}
+                                        onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">End Time</label>
+                                    <input 
+                                        type="time"
+                                        required
+                                        className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
+                                        value={formData.endTime}
+                                        onChange={(e) => setFormData({...formData, endTime: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -325,7 +358,11 @@ const AlumniEvents = () => {
                                 <button type="submit" className="flex-1 py-5 bg-primary text-white font-black rounded-[2rem] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
                                     Publish Event
                                 </button>
-                                <button type="button" onClick={() => setShowAddForm(false)} className="px-12 py-5 bg-gray-100 text-gray-500 font-bold rounded-[2rem] hover:bg-gray-200 transition-all">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddForm(false)}
+                                    className="px-10 py-5 bg-gray-50 text-gray-500 rounded-3xl hover:bg-gray-100 transition-all font-black text-lg"
+                                >
                                     Cancel
                                 </button>
                             </div>

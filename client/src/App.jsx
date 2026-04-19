@@ -12,7 +12,9 @@ import JobDetail from './pages/JobDetail';
 import ApplicantManager from './pages/ApplicantManager';
 import Navbar from './components/Navbar';
 import Layout from './components/Layout';
+import ScrollToTop from './components/ScrollToTop';
 import { AuthProvider } from './context/AuthContext.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import StudentAuth from './pages/StudentAuth';
 import AlumniAuth from './pages/AlumniAuth';
@@ -32,12 +34,15 @@ import AdminEvents from './pages/AdminEvents';
 import BlockedMembers from './pages/admin/BlockedMembers';
 import BlockedStudents from './pages/admin/BlockedStudents';
 import PendingJobs from './pages/admin/PendingJobs';
+import EventDetailView from './pages/EventDetailView';
 
 function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"}>
-      <AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
         <Router>
+          <ScrollToTop />
           <Routes>
             {/* Public routes with simple navbar */}
             <Route path="/" element={
@@ -210,9 +215,15 @@ function App() {
                 <AlumniEvents />
               </Layout>
             } />
+            <Route path="/events/:id" element={
+              <Layout>
+                <EventDetailView />
+              </Layout>
+            } />
           </Routes>
         </Router>
-      </AuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </GoogleOAuthProvider>
   );
 }

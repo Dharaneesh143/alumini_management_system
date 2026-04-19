@@ -30,7 +30,7 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) 
             case 'voice':
                 return (
                     <div className="space-y-2">
-                        <div className="flex items-center gap-3 bg-black/5 p-3 rounded-xl border border-black/5">
+                        <div className="flex items-center gap-3 bg-black/5 dark:bg-white/5 p-3 rounded-xl border border-black/5 dark:border-white/5">
                             <button className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:scale-105 transition-transform">
                                 <Play size={20} fill="currentColor" />
                             </button>
@@ -43,7 +43,7 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) 
                             <audio src={getFileUrl(message.fileUrl)} className="hidden" />
                         </div>
                         {message.transcription && (
-                            <div className="p-2 bg-white/50 rounded-lg border border-dashed border-black/10 text-xs italic text-gray-600">
+                            <div className="p-2 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-dashed border-black/10 dark:border-white/10 text-xs italic text-gray-600 dark:text-slate-400">
                                 "{message.transcription}"
                             </div>
                         )}
@@ -55,14 +55,14 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) 
                         href={getFileUrl(message.fileUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 bg-white/50 rounded-xl border border-black/10 hover:bg-white/80 transition-colors group"
+                        className="flex items-center gap-3 p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-black/10 dark:border-white/10 hover:bg-white/80 dark:hover:bg-slate-800 transition-colors group"
                     >
-                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
                             <FileText size={24} />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">{message.fileName || 'Shared Document'}</p>
-                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Download PDF</p>
+                            <p className="font-medium text-sm truncate dark:text-white">{message.fileName || 'Shared Document'}</p>
+                            <p className="text-[10px] text-gray-500 dark:text-slate-400 uppercase font-bold tracking-wider">Download PDF</p>
                         </div>
                         <Download size={18} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
                     </a>
@@ -83,7 +83,7 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) 
                 {isOwn && onDelete && (
                     <button
                         onClick={() => onDelete(message._id)}
-                        className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 transition-all duration-200"
+                        className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-all duration-200"
                         title="Delete message"
                     >
                         <Trash2 size={16} />
@@ -93,8 +93,8 @@ const MessageBubble = ({ message, isOwn, partnerName, onDelete, onImageClick }) 
                 <div className={`
                     p-4 rounded-3xl shadow-sm relative
                     ${isOwn
-                        ? 'bg-indigo-100 text-gray-800 rounded-tr-none'
-                        : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'}
+                        ? 'bg-indigo-100 dark:bg-indigo-600 text-gray-800 dark:text-white rounded-tr-none'
+                        : 'bg-white dark:bg-slate-800 text-gray-800 dark:text-white rounded-tl-none border border-gray-100 dark:border-slate-700'}
                 `}>
                     {renderContent()}
 

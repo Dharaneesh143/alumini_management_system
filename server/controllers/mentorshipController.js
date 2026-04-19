@@ -230,8 +230,8 @@ exports.sendMessage = async (req, res) => {
 exports.getConversation = async (req, res) => {
     try {
         const mentorship = await Mentorship.findById(req.params.id)
-            .populate('student', 'name email profile')
-            .populate('alumni', 'name email profile currentCompany jobRole');
+            .populate('student', 'name email profile department batch rollNumber isOnline lastSeen profile_image')
+            .populate('alumni', 'name email profile currentCompany jobRole isOnline lastSeen profile_image');
 
         if (!mentorship) return res.status(404).json({ msg: 'Mentorship not found' });
 
@@ -246,7 +246,13 @@ exports.getConversation = async (req, res) => {
             return res.status(401).json({ msg: 'Not authorized' });
         }
 
-        res.json(mentorship);
+        const partner = req.user.role === 'student' ? mentorship.alumni : mentorship.student;
+
+        res.json({
+            mentorship,
+            partner,
+            messages: mentorship.messages
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

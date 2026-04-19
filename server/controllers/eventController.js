@@ -1,4 +1,15 @@
 const Event = require('../models/Event');
+const fs = require('fs');
+const path = require('path');
+
+// Helper to log to debug.log
+const logToFile = (msg) => {
+    const logMsg = `[${new Date().toISOString()}] ${msg}\n`;
+    try {
+        fs.appendFileSync(path.join(__dirname, '../debug.log'), logMsg);
+    } catch (e) { }
+    console.log(msg);
+};
 const User = require('../models/User');
 const Invitation = require('../models/Invitation');
 const EventRegistration = require('../models/EventRegistration');
@@ -13,6 +24,10 @@ exports.createEvent = async (req, res) => {
             description,
             type,
             date,
+            startDate,
+            endDate,
+            startTime,
+            endTime,
             time,
             venue,
             mode,
@@ -28,43 +43,54 @@ exports.createEvent = async (req, res) => {
         } = req.body;
 
         // Role-based restrictions
-        if (req.user.role === 'alumni' && !['Hackathon', 'Company'].includes(type)) {
+        if (req.user.role === 'alumni' && !['Hackathon', 'Company', 'Other'].includes(type || category)) {
             return res.status(400).json({ msg: 'Alumni can only create Hackathon or Company events' });
         }
-        if (req.user.role === 'admin' && type !== 'College Event') {
+        if (req.user.role === 'admin' && (type || category) !== 'College Event') {
             return res.status(400).json({ msg: 'Admin can only create College Events' });
         }
 
-        // If it's a request to alumni, set status to Pending, otherwise Upcoming
-        const status = (speaker?.alumniId && !date) ? 'Pending' : 'Upcoming';
+        const eventStatus = (speaker?.alumniId && !date && !startDate) ? 'Pending' : 'Upcoming';
+
+        logToFile('Incoming Event Data:' + JSON.stringify(req.body, null, 2));
 
         const event = new Event({
             title,
             description,
-            type,
-            date,
-            time,
+            type: type || category,
+            date: date || startDate,
+            startDate: (startDate && startDate !== "") ? startDate : (date || null),
+            endDate: (endDate && endDate !== "") ? endDate : null,
+            startTime: startTime || time,
+            endTime,
+            time: time || startTime,
             venue,
             mode: mode || 'Online',
             speaker,
             department,
             maxParticipants,
-            status,
+            status: eventStatus,
             requestDetails,
             organizer: organizer || (req.user.role === 'admin' ? 'College Admin' : req.user.name),
             duration,
             meetingLink,
             imageUrl,
-            category,
+            category: category || type,
             organized_by: req.user.role === 'admin' ? 'Admin' : 'Alumni',
             createdBy: req.user.id
         });
 
+        logToFile(`Final Save Model - Type: "${event.type}", Category: "${event.category}"`);
+        console.log('Event instance created, attempting to save...');
         await event.save();
+        logToFile('Event saved successfully');
         res.status(201).json(event);
     } catch (err) {
-        console.error('Create Event Error:', err.message);
-        res.status(500).send('Server Error: ' + err.message);
+        logToFile('CRITICAL: Create Event Error!' + err.stack);
+        res.status(500).json({ 
+            msg: 'Server Error: ' + err.message, 
+            errors: err.errors // Include Mongoose validation errors
+        });
     }
 };
 

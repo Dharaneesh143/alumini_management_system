@@ -12,7 +12,7 @@ const fileFilter = (req, file, cb) => {
         } else {
             cb(new Error('Only images are allowed for company logo'), false);
         }
-    } else if (file.fieldname === 'jdPdf' || file.fieldname === 'resume') {
+    } else if (file.fieldname === 'jdPdf' || file.fieldname === 'resume' || file.fieldname === 'profileImage') {
         if (
             file.mimetype === 'application/pdf' || 
             file.mimetype.startsWith('image/') ||

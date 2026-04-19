@@ -162,7 +162,7 @@ const StudentManagement = () => {
 
     return (
         <div className="space-y-8 mb-8">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 className="text-2xl font-bold">Student Management</h2>
                     <p className="text-secondary">View and manage all registered student accounts</p>

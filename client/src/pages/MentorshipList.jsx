@@ -21,6 +21,24 @@ const MentorshipList = () => {
     });
     const [mentorshipTopic, setMentorshipTopic] = useState('Career Guidance');
 
+    const calculateProfileProgress = () => {
+        if (!user) return 0;
+        const fields = [
+            user.name,
+            user.email,
+            user.phoneNumber || user.phone_number,
+            user.department || user.profile?.department,
+            user.batch || user.profile?.batch || user.passedOutYear,
+            user.profile?.cgpa,
+            user.profile?.skills && user.profile.skills.length > 0,
+            user.profile?.resumeUrl || user.resumeUrl,
+            user.rollNumber || user.registerNumber,
+            user.profile?.careerGoals || user.careerGoals
+        ];
+        const filled = fields.filter(f => f !== null && f !== undefined && f !== '' && f !== false && (typeof f !== 'number' || f === 0 || f > 0));
+        return Math.round((filled.length / fields.length) * 100);
+    };
+
     const fetchAlumni = async () => {
         try {
             const params = new URLSearchParams();
@@ -218,7 +236,15 @@ const MentorshipList = () => {
                                         }
                                         return (
                                             <button
-                                                onClick={() => setRequesting(mentor)}
+                                                onClick={() => {
+                                                    const progress = calculateProfileProgress();
+                                                    if (progress < 100) {
+                                                        setStatusMessage({ type: 'error', text: 'You must complete your profile 100% before requesting mentorship. Please visit your Profile page.' });
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                        return;
+                                                    }
+                                                    setRequesting(mentor);
+                                                }}
                                                 className="btn btn-primary w-full flex items-center justify-center gap-2"
                                             >
                                                 <MessageSquare size={18} />

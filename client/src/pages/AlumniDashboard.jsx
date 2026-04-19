@@ -14,7 +14,9 @@ import { Pie, Bar, Line } from "react-chartjs-2";
 import { Link, useNavigate } from 'react-router-dom';
 import api, { API_ENDPOINTS } from "../config/api";
 import { AuthContext } from '../context/AuthContext.jsx';
-import { X } from 'lucide-react';
+import { X, MoreVertical, MessageSquare, Briefcase, Calendar, Settings, ClipboardList } from 'lucide-react';
+import PageSettings from '../components/PageSettings';
+import { useTheme } from '../context/ThemeContext.jsx';
 
 
 ChartJS.register(
@@ -39,6 +41,8 @@ const AlumniDashboard = () => {
     const [alumniRequests, setAlumniRequests] = React.useState([]); // New Request State
     const [loading, setLoading] = React.useState(true);
     const { user, refreshUser } = React.useContext(AuthContext);
+    const { isDarkMode, setIsDarkMode } = useTheme();
+    const [showSettings, setShowSettings] = React.useState(false);
     const navigate = useNavigate();
 
     /* ── Dismiss mentorship banner — persisted in MongoDB, not localStorage ── */
@@ -91,9 +95,29 @@ const AlumniDashboard = () => {
         <div className="dashboard-container">
 
             {/* HEADER */}
-            <div className="dashboard-header">
-                <h1>Alumni Dashboard</h1>
-                <p>Mentorship, activity and engagement overview</p>
+            <div className="dashboard-header flex justify-between items-start">
+                <div>
+                    <h1 className="text-gray-900 dark:text-white">Alumni Dashboard</h1>
+                    <p className="text-gray-500 dark:text-slate-400">Mentorship, activity and engagement overview</p>
+                </div>
+                <div className="relative">
+                    <button 
+                        onClick={() => setShowSettings(!showSettings)}
+                        className={`p-3 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-all text-gray-500 dark:text-slate-400 ${showSettings ? 'ring-2 ring-primary/20' : ''}`}
+                    >
+                        <MoreVertical size={20} />
+                    </button>
+
+                    {showSettings && (
+                        <div className="absolute right-0 top-full mt-2 z-50">
+                            <PageSettings 
+                                isDarkMode={isDarkMode}
+                                setIsDarkMode={setIsDarkMode}
+                                onClose={() => setShowSettings(false)}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* MENTORSHIP STATUS ALERT */}
@@ -235,6 +259,29 @@ const AlumniDashboard = () => {
                 </div>
             </div>
 
+
+            {/* QUICK ACTIONS */}
+            <div className="mb-10 bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-gray-100 dark:border-slate-700 shadow-sm">
+                <h3 className="text-base font-bold text-gray-800 dark:text-white mb-6">Quick Actions</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Link to="/mentorship/requests" className="flex items-center justify-center gap-3 py-4 px-6 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-700 rounded-2xl hover:border-primary/50 hover:bg-white dark:hover:bg-slate-800 transition-all group shadow-sm hover:shadow-md">
+                        <ClipboardList size={20} className="text-blue-500 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-bold text-gray-700 dark:text-slate-200">Requests</span>
+                    </Link>
+                    <Link to="/jobs" className="flex items-center justify-center gap-3 py-4 px-6 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-700 rounded-2xl hover:border-primary/50 hover:bg-white dark:hover:bg-slate-800 transition-all group shadow-sm hover:shadow-md">
+                        <Briefcase size={20} className="text-indigo-500 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-bold text-gray-700 dark:text-slate-200">Browse Jobs</span>
+                    </Link>
+                    <Link to="/events" className="flex items-center justify-center gap-3 py-4 px-6 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-700 rounded-2xl hover:border-primary/50 hover:bg-white dark:hover:bg-slate-800 transition-all group shadow-sm hover:shadow-md">
+                        <Calendar size={20} className="text-purple-500 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-bold text-gray-700 dark:text-slate-200">Events</span>
+                    </Link>
+                    <Link to="/profile" className="flex items-center justify-center gap-3 py-4 px-6 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-700 rounded-2xl hover:border-primary/50 hover:bg-white dark:hover:bg-slate-800 transition-all group shadow-sm hover:shadow-md">
+                        <Settings size={20} className="text-slate-500 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-bold text-gray-700 dark:text-slate-200">Settings</span>
+                    </Link>
+                </div>
+            </div>
 
             {/* BOTTOM SECTION */}
             <div className="bottom-grid">

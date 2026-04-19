@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import {
@@ -16,7 +17,10 @@ import {
     UserPlus,
     Tag,
     BarChart2,
-    ArrowRight
+    ArrowRight,
+    ChevronRight,
+    Video,
+    MapPin
 } from 'lucide-react';
 import {
     BarChart,
@@ -31,6 +35,7 @@ import {
 
 const AdminEvents = () => {
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [alumni, setAlumni] = useState([]);
     const [stats, setStats] = useState(null);
@@ -44,11 +49,16 @@ const AdminEvents = () => {
         description: '',
         category: 'College Event',
         mode: 'Offline',
-        date: '',
-        time: '',
+        startDate: '',
+        endDate: '',
+        startTime: '',
+        endTime: '',
+        date: '', // Keep for legacy compatibility
+        time: '', // Keep for legacy compatibility
         duration: '2 hours',
         venue: '',
         meetingLink: '',
+        registration_link: '',
         maxParticipants: 500,
         imageUrl: ''
     });
@@ -206,6 +216,14 @@ const AdminEvents = () => {
                                         </td>
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex gap-2 justify-end">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => navigate(`/events/${event._id}`)}
+                                                    className="p-3 bg-gray-50 text-gray-600 hover:bg-primary hover:text-white rounded-xl transition-all"
+                                                    title="View Details"
+                                                >
+                                                    <ChevronRight size={18} />
+                                                </button>
                                                 <button 
                                                     onClick={() => setShowInviteModal(event)}
                                                     className="p-3 bg-primary/5 text-primary hover:bg-primary hover:text-white rounded-xl transition-all"
@@ -372,23 +390,43 @@ const AdminEvents = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">Date</label>
+                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">Start Date</label>
                                     <input 
                                         type="date"
                                         required
                                         className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                        value={formData.date}
-                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                                        value={formData.startDate}
+                                        onChange={(e) => setFormData({...formData, startDate: e.target.value, date: e.target.value})}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">Time</label>
+                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">End Date</label>
+                                    <input 
+                                        type="date"
+                                        required
+                                        className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
+                                        value={formData.endDate}
+                                        onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">Start Time</label>
                                     <input 
                                         type="time" 
                                         required
                                         className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                        value={formData.time}
-                                        onChange={(e) => setFormData({...formData, time: e.target.value})}
+                                        value={formData.startTime}
+                                        onChange={(e) => setFormData({...formData, startTime: e.target.value, time: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest mb-2 block">End Time</label>
+                                    <input 
+                                        type="time" 
+                                        required
+                                        className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
+                                        value={formData.endTime}
+                                        onChange={(e) => setFormData({...formData, endTime: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -408,6 +446,36 @@ const AdminEvents = () => {
                                         value={formData.maxParticipants}
                                         onChange={(e) => setFormData({...formData, maxParticipants: e.target.value})}
                                     />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="text-xs font-black uppercase tracking-widest mb-2 block text-primary">Event Poster Image URL</label>
+                                    <div className="relative">
+                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/40">
+                                            <Tag size={18} />
+                                        </div>
+                                        <input 
+                                            className="w-full pl-14 pr-6 py-4 bg-primary/5 border border-primary/10 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
+                                            placeholder="Paste image URL (Unsplash/Cloudinary) here..."
+                                            value={formData.imageUrl}
+                                            onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-2 italic">* Optional: Paste a direct image link to show a custom poster</p>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="text-xs font-black uppercase tracking-widest mb-2 block text-primary">External Registration Link (Optional)</label>
+                                    <div className="relative">
+                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/40">
+                                            <ExternalLink size={18} />
+                                        </div>
+                                        <input 
+                                            className="w-full pl-14 pr-6 py-4 bg-primary/5 border border-primary/10 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-medium"
+                                            placeholder="e.g. Google Form or External Portal link..."
+                                            value={formData.registration_link}
+                                            onChange={(e) => setFormData({...formData, registration_link: e.target.value})}
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-2 italic">* For cases where students must register on another site</p>
                                 </div>
                             </div>
 

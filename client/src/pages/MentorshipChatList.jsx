@@ -134,7 +134,7 @@ const MentorshipChatList = () => {
                                 to={user.role === 'alumni' ? `/mentee/${chat._id}` : `/mentorship/conversation/${chat._id}`}
                                 className="block group"
                             >
-                                <div className="flex items-center gap-4 p-5 bg-white hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 rounded-2xl border-2 border-gray-100 hover:border-indigo-300 transition-all duration-200 group-hover:shadow-lg">
+                                <div className="flex items-center gap-4 p-5 mb-4 bg-white hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 rounded-2xl border-2 border-gray-100 hover:border-indigo-300 transition-all duration-200 group-hover:shadow-lg">
                                     {/* Avatar */}
                                     <div className="relative flex-shrink-0">
                                         <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-md">

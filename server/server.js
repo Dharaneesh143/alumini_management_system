@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 
@@ -157,7 +159,58 @@ process.on('uncaughtException', (err) => {
     logToFile(`🔥 Uncaught Exception: ${err.stack || err}`);
 });
 
-// Start Server
-app.listen(PORT, () => {
-    logToFile(`🚀 Server is ACTIVELY running on port ${PORT} (CORS FIX V2)`);
+// Create HTTP Server for Socket.io
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: corsOptions
+});
+
+// Socket.io Presence and Typing Logic
+const User = require('./models/User');
+
+io.on('connection', (socket) => {
+    const userId = socket.handshake.query.userId;
+    
+    if (userId) {
+        logToFile(`🔌 User Connected: ${userId} (Socket: ${socket.id})`);
+        socket.join(userId); // Join a private room for this user
+        
+        // Mark user as online
+        User.findByIdAndUpdate(userId, { isOnline: true }).exec();
+        
+        // Broadcast that this user is online to everyone (or specific friends/mentors in future)
+        io.emit('user_status', { userId, isOnline: true });
+    }
+
+    // Typing Indicators
+    socket.on('typing', (data) => {
+        // data: { receiverId, isTyping }
+        if (data.receiverId) {
+            socket.to(data.receiverId).emit('typing_status', {
+                senderId: userId,
+                isTyping: data.isTyping
+            });
+        }
+    });
+
+    socket.on('disconnect', () => {
+        if (userId) {
+            logToFile(`🔌 User Disconnected: ${userId}`);
+            User.findByIdAndUpdate(userId, { 
+                isOnline: false, 
+                lastSeen: new Date() 
+            }).exec();
+            
+            io.emit('user_status', { 
+                userId, 
+                isOnline: false, 
+                lastSeen: new Date() 
+            });
+        }
+    });
+});
+
+// Start Server using the wrapped 'server' instance (NOT app.listen)
+server.listen(PORT, () => {
+    logToFile(`🚀 Server is ACTIVELY running on port ${PORT} (Socket.io Enabled)`);
 });

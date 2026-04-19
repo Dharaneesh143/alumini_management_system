@@ -69,9 +69,6 @@ router.get('/invitations/me', auth, eventController.getAlumniInvitations);
 // @access  Alumni
 router.put('/invitations/:id', auth, eventController.respondToInvitation);
 
-module.exports = router;
-
-
 // @route   GET /api/events/alumni/requests
 // @access  Private (Alumni)
 router.get('/alumni/requests', auth, eventController.getAlumniRequests);
@@ -79,3 +76,5 @@ router.get('/alumni/requests', auth, eventController.getAlumniRequests);
 // @route   PUT /api/events/:id/schedule
 // @access  Private (Alumni)
 router.put('/:id/schedule', auth, eventController.scheduleEvent);
+
+module.exports = router;

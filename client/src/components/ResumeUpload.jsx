@@ -68,9 +68,9 @@ const ResumeUpload = ({ currentResume, onUploadSuccess }) => {
                         </svg>
                         <span className="text-sm text-indigo-700 truncate font-medium">Current Resume</span>
                     </div>
-                    <a 
-                        href={getFileUrl(currentResume)} 
-                        target="_blank" 
+                    <a
+                        href={getFileUrl(currentResume)}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition-colors"
                     >
@@ -81,14 +81,14 @@ const ResumeUpload = ({ currentResume, onUploadSuccess }) => {
 
             <div className="space-y-4">
                 <div className="relative border-2 border-dashed border-slate-200 rounded-lg p-6 hover:border-indigo-300 transition-colors text-center">
-                    <input 
-                        type="file" 
+                    <input
+                        type="file"
                         onChange={handleFileChange}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         accept=".pdf,.doc,.docx"
                     />
                     <div className="space-y-1">
-                        <p className="text-sm text-slate-600">
+                        <p className="text-sm text-slate-600 ">
                             {file ? <span className="text-indigo-600 font-medium">{file.name}</span> : 'Click to upload or drag and drop'}
                         </p>
                         <p className="text-xs text-slate-400">PDF, DOC, DOCX up to 5MB</p>
@@ -100,14 +100,13 @@ const ResumeUpload = ({ currentResume, onUploadSuccess }) => {
                 <button
                     onClick={handleUpload}
                     disabled={!file || uploading}
-                    className={`w-full py-2.5 rounded-lg font-medium transition-all transform active:scale-95 ${
-                        !file || uploading 
-                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-                        : 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700 shadow-indigo-200'
-                    }`}
+                    className={`w-full mt-5 py-2.5 rounded-lg font-medium transition-all transform active:scale-95 ${!file || uploading
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                            : 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700 shadow-indigo-200'
+                        }`}
                 >
                     {uploading ? (
-                        <span className="flex items-center justify-center gap-2">
+                        <span className="flex items-center justify-center mt-4 gap-2">
                             <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

@@ -19,7 +19,8 @@ import {
     Search
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import api, { API_ENDPOINTS } from '../config/api';
+import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
+import { useTheme } from '../context/ThemeContext.jsx';
 import './Layout.css';
 
 const Layout = ({ children }) => {
@@ -31,6 +32,7 @@ const Layout = ({ children }) => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showProfilePreview, setShowProfilePreview] = useState(false);
+    const { isDarkMode, setIsDarkMode } = useTheme();
 
     useEffect(() => {
         if (user) {
@@ -170,7 +172,11 @@ const Layout = ({ children }) => {
                     <Link to="/profile" className="sidebar-user-link">
                         <div className="sidebar-user">
                             <div className="sidebar-user-avatar">
-                                {user?.name?.charAt(0).toUpperCase()}
+                                {user?.profile_image ? (
+                                    <img src={getFileUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover rounded-full" />
+                                ) : (
+                                    user?.name?.charAt(0).toUpperCase()
+                                )}
                             </div>
                             <div className="sidebar-user-info">
                                 <div className="sidebar-user-name">{user?.name}</div>
@@ -314,8 +320,12 @@ const Layout = ({ children }) => {
                                     <PlusCircle size={24} className="rotate-45" />
                                 </button>
                                 <div className="flex items-center gap-6">
-                                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center text-3xl font-black border border-white/30">
-                                        {user?.name?.charAt(0).toUpperCase()}
+                                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center text-3xl font-black border border-white/30 overflow-hidden">
+                                        {user?.profile_image ? (
+                                            <img src={getFileUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            user?.name?.charAt(0).toUpperCase()
+                                        )}
                                     </div>
                                     <div>
                                         <h2 className="text-2xl font-black m-0">{user?.name}</h2>

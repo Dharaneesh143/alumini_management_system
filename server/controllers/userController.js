@@ -60,6 +60,7 @@ exports.updateProfile = async (req, res) => {
             user.phoneNumber = phoneNumber;
             user.phone_number = phoneNumber;
         }
+        if (req.body.rollNumber) user.rollNumber = req.body.rollNumber;
 
         if (req.body.isMentor !== undefined) user.isMentor = req.body.isMentor;
         if (req.body.mentorSettings) {
@@ -87,6 +88,7 @@ exports.updateProfile = async (req, res) => {
             if ('yearsOfExperience' in profile) user.profile.yearsOfExperience = profile.yearsOfExperience;
             if ('companyWebsite' in profile) user.profile.companyWebsite = profile.companyWebsite;
             if ('oldCompany' in profile) user.profile.oldCompany = profile.oldCompany;
+            if ('careerGoals' in profile) user.profile.careerGoals = profile.careerGoals;
 
             // Handle skills array explicitly
             if (profile.skills) {
@@ -228,6 +230,30 @@ exports.uploadResume = async (req, res) => {
         });
     } catch (err) {
         console.error('Resume Upload Error:', err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
+    }
+};
+// Upload Profile Image
+exports.uploadProfileImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ msg: 'No file uploaded' });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        user.profile_image = req.file.path; // Cloudinary URL
+        await user.save();
+
+        res.json({
+            msg: 'Profile image uploaded successfully',
+            imageUrl: req.file.path
+        });
+    } catch (err) {
+        console.error('Profile Image Upload Error:', err.message);
         res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };

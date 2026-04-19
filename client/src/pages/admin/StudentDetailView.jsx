@@ -170,9 +170,13 @@ const StudentDetailView = () => {
                 {/* Left Column: Summary & Quick Info */}
                 <div className="space-y-6">
                     <div className="card text-center flex flex-col items-center justify-center py-8">
-                        <div className="w-24 h-24 rounded-full bg-primary-light text-primary flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-sm">
-                            {(student?.name || 'S').charAt(0).toUpperCase()}
-                        </div>
+                            <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-xl border-2 border-white/30 overflow-hidden">
+                                {student?.profile_image ? (
+                                    <img src={getFileUrl(student.profile_image)} alt={student.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    student?.name?.charAt(0).toUpperCase() || '?'
+                                )}
+                            </div>
                         <h2 className="text-xl font-bold">{student.name}</h2>
                         <p className="text-secondary">{student.email}</p>
                         <div className="mt-4 flex justify-center gap-2">
@@ -353,32 +357,67 @@ const StudentDetailView = () => {
                                     <FileText size={16} /> Resume / Documents
                                 </h5>
                                 {(student?.profile?.resumeUrl || student?.resumeUrl) ? (
-                                    <div className="space-y-2">
+                                    <div className="space-y-4">
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-medium">
                                                 {(student?.profile?.resumeUrl || student?.resumeUrl).split('/').pop()}
                                             </span>
-                                            <a
-                                                href={getFileUrl(student?.profile?.resumeUrl || student?.resumeUrl)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-primary hover:text-primary-dark"
-                                                title="View Resume"
-                                            >
-                                                <Download size={14} />
-                                            </a>
+                                            <div className="flex gap-2">
+                                                <a
+                                                    href={getFileUrl(student?.profile?.resumeUrl || student?.resumeUrl)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="p-1.5 bg-white rounded-lg text-primary shadow-sm hover:shadow-md transition-all"
+                                                    title="View Fullscreen"
+                                                >
+                                                    <Eye size={14} />
+                                                </a>
+                                                <a
+                                                    href={getFileUrl(student?.profile?.resumeUrl || student?.resumeUrl)}
+                                                    download
+                                                    className="p-1.5 bg-white rounded-lg text-primary shadow-sm hover:shadow-md transition-all"
+                                                    title="Download"
+                                                >
+                                                    <Download size={14} />
+                                                </a>
+                                            </div>
                                         </div>
-                                        <a
-                                            href={getFileUrl(student?.profile?.resumeUrl || student?.resumeUrl)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="btn btn-sm btn-outline w-full flex items-center justify-center gap-2"
-                                        >
-                                            <Eye size={14} /> View Resume
-                                        </a>
+                                        
+                                        {/* Resume Preview */}
+                                        <div className="h-[300px] w-full bg-white rounded-xl border border-gray-200 overflow-hidden relative group">
+                                            {(() => {
+                                                const url = getFileUrl(student?.profile?.resumeUrl || student?.resumeUrl);
+                                                const isPdf = url?.toLowerCase().endsWith('.pdf');
+                                                
+                                                if (isPdf) {
+                                                    return (
+                                                        <iframe 
+                                                            src={url} 
+                                                            className="w-full h-full border-none"
+                                                            title="Resume Preview"
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <div className="w-full h-full flex items-center justify-center p-2">
+                                                        <img 
+                                                            src={url} 
+                                                            className="max-w-full max-h-full object-contain" 
+                                                            alt="Resume Preview"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = 'https://via.placeholder.com/300x400?text=Resume+Preview';
+                                                            }}
+                                                        />
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
                                     </div>
                                 ) : (
-                                    <div className="text-xs text-secondary italic">No resume uploaded</div>
+                                    <div className="text-xs text-secondary italic py-8 border-2 border-dashed border-gray-200 rounded-xl text-center">
+                                        No resume uploaded
+                                    </div>
                                 )}
                             </div>
                         </div>

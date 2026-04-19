@@ -21,7 +21,8 @@ import {
     AlertTriangle,
     ExternalLink,
     Globe,
-    X
+    Wifi,
+    Trash2, Save, X
 } from 'lucide-react';
 
 const MenteeDetailView = () => {
@@ -36,6 +37,7 @@ const MenteeDetailView = () => {
     const [activeTab, setActiveTab] = useState('chat'); // chat, profile, notes
     const [showEndModal, setShowEndModal] = useState(false);
     const [endFeedback, setEndFeedback] = useState('');
+    const [enlargedImage, setEnlargedImage] = useState(null);
 
     useEffect(() => {
         if (!user) return;
@@ -49,7 +51,7 @@ const MenteeDetailView = () => {
     const fetchDetails = async () => {
         try {
             const res = await api.get(`/api/mentorship/conversation/${id}`);
-            setMentorship(res.data);
+            setMentorship(res.data.mentorship);
         } catch (err) {
             console.error('Error fetching mentee details:', err);
         } finally {
@@ -117,8 +119,12 @@ const MenteeDetailView = () => {
                         <ChevronLeft size={24} />
                     </Link>
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                            {student?.name?.charAt(0).toUpperCase() || '?'}
+                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg overflow-hidden">
+                            {student?.profile_image ? (
+                                <img src={getFileUrl(student.profile_image)} alt={student.name} className="w-full h-full object-cover" />
+                            ) : (
+                                student?.name?.charAt(0).toUpperCase() || '?'
+                            )}
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">{student?.name || 'Student'}</h1>
@@ -145,8 +151,15 @@ const MenteeDetailView = () => {
                         {/* Profile Header */}
                         <div className="bg-gradient-to-br from-indigo-500 to-purple-100 p-6 text-center">
                             <div className="relative inline-block mb-3">
-                                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-xl border-2 border-white/30">
-                                    {student?.name?.charAt(0).toUpperCase() || '?'}
+                                <div 
+                                    className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-xl border-2 border-white/30 overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+                                    onClick={() => student?.profile_image && setEnlargedImage(getFileUrl(student.profile_image))}
+                                >
+                                    {student?.profile_image ? (
+                                        <img src={getFileUrl(student.profile_image)} alt={student.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        student?.name?.charAt(0).toUpperCase() || '?'
+                                    )}
                                 </div>
                             </div>
                             <h3 className="text-xl font-bold text-white mb-1">{student?.name}</h3>
@@ -178,7 +191,7 @@ const MenteeDetailView = () => {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-xs text-gray-500 font-medium mb-0.5">Roll Number</p>
-                                            <p className="text-sm text-gray-900 font-medium">{student.rollNumber || 'Not provided'}</p>
+                                            <p className="text-sm text-gray-900 font-medium">{student.rollNumber || student.registerNumber || 'Not provided'}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -187,15 +200,50 @@ const MenteeDetailView = () => {
                             {/* Divider */}
                             <div className="border-t border-gray-200"></div>
 
+                            {/* Professional Links */}
+                            {(student.profile?.linkedin || student.profile?.github) && (
+                                <div>
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 px-4 pt-4 pb-2 flex items-center gap-1.5">
+                                        <Globe size={13} className="text-blue-600" />
+                                        Links
+                                    </h4>
+                                    <div className="flex flex-col gap-3 px-6 pb-4">
+                                        {student.profile?.linkedin && (
+                                            <a 
+                                                href={student.profile.linkedin} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 text-sm text-[#0077b5] hover:underline font-bold"
+                                            >
+                                                <svg size={16} className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
+                                                LinkedIn Profile
+                                            </a>
+                                        )}
+                                        {student.profile?.github && (
+                                            <a 
+                                                href={student.profile.github} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 text-sm text-[#24292e] hover:underline font-bold"
+                                            >
+                                                <svg size={16} className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" /></svg>
+                                                GitHub Profile
+                                            </a>
+                                        )}
+                                    </div>
+                                    <div className="border-t border-gray-200"></div>
+                                </div>
+                            )}
+
                             {/* Career Goal */}
                             <div>
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 px-2 flex items-center gap-1.5">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 px-4 pt-4 flex items-center gap-1.5">
                                     <Target size={13} className="text-indigo-600" />
                                     Career Goal
                                 </h4>
-                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 px-6 rounded-xl border border-indigo-100">
-                                    <p className="text-sm text-gray-700 leading-relaxed">
-                                        {student.careerGoals || 'No career goal specified yet.'}
+                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 px-6 mx-4 mb-4 rounded-xl border border-indigo-100">
+                                    <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                                        {student.profile?.careerGoals || student.careerGoals || 'No career goal specified yet.'}
                                     </p>
                                 </div>
                             </div>
@@ -210,8 +258,8 @@ const MenteeDetailView = () => {
                                     Skills
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {student.skills?.length > 0 ? (
-                                        student.skills.map((skill, i) => (
+                                    {(student.profile?.skills || student.skills)?.length > 0 ? (
+                                        (student.profile?.skills || student.skills).map((skill, i) => (
                                             <span key={i} className="text-xs font-semibold px-3 py-1.5 bg-white text-indigo-700 rounded-lg border border-indigo-200 shadow-sm">
                                                 {skill}
                                             </span>
@@ -328,22 +376,47 @@ const MenteeDetailView = () => {
 
                                 {/* Preview Container */}
                                 <div className="flex-1 bg-gray-100 relative group overflow-auto p-4 md:p-8 flex justify-center">
-                                    {(student?.profile?.resumeUrl || mentorship?.resumeUrl) ? (
-                                        <div className="w-full max-w-4xl bg-white shadow-2xl rounded-sm border border-gray-200 h-full relative group/resume">
-                                            <iframe
-                                                src={getFileUrl(student?.profile?.resumeUrl || mentorship?.resumeUrl)}
-                                                className="w-full h-full border-none pointer-events-auto"
-                                                title="Student Resume"
-                                            />
-                                        </div>
-                                    ) : (
+                                {(() => {
+                                    const url = getFileUrl(student?.profile?.resumeUrl || mentorship?.resumeUrl);
+                                    if (!url) return (
                                         <div className="flex flex-col items-center justify-center h-full text-secondary">
                                             <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4 opacity-40">
                                                 <FileText size={40} />
                                             </div>
-                                            <p className="font-black uppercase tracking-widest text-xs opacity-50 text-center">No resume uploaded by the student</p>
+                                            <p className="font-black uppercase tracking-widest text-xs opacity-50 text-center">No resume uploaded</p>
                                         </div>
-                                    )}
+                                    );
+                                    
+                                    const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(url) || url.includes('image/upload');
+                                    
+                                    return (
+                                        <div className="w-full max-w-4xl bg-white shadow-2xl rounded-sm border border-gray-200 h-full relative group/resume flex items-center justify-center overflow-auto">
+                                            {url?.toLowerCase().endsWith('.pdf') ? (
+                                                <iframe
+                                                    src={url}
+                                                    className="w-full h-full border-none pointer-events-auto"
+                                                    title="Student Resume"
+                                                />
+                                            ) : (
+                                                <div className="flex-1 overflow-auto flex items-center justify-center p-2 relative group-preview">
+                                                <img 
+                                                    src={url} 
+                                                    className="max-w-full max-h-full object-contain cursor-pointer" 
+                                                    alt="Resume Preview"
+                                                    onClick={() => setEnlargedImage(url)}
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = 'https://via.placeholder.com/400x500?text=Resume+Preview';
+                                                    }}
+                                                />
+                                                <div className="absolute inset-0 bg-black/0 group-preview-hover:bg-black/10 transition-colors pointer-events-none flex items-center justify-center">
+                                                    <Sparkles className="text-white opacity-0 group-preview-hover:opacity-100 transition-opacity" size={48} />
+                                                </div>
+                                            </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                                 </div>
                             </div>
                         )}
@@ -490,6 +563,26 @@ const MenteeDetailView = () => {
                     </div>
                 )}
             </div>
+            {/* Shared Enlarged Image Modal */}
+            {enlargedImage && (
+                <div 
+                    className="fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center p-4 animate-in fade-in duration-300"
+                    onClick={() => setEnlargedImage(null)}
+                >
+                    <button 
+                        className="absolute top-6 right-6 text-white bg-white/10 p-3 rounded-full hover:bg-white/20 transition-all backdrop-blur-md"
+                        onClick={() => setEnlargedImage(null)}
+                    >
+                        <X size={24} />
+                    </button>
+                    <img 
+                        src={enlargedImage} 
+                        className="max-w-full max-h-full object-contain shadow-2xl animate-in zoom-in-95 duration-300" 
+                        alt="Enlarged" 
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
         </div>
     );
 };

@@ -13,10 +13,14 @@ import {
     ChevronRight,
     BookOpen,
     MessageSquare,
-    Clock
+    Clock,
+    Settings,
+    MoreVertical
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import ResumeUpload from '../components/ResumeUpload';
+import PageSettings from '../components/PageSettings';
+import { useTheme } from '../context/ThemeContext.jsx';
 import api, { API_ENDPOINTS } from '../config/api';
 
 const StudentDashboard = () => {
@@ -26,6 +30,8 @@ const StudentDashboard = () => {
     const [stats, setStats] = useState({ appliedJobs: 0, mentorshipRequests: 0, events: 0 });
     const [activeMentorship, setActiveMentorship] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showSettings, setShowSettings] = useState(false);
+    const { isDarkMode, setIsDarkMode } = useTheme();
 
     useEffect(() => {
         fetchDashboardData();
@@ -44,7 +50,7 @@ const StudentDashboard = () => {
                 api.get(API_ENDPOINTS.GET_MENTORSHIP_REQUESTS)
             ]);
             setTotalJobsCount(jobsRes.data.length);
-            setJobs(jobsRes.data.slice(0, 3));
+            setJobs(jobsRes.data);
             setStats(statsRes.data);
             const active = requestsRes.data.find(r => r.status === 'accepted' || r.status === 'Active');
             setActiveMentorship(active);
@@ -84,15 +90,35 @@ const StudentDashboard = () => {
 
 
     return (
-        <div className="space-y-8 pb-8 mb-8">
+        <div className="space-y-8 pb-8">
             {/* Welcome Section */}
-            <div className="mb-6">
-                <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h2>
-                <p className="text-secondary">Here's your dashboard overview</p>
+            <div className="flex justify-between items-start">
+                <div>
+                    <h2 className="text-3xl font-bold mb-2 dark:text-white">Welcome back, {user?.name}!</h2>
+                    <p className="text-secondary dark:text-slate-400">Here's your dashboard overview</p>
+                </div>
+                <div className="relative">
+                    <button 
+                        onClick={() => setShowSettings(!showSettings)}
+                        className={`p-3 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-all text-gray-500 dark:text-slate-400 ${showSettings ? 'ring-2 ring-primary/20' : ''}`}
+                    >
+                        <MoreVertical size={20} />
+                    </button>
+
+                    {showSettings && (
+                        <div className="absolute right-0 top-full mt-2 z-50">
+                            <PageSettings 
+                                isDarkMode={isDarkMode}
+                                setIsDarkMode={setIsDarkMode}
+                                onClose={() => setShowSettings(false)}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-3 gap-6 mb-8 justify-between">
+            <div className="grid grid-cols-3 gap-6 justify-between">
                 <StatCard
                     icon={Briefcase}
                     label="Jobs Available"
@@ -116,29 +142,28 @@ const StudentDashboard = () => {
             {/* Main Content Grid */}
             <div className="grid grid-cols-3 gap-6">
                 {/* Recent Jobs */}
-                <div className="card" style={{ gridColumn: 'span 2' }}>
-                    <div className="card-header">
-                        <div className="flex items-center justify-between">
-                            <h3 className="card-title">Recent Job Opportunities</h3>
-                            <Link to="/jobs" className="text-sm text-primary font-medium">
-                                View All →
-                            </Link>
-                        </div>
+                {/* Recent Jobs */}
+                <div className="card flex flex-col" style={{ gridColumn: 'span 2', height: '800px' }}>
+                    <div className="px-6 py-2 border-b border-gray-100 flex items-center justify-between">
+                        <h3 className="text-base font-bold text-gray-800">Recent Job Opportunities</h3>
+                        <Link to="/jobs" className="text-xs text-primary font-bold hover:underline">
+                            View All
+                        </Link>
                     </div>
-                    <div className="card-body">
-                        {loading ? (
-                            <div className="text-center text-secondary py-8">Loading...</div>
-                        ) : jobs.length === 0 ? (
-                            <div className="text-center text-secondary py-8">
-                                <div className="flex justify-center mb-4">
-                                    <Briefcase size={48} className="text-muted" />
+                    <div className="card-body p-0 relative flex flex-col overflow-hidden h-full">
+                        <div style={{ maxHeight: '780px' }} className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                            {loading ? (
+                                <div className="text-center text-secondary py-8">Loading...</div>
+                            ) : jobs.length === 0 ? (
+                                <div className="text-center text-secondary py-8">
+                                    <div className="flex justify-center mb-4">
+                                        <Briefcase size={48} className="text-muted" />
+                                    </div>
+                                    <p>No jobs available yet</p>
                                 </div>
-                                <p>No jobs available yet</p>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-4">
-                                {jobs.map((job) => (
-                                    <div key={job._id} className="p-4 border border-gray-200 rounded-lg hover:border-primary transition-all">
+                            ) : (
+                                jobs.slice(0, 6).map((job) => (
+                                    <div key={job._id} className="p-4 border border-gray-200 rounded-xl hover:border-primary transition-all bg-white hover:shadow-md">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
                                                 <h4 className="font-semibold text-base mb-1">{job.title}</h4>
@@ -153,7 +178,21 @@ const StudentDashboard = () => {
                                             </Link>
                                         </div>
                                     </div>
-                                ))}
+                                ))
+                            )}
+                        </div>
+                        {jobs.length > 6 && (
+                            <div className="absolute bottom-6 right-6">
+                                <Link
+                                    to="/jobs"
+                                    className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all border-4 border-white group"
+                                    title="See all jobs"
+                                >
+                                    <div className="flex flex-col items-center leading-none">
+                                        <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                                        <span className="text-[8px] font-black uppercase mt-1">See All</span>
+                                    </div>
+                                </Link>
                             </div>
                         )}
                     </div>
@@ -165,7 +204,7 @@ const StudentDashboard = () => {
                     {activeMentorship && (
                         <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl border-2 border-indigo-100 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                             {/* Header with gradient */}
-                            <div className="bg-purple-500 px-6 py-4">
+                            <div className="bg-violet-400 px-6 py-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -187,7 +226,7 @@ const StudentDashboard = () => {
                                 <div className="flex items-start gap-4 mb-4">
                                     {/* Large Avatar */}
                                     <div className="relative flex-shrink-0">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                                        <div className="w-16 h-16 bg-gray-400 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                                             {(activeMentorship.alumni?.name || 'M').charAt(0).toUpperCase()}
                                         </div>
                                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>
@@ -235,7 +274,7 @@ const StudentDashboard = () => {
                                 {/* CTA Button */}
                                 <Link
                                     to={`/mentorship/conversation/${activeMentorship._id}`}
-                                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                                    className="w-full bg-violet-400 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
                                 >
                                     <MessageSquare size={18} />
                                     Chat with Mentor
@@ -245,71 +284,83 @@ const StudentDashboard = () => {
                     )}
 
                     {/* Resume Upload Section */}
-                    <ResumeUpload 
-                        currentResume={user?.profile?.resumeUrl || user?.resume} 
+                    <ResumeUpload
+                        currentResume={user?.profile?.resumeUrl || user?.resume}
                         onUploadSuccess={() => {
                             if (refreshUser) refreshUser();
                         }}
                     />
 
-                    {/* Profile Completion */}
-                    <div className="card">
-                        <h3 className="card-title mb-4">Profile Completion</h3>
-                        <div className="mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-secondary">Progress</span>
-                                <span className="text-sm font-semibold">{progress}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
-                            </div>
-                        </div>
-                        <p className="text-xs text-secondary mb-4">
-                            Complete your profile to increase visibility to alumni
-                        </p>
-                        <Link to="/profile" className="btn btn-outline w-full btn-sm">
-                            Update Profile
+                </div>
+            </div>
+
+            {/* Secondary Row: Quick Actions (Left) + Profile Completion (Right) */}
+            <div className="grid grid-cols-3 gap-6">
+                {/* Quick Actions - span 2 */}
+                <div className="card" style={{ gridColumn: 'span 2' }}>
+                    <h3 className="card-title mb-4 text-base font-bold text-gray-800">Quick Actions</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <Link to="/jobs" className="btn btn-outline w-full flex items-center justify-center gap-2 py-3">
+                            <Search size={18} />
+                            Browse Jobs
+                        </Link>
+                        {activeMentorship ? (
+                            <Link to={`/mentorship/conversation/${activeMentorship._id}`} className="btn btn-outline w-full flex items-center justify-center gap-2 py-3">
+                                <MessageSquare size={18} />
+                                My Mentor Chat
+                            </Link>
+                        ) : (
+                            <>
+                                <Link to="/mentorship" className="btn btn-outline w-full flex items-center justify-center gap-2 py-3">
+                                    <Users size={18} />
+                                    Find Mentor
+                                </Link>
+                                <Link to="/mentorship/requests" className="btn btn-outline w-full flex items-center justify-center gap-2 py-3">
+                                    <Clock size={18} />
+                                    My Requests
+                                </Link>
+                            </>
+                        )}
+                        <Link to="/events" className="btn btn-outline w-full flex items-center justify-center gap-2 py-3">
+                            <Calendar size={18} />
+                            Events
+                        </Link>
+                        <Link to="/settings" className="btn btn-outline w-full flex items-center justify-center gap-2 py-3">
+                            <Settings size={18} />
+                            Settings
                         </Link>
                     </div>
+                </div>
 
-                    {/* Quick Actions Card */}
-                    <div className="card">
-                        <h3 className="card-title mb-4">Quick Actions</h3>
-                        <div className="flex flex-col gap-3">
-                            <Link to="/jobs" className="btn btn-outline w-full flex items-center justify-center gap-2">
-                                <Search size={18} />
-                                Browse Jobs
-                            </Link>
-                            {activeMentorship ? (
-                                <Link to={`/mentorship/conversation/${activeMentorship._id}`} className="btn btn-outline w-full flex items-center justify-center gap-2">
-                                    <MessageSquare size={18} />
-                                    My Mentor Chat
-                                </Link>
-                            ) : (
-                                <>
-                                    <Link to="/mentorship" className="btn btn-outline w-full flex items-center justify-center gap-2">
-                                        <Users size={18} />
-                                        Find Mentor
-                                    </Link>
-                                    <Link to="/mentorship/requests" className="btn btn-outline w-full flex items-center justify-center gap-2">
-                                        <Clock size={18} />
-                                        My Requests
-                                    </Link>
-                                </>
-                            )}
+                {/* Profile Completion - span 1 */}
+                <div className="card">
+                    <h3 className="card-title mb-4 text-base font-bold text-gray-800">Profile Completion</h3>
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-secondary">Progress</span>
+                            <span className="text-sm font-semibold">{progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
                         </div>
                     </div>
+                    <p className="text-xs text-secondary mb-4">
+                        Complete your profile to increase visibility to alumni
+                    </p>
+                    <Link to="/profile" className="btn btn-outline w-full btn-sm mt-auto">
+                        Update Profile
+                    </Link>
                 </div>
             </div>
 
             {/* Activity Section */}
-            <div className="mt-8" >
+            <div>
                 <div className="card">
                     <div className="card-header">
                         <h3 className="card-title">Your Activity</h3>
                     </div>
                     <div className="card-body">
-                        <div className="grid grid-cols-3 gap-6">
+                        <div className="grid grid-cols-2 gap-6">
                             <div className="text-center p-4 bg-gray-50 rounded-lg">
                                 <div className="text-2xl font-bold text-primary mb-1">{stats.appliedJobs}</div>
                                 <div className="text-sm text-secondary">Jobs Applied</div>

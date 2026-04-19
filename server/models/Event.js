@@ -23,6 +23,10 @@ const eventSchema = new mongoose.Schema({
         type: Date,
         required: false
     },
+    startDate: Date,
+    endDate: Date,
+    startTime: String,
+    endTime: String,
     event_date: Date, // Explicit mapping from request
     time: {
         type: String,
@@ -47,7 +51,7 @@ const eventSchema = new mongoose.Schema({
     imageUrl: String, // Poster image
     category: {
         type: String,
-        enum: ['Farewell', 'Guest Lecture', 'Celebration', 'Technical', 'Career', 'Other'],
+        enum: ['Farewell', 'Guest Lecture', 'Celebration', 'Technical', 'Career', 'Hackathon', 'Company', 'Other'],
         default: 'Other'
     },
     registration_link: String, // Explicit mapping from request

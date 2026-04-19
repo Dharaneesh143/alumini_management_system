@@ -8,7 +8,7 @@ import {
     ArrowLeft, User, Phone, Globe, MessageSquare,
     Upload, Download, AlertCircle, Trash2, Edit,
     Info, GraduationCap, Users, Target, Award,
-    Sparkles, Building, Mail, TrendingUp
+    Sparkles, Building, Mail, TrendingUp, X
 } from 'lucide-react';
 
 const JobDetail = () => {
@@ -19,6 +19,7 @@ const JobDetail = () => {
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [fullScreenImage, setFullScreenImage] = useState(null);
 
     // Application Form State
     const [showApplyForm, setShowApplyForm] = useState(false);
@@ -108,7 +109,7 @@ const JobDetail = () => {
     const eligible = isEligible();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-purple-50/10 pb-16">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-purple-50/10">
             {/* Enhanced Top Navigation Bar */}
             <div className="bg-white/80 backdrop-blur-lg border-b border-gray-200 -mx-8 -mt-8 px-8 py-5 mb-10 sticky top-0 z-40 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -162,7 +163,10 @@ const JobDetail = () => {
                             <div className="p-8 md:p-10">
                                 <div className="flex flex-col md:flex-row gap-8">
                                     {/* Enhanced Company Logo */}
-                                    <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg">
+                                    <div 
+                                        className="w-28 h-28 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg cursor-pointer hover:scale-105 transition-transform"
+                                        onClick={() => job.companyLogo && setFullScreenImage(getFileUrl(job.companyLogo))}
+                                    >
                                         {job.companyLogo ? (
                                             <img src={getFileUrl(job.companyLogo)} alt={job.company} className="w-full h-full object-contain p-3" />
                                         ) : (
@@ -516,8 +520,12 @@ const JobDetail = () => {
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100">
                             <h5 className="font-black text-xs text-gray-400 uppercase tracking-widest mb-6">Posted By</h5>
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-200">
-                                    {job.postedBy?.name?.charAt(0)}
+                                <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-200 overflow-hidden flex-shrink-0">
+                                    {job.postedBy?.profile_image ? (
+                                        <img src={getFileUrl(job.postedBy.profile_image)} alt={job.postedBy.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        job.postedBy?.name?.charAt(0)
+                                    )}
                                 </div>
                                 <div>
                                     <p className="font-black text-gray-900 text-lg leading-tight">{job.postedBy?.name}</p>
@@ -536,6 +544,27 @@ const JobDetail = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Full-Screen Image Viewer */}
+            {fullScreenImage && (
+                <div
+                    className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300"
+                    onClick={() => setFullScreenImage(null)}
+                >
+                    <button
+                        onClick={() => setFullScreenImage(null)}
+                        className="absolute top-6 right-6 z-[10000] bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-md transition-all border border-white/20"
+                    >
+                        <X size={24} />
+                    </button>
+                    <img
+                        src={fullScreenImage}
+                        alt="Full screen view"
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
         </div>
     );
 };

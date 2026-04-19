@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api, { API_ENDPOINTS, getFileUrl } from '../config/api';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, FileText, Download, Upload } from 'lucide-react';
+import { CheckCircle, FileText, Download, Upload, X } from 'lucide-react';
 
 const Profile = () => {
     const { user, refreshUser } = useContext(AuthContext);
@@ -10,6 +10,7 @@ const Profile = () => {
     const [formData, setFormData] = useState({
         name: '',
         phoneNumber: '',
+        rollNumber: '',
         profile: {
             department: '',
             batch: '',
@@ -23,7 +24,8 @@ const Profile = () => {
             currentLocation: '',
             yearsOfExperience: '',
             companyWebsite: '',
-            oldCompany: ''
+            oldCompany: '',
+            careerGoals: ''
         },
         isMentor: false,
         mentorSettings: {
@@ -36,6 +38,7 @@ const Profile = () => {
     const [message, setMessage] = useState('');
     const [showDeactivateModal, setShowDeactivateModal] = useState(false);
     const [deactivateFeedback, setDeactivateFeedback] = useState('');
+    const [fullScreenImage, setFullScreenImage] = useState(null);
 
     useEffect(() => {
         if (user) {
@@ -46,6 +49,7 @@ const Profile = () => {
             setFormData({
                 name: user.name || '',
                 phoneNumber: user.phoneNumber || user.phone_number || '',
+                rollNumber: clean(user.rollNumber) || clean(user.registerNumber) || '',
                 profile: {
                     department: clean(user.profile?.department) || clean(user.department),
                     batch: clean(user.profile?.batch) || clean(user.batch) || clean(user.passedOutYear),
@@ -59,7 +63,8 @@ const Profile = () => {
                     currentLocation: clean(user.profile?.currentLocation),
                     yearsOfExperience: clean(user.profile?.yearsOfExperience),
                     companyWebsite: clean(user.profile?.companyWebsite),
-                    oldCompany: clean(user.profile?.oldCompany)
+                    oldCompany: clean(user.profile?.oldCompany),
+                    careerGoals: clean(user.profile?.careerGoals)
                 },
                 isMentor: user.isMentor || false,
                 mentorSettings: {
@@ -74,7 +79,7 @@ const Profile = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'name' || name === 'phoneNumber') {
+        if (name === 'name' || name === 'phoneNumber' || name === 'rollNumber') {
             setFormData({ ...formData, [name]: value });
         } else if (name === 'isMentor') {
             setFormData({ ...formData, isMentor: e.target.checked });
@@ -103,6 +108,7 @@ const Profile = () => {
             const updateData = {
                 name: formData.name,
                 phoneNumber: formData.phoneNumber,
+                rollNumber: formData.rollNumber,
                 profile: {
                     ...formData.profile,
                     cgpa: formData.profile.cgpa,
@@ -156,6 +162,51 @@ const Profile = () => {
             )}
 
             {/* Profile Form */}
+
+            <div className="card mb-8 p-8 flex flex-col items-center justify-center border-dashed border-2 border-indigo-100 bg-indigo-50/30 rounded-[3rem]">
+                <div className="relative group cursor-pointer w-32 h-32 mb-6">
+                    <div 
+                        className="w-full h-full rounded-full bg-white shadow-xl flex items-center justify-center text-4xl font-black text-indigo-600 border-4 border-white overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => user?.profile_image && setFullScreenImage(getFileUrl(user.profile_image))}
+                    >
+                        {user?.profile_image ? (
+                            <img src={getFileUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
+                        ) : (
+                            user?.name?.charAt(0).toUpperCase()
+                        )}
+                    </div>
+                    <label className="absolute inset-0 bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                        <Upload size={24} />
+                        <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                const formData = new FormData();
+                                formData.append('profileImage', file);
+                                try {
+                                    setLoading(true);
+                                    await api.post('/api/users/profile-image', formData, {
+                                        headers: { 'Content-Type': 'multipart/form-data' }
+                                    });
+                                    setMessage('Profile picture updated!');
+                                    await refreshUser();
+                                } catch (err) {
+                                    setMessage('Failed to upload image');
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                        />
+                    </label>
+                </div>
+                <div className="text-center">
+                    <h3 className="text-lg font-black text-gray-900">{user?.name}</h3>
+                    <p className="text-sm text-gray-500 font-bold uppercase tracking-widest">{user?.role}</p>
+                </div>
+            </div>
 
             <div className="card">
                 <form onSubmit={handleSubmit}>
@@ -232,6 +283,17 @@ const Profile = () => {
 
                         {user?.role === 'student' && (
                             <>
+                                <div className="form-group">
+                                    <label className="form-label">Roll Number</label>
+                                    <input
+                                        type="text"
+                                        name="rollNumber"
+                                        value={formData.rollNumber}
+                                        onChange={handleChange}
+                                        className="form-input"
+                                        placeholder="e.g., 20CS101"
+                                    />
+                                </div>
                                 <div className="form-group">
                                     <label className="form-label">Year of Study</label>
                                     <select
@@ -406,6 +468,20 @@ const Profile = () => {
                                 placeholder="https://github.com/username"
                             />
                         </div>
+
+                        {user?.role === 'student' && (
+                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                <label className="form-label">Career Goal</label>
+                                <textarea
+                                    name="careerGoals"
+                                    value={formData.profile.careerGoals}
+                                    onChange={handleChange}
+                                    className="form-input w-full"
+                                    rows="3"
+                                    placeholder="What are your career aspirations? This helps mentors guide you better."
+                                ></textarea>
+                            </div>
+                        )}
                     </div>
 
                     {/* Mentorship Settings (for Alumni) */}
@@ -655,7 +731,7 @@ const Profile = () => {
 
                         {/* Feedback Input Block */}
                         <div className="mb-8">
-                            <label className="block text-sm font-medium mb-4 text-gray-500 mb-3">
+                            <label className="block text-sm font-medium text-gray-500 mb-3">
                                 Share your reason (optional)
                             </label>
                             <textarea
@@ -697,6 +773,27 @@ const Profile = () => {
                             </button>
                         )}
                     </div>
+                </div>
+            )}
+
+            {/* Full-Screen Image Viewer */}
+            {fullScreenImage && (
+                <div
+                    className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300"
+                    onClick={() => setFullScreenImage(null)}
+                >
+                    <button
+                        onClick={() => setFullScreenImage(null)}
+                        className="absolute top-6 right-6 z-[10000] bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-md transition-all border border-white/20"
+                    >
+                        <X size={24} />
+                    </button>
+                    <img
+                        src={fullScreenImage}
+                        alt="Full screen view"
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    />
                 </div>
             )}
         </div>

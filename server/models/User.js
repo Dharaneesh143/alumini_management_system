@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema({
         sparse: true,
         unique: true
     },
+    rollNumber: String,
     // Alumni specific
     approvalStatus: {
         type: String,
@@ -102,9 +103,22 @@ const userSchema = new mongoose.Schema({
         currentLocation: String,
         yearsOfExperience: String,
         companyWebsite: String,
-        oldCompany: String
+        oldCompany: String,
+        careerGoals: String
+    },
+    isOnline: {
+        type: Boolean,
+        default: false
+    },
+    lastSeen: {
+        type: Date,
+        default: Date.now
     }
-}, { timestamps: true });
+}, { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 // Pre-save middleware to sync fields
 userSchema.pre('save', async function () {

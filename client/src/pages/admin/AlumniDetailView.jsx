@@ -22,7 +22,7 @@ import {
     UserMinus,
     Target
 } from 'lucide-react';
-import api from '../../config/api';
+import api, { getFileUrl } from '../../config/api';
 
 const AlumniDetailView = () => {
     const { id } = useParams();
@@ -180,7 +180,47 @@ const AlumniDetailView = () => {
                         <h3 className="font-bold flex items-center gap-2 border-b pb-2 text-primary">
                             <Briefcase size={18} /> Professional Info
                         </h3>
-                        <div className="space-y-2">
+                        <div className="space-y-4">
+                            {(alumni?.profile?.resumeUrl || alumni?.resumeUrl) && (
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-bold uppercase text-secondary">Uploaded Document</h4>
+                                    <div className="h-[200px] w-full bg-gray-50 rounded-xl border border-gray-200 overflow-hidden relative group">
+                                        {(() => {
+                                            const url = getFileUrl(alumni?.profile?.resumeUrl || alumni?.resumeUrl);
+                                            const isPdf = url?.toLowerCase().endsWith('.pdf');
+                                            
+                                            if (isPdf) {
+                                                return (
+                                                    <iframe 
+                                                        src={url} 
+                                                        className="w-full h-full border-none"
+                                                        title="Document Preview"
+                                                    />
+                                                );
+                                            }
+                                            return (
+                                                <div className="w-full h-full flex items-center justify-center p-2">
+                                                    <img 
+                                                        src={url} 
+                                                        className="max-w-full max-h-full object-contain cursor-pointer" 
+                                                        alt="Document Preview"
+                                                        onClick={() => window.open(url, '_blank')}
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = 'https://via.placeholder.com/300x400?text=No+Preview';
+                                                        }}
+                                                    />
+                                                </div>
+                                            );
+                                        })()}
+                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <a href={getFileUrl(alumni?.profile?.resumeUrl || alumni?.resumeUrl)} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg text-primary shadow-sm hover:scale-110 transition-all">
+                                                <ExternalLink size={14} />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <div className="flex justify-between">
                                 <span className="text-secondary">Company</span>
                                 <span className="font-medium">{alumni.currentCompany || 'N/A'}</span>
@@ -465,8 +505,12 @@ const AlumniDetailView = () => {
 
                         {/* User Identity Section */}
                         <div className="flex items-center gap-4 mb-8 pb-2">
-                            <div className="w-14 h-14 bg-red-600 rounded-xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg shadow-red-200">
-                                {(alumni?.name || 'A').charAt(0).toUpperCase()}
+                            <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-xl border-2 border-white/30 overflow-hidden">
+                                {alumni?.profile_image ? (
+                                    <img src={getFileUrl(alumni.profile_image)} alt={alumni.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    alumni?.name?.charAt(0).toUpperCase() || '?'
+                                )}
                             </div>
                             <div className="flex-1">
                                 <p className="font-bold text-lg text-gray-900 leading-tight">{alumni?.name}</p>

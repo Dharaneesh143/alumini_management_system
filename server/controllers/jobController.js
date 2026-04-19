@@ -153,7 +153,7 @@ exports.getJobs = async (req, res) => {
 
         const jobs = await Job.find(query)
             .sort({ createdAt: -1 })
-            .populate('postedBy', 'name email profile.company');
+            .populate('postedBy', 'name email profile.company profile_image');
 
         // 3. Add hasApplied Flag for Students
         let jobsWithStatus = jobs.map(job => job.toObject());
@@ -180,7 +180,7 @@ exports.getJobs = async (req, res) => {
 exports.getJobById = async (req, res) => {
     try {
         const job = await Job.findById(req.params.id)
-            .populate('postedBy', 'name email profile');
+            .populate('postedBy', 'name email profile profile_image');
 
         if (!job) return res.status(404).json({ msg: 'Opportunity not found' });
 

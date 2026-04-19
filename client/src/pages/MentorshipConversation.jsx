@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
-import api from '../config/api';
+import api, { getFileUrl } from '../config/api';
 import MessageBubble from '../components/MessageBubble';
 import VoiceRecorder from '../components/VoiceRecorder';
+import PageSettings from '../components/PageSettings';
+import { useTheme } from '../context/ThemeContext.jsx';
+import { initSocket } from '../config/socket';
 import {
     Send,
     Paperclip,
@@ -22,9 +25,14 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
     const navigate = useNavigate();
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const isFirstLoad = useRef(true);
 
     const [mentorship, setMentorship] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [partner, setPartner] = useState(null);
+    const [isPartnerOnline, setIsPartnerOnline] = useState(false);
+    const [partnerLastSeen, setPartnerLastSeen] = useState(null);
+    const [isPartnerTyping, setIsPartnerTyping] = useState(false);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
@@ -34,6 +42,59 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
     const [fullScreenImage, setFullScreenImage] = useState(null);
     const [fullScreenImageCaption, setFullScreenImageCaption] = useState(null);
     const [messageToDelete, setMessageToDelete] = useState(null);
+    const [showSettings, setShowSettings] = useState(false);
+    const { isDarkMode, setIsDarkMode } = useTheme();
+    const [chatBackground, setChatBackground] = useState('');
+    const socketRef = useRef(null);
+    const typingTimeoutRef = useRef(null);
+
+    const handleBackgroundChange = (newBg) => {
+        console.log('Background changing to:', newBg ? 'Image/Base64' : 'Default');
+        setChatBackground(newBg);
+        if (newBg) {
+            localStorage.setItem(`chat_bg_${id}`, newBg);
+        } else {
+            localStorage.removeItem(`chat_bg_${id}`);
+        }
+    };
+
+    // Load background when ID changes
+    useEffect(() => {
+        if (id) {
+            const savedBg = localStorage.getItem(`chat_bg_${id}`);
+            setChatBackground(savedBg || '');
+        }
+    }, [id]);
+
+    // Socket Connection and Presence Listeners
+    useEffect(() => {
+        if (!user?._id || !partner?._id) return;
+
+        socketRef.current = initSocket(user._id);
+
+        socketRef.current.on('user_status', (data) => {
+            if (partner && data.userId === partner._id) {
+                setIsPartnerOnline(data.isOnline);
+                if (data.lastSeen) setPartnerLastSeen(data.lastSeen);
+            }
+        });
+
+        socketRef.current.on('typing_status', (data) => {
+            if (partner && data.senderId === partner._id) {
+                setIsPartnerOnline(true); // If they are typing, they are online
+                setIsPartnerTyping(data.isTyping);
+            }
+        });
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+        };
+    }, [user, partner]);
 
     useEffect(() => {
         if (!user) return;
@@ -48,18 +109,37 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
     }, [id, user]);
 
     useEffect(() => {
-        scrollToBottom();
+        if (messages.length > 0) {
+            if (isFirstLoad.current) {
+                isFirstLoad.current = false;
+                return;
+            }
+            scrollToBottom();
+        }
     }, [messages]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messagesEndRef.current) {
+            const container = messagesEndRef.current.parentElement;
+            if (container) {
+                const scrollContainer = container.closest('.overflow-y-auto');
+                if (scrollContainer) {
+                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                } else {
+                    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
     };
 
     const fetchConversation = async () => {
         try {
             const res = await api.get(`/api/mentorship/conversation/${id}`);
-            setMentorship(res.data);
-            setMessages(res.data.messages || []);
+            setMentorship(res.data.mentorship);
+            setPartner(res.data.partner);
+            setIsPartnerOnline(res.data.partner.isOnline);
+            setPartnerLastSeen(res.data.partner.lastSeen);
+            setMessages(res.data.messages);
             markAsRead();
         } catch (err) {
             console.error('Error fetching conversation:', err);
@@ -85,6 +165,41 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
 
     const handleDeleteMessage = (messageId) => {
         setMessageToDelete(messageId);
+    };
+
+    const formatLastSeen = (date) => {
+        if (!date) return '';
+        const now = new Date();
+        const lastSeen = new Date(date);
+        const diffInMinutes = Math.floor((now - lastSeen) / 1000 / 60);
+
+        if (diffInMinutes < 1) return 'last seen just now';
+        if (diffInMinutes < 60) return `last seen ${diffInMinutes}m ago`;
+        
+        const isToday = now.toDateString() === lastSeen.toDateString();
+        if (isToday) {
+            return `last seen today at ${lastSeen.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+        
+        return `last seen on ${lastSeen.toLocaleDateString()}`;
+    };
+
+    const handleInputChange = (e) => {
+        const val = e.target.value;
+        setNewMessage(val);
+
+        if (socketRef.current && partner) {
+            // Typing start emittance
+            socketRef.current.emit('typing', { receiverId: partner._id, isTyping: val.length > 0 });
+
+            // Clear existing timeout
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+            // Set timeout to clear typing after 2 seconds of inactivity
+            typingTimeoutRef.current = setTimeout(() => {
+                socketRef.current.emit('typing', { receiverId: partner._id, isTyping: false });
+            }, 2000);
+        }
     };
 
     const confirmDeleteMessage = async () => {
@@ -114,7 +229,7 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
     };
 
     const handleSendMessage = async (e, typeArg = null, fileArg = null, transcription = '') => {
-        if (e) e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault(); // Check if e is an event object
 
         const file = fileArg || selectedFile;
         let type = typeArg;
@@ -148,6 +263,13 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
             setFilePreview(null);
             setIsVoiceMode(false);
             markAsRead();
+
+            // Emit typing status off after sending message
+            if (socketRef.current && partner) {
+                socketRef.current.emit('typing', { receiverId: partner._id, isTyping: false });
+                if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            }
+
         } catch (err) {
             console.error('Error sending message:', err);
             alert('Failed to send message');
@@ -164,51 +286,96 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
 
     if (!mentorship) return <div className="text-center py-20 text-red-600 font-semibold">Conversation not found.</div>;
 
-    const partner = user.role === 'student' ? mentorship.alumni : mentorship.student;
+    // const partner = user.role === 'student' ? mentorship.alumni : mentorship.student; // This is now handled by state
 
     return (
-        <div className={`flex flex-col ${isEmbedded ? 'h-full' : 'h-screen'} bg-white`}>
+        <div className={`flex flex-col ${isEmbedded ? 'h-full' : 'h-screen'} bg-white dark:bg-slate-900 transition-colors duration-300`}>
             {/* Header */}
             {!isEmbedded && (
-                <div className="bg-blue-400 text-white px-6 py-4 flex items-center gap-4 shadow-lg">
+                <div className="bg-violet-400 dark:bg-slate-800 text-white px-6 py-4 flex items-center gap-4 shadow-lg relative z-50">
                     <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                         <ArrowLeft size={24} />
                     </button>
-                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        {partner?.name?.charAt(0).toUpperCase()}
+                    <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-black dark:text-white font-bold text-lg overflow-hidden flex-shrink-0">
+                        {partner?.profile_image ? (
+                            <img src={getFileUrl(partner.profile_image)} alt={partner.name} className="w-full h-full object-cover" />
+                        ) : (
+                            partner?.name?.charAt(0).toUpperCase()
+                        )}
                     </div>
-                    <div className="flex-1">
-                        <h3 className="font-bold text-lg">{partner?.name}</h3>
-                        <p className="text-xs text-white/80">{user.role === 'student' ? 'Mentor' : 'Student'}</p>
+                        <div className="flex-1 min-w-0">
+                            <h2 className="text-sm font-bold m-0 dark:text-white truncate">{partner?.name}</h2>
+                            <p className={`text-[10px] font-medium m-0 ${isPartnerOnline ? 'text-green-500' : 'text-gray-400 dark:text-slate-500'}`}>
+                                {isPartnerOnline ? (isPartnerTyping ? 'typing...' : 'Online') : formatLastSeen(partnerLastSeen)}
+                            </p>
+                        </div>
+                    <div className="relative">
+                        <button 
+                            onClick={() => setShowSettings(!showSettings)}
+                            className={`p-2 hover:bg-white/10 rounded-full transition-colors ${showSettings ? 'bg-white/20' : ''}`}
+                        >
+                            <MoreVertical size={20} />
+                        </button>
+                        
+                        {showSettings && (
+                            <div className="absolute right-0 top-full mt-2 z-[100]">
+                                <PageSettings 
+                                    isDarkMode={isDarkMode}
+                                    setIsDarkMode={setIsDarkMode}
+                                    showChatSettings={true}
+                                    currentBackground={chatBackground}
+                                    onBackgroundChange={handleBackgroundChange}
+                                    onClose={() => setShowSettings(false)}
+                                />
+                            </div>
+                        )}
                     </div>
-                    <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                        <MoreVertical size={20} />
-                    </button>
                 </div>
             )}
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-                {messages.length === 0 ? (
-                    <div className="text-center py-20 text-gray-500">
-                        <p className="text-sm">No messages yet. Start the conversation!</p>
-                    </div>
-                ) : (
-                    messages.map((msg, idx) => (
-                        <MessageBubble
-                            key={idx}
-                            message={msg}
-                            isOwn={msg.sender === (user._id || user.id)}
-                            partnerName={partner?.name}
-                            onDelete={handleDeleteMessage}
-                            onImageClick={(imageUrl, caption) => {
-                                setFullScreenImage(imageUrl);
-                                setFullScreenImageCaption(caption);
-                            }}
-                        />
-                    ))
+            {/* Messages Area - Now with a stable background layer */}
+            <div className="flex-1 relative overflow-hidden">
+                {/* 1. Background Image Layer - Using <img> for better URL compatibility */}
+                {chatBackground && (
+                    <img 
+                        src={chatBackground}
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500"
+                        alt="Chat Background"
+                        onError={(e) => {
+                            console.error('Page-level: Failed to load background URL:', chatBackground);
+                             // Optional: clear it if broken?
+                        }}
+                    />
                 )}
-                <div ref={messagesEndRef} />
+
+                {/* 2. Glass Overlay Layer */}
+                <div className={`absolute inset-0 pointer-events-none ${chatBackground ? 'bg-white/20 dark:bg-slate-900/40 backdrop-blur-[1px]' : 'bg-gray-50 dark:bg-slate-900'}`}></div>
+
+                {/* 3. Scrollable Content Layer */}
+                <div className="absolute inset-0 overflow-y-auto p-6 scroll-smooth">
+                    <div className="relative z-10 max-w-5xl mx-auto">
+                        {messages.length === 0 ? (
+                            <div className="text-center py-20 text-gray-500 dark:text-slate-400">
+                                <p className="text-sm">No messages yet. Start the conversation!</p>
+                            </div>
+                        ) : (
+                            messages.map((msg, idx) => (
+                                <MessageBubble
+                                    key={idx}
+                                    message={msg}
+                                    isOwn={msg.sender === (user._id || user.id)}
+                                    partnerName={partner?.name}
+                                    onDelete={handleDeleteMessage}
+                                    onImageClick={(imageUrl, caption) => {
+                                        setFullScreenImage(imageUrl);
+                                        setFullScreenImageCaption(caption);
+                                    }}
+                                />
+                            ))
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+                </div>
             </div>
 
             {/* Input Area - Premium Gradient Design */}
@@ -218,17 +385,17 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
                     onCancel={() => setIsVoiceMode(false)}
                 />
             ) : (
-                <div className="relative p-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+                <div className="relative p-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 border-t border-gray-100 dark:border-slate-700">
                     {/* Decorative gradient line */}
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                    {!isDarkMode && <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>}
 
                     {selectedFile && (
-                        <div className="mb-4 bg-white/80 backdrop-blur-lg border-2 border-indigo-200/50 p-4 rounded-2xl shadow-xl flex items-center justify-between animate-in slide-in-from-bottom-2 hover:shadow-2xl transition-all">
+                        <div className="mb-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg border-2 border-indigo-200/50 dark:border-slate-700/50 p-4 rounded-2xl shadow-xl flex items-center justify-between animate-in slide-in-from-bottom-2 hover:shadow-2xl transition-all">
                             <div className="flex items-center gap-4">
                                 {filePreview ? (
                                     <div className="relative">
-                                        <img src={filePreview} className="w-16 h-16 object-cover rounded-2xl border-2 border-indigo-200 shadow-md" alt="Preview" />
-                                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full border-2 border-white"></div>
+                                        <img src={filePreview} className="w-16 h-16 object-cover rounded-2xl border-2 border-indigo-200 dark:border-slate-600 shadow-md" alt="Preview" />
+                                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full border-2 border-white dark:border-slate-800"></div>
                                     </div>
                                 ) : (
                                     <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
@@ -236,9 +403,9 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
                                     </div>
                                 )}
                                 <div className="min-w-0">
-                                    <p className="text-sm font-bold text-gray-900 truncate mb-1">{selectedFile.name}</p>
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate mb-1">{selectedFile.name}</p>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full">
+                                        <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">
                                             {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                                         </span>
                                     </div>
@@ -246,7 +413,7 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
                             </div>
                             <button
                                 onClick={() => setSelectedFile(null)}
-                                className="p-3 hover:bg-red-100 rounded-xl text-gray-500 hover:text-red-600 transition-all hover:rotate-90 duration-300"
+                                className="p-3 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl text-gray-500 hover:text-red-600 transition-all hover:rotate-90 duration-300"
                             >
                                 <X size={22} />
                             </button>
@@ -258,7 +425,7 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
                         {/* Animated gradient border */}
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl blur opacity-60 group-hover:opacity-100 transition duration-500"></div>
 
-                        <form onSubmit={handleSendMessage} className="relative bg-white p-3 flex gap-3 items-end shadow-2xl rounded-3xl transition-all duration-300">
+                        <form onSubmit={handleSendMessage} className="relative bg-white dark:bg-slate-800 p-3 flex gap-3 items-end shadow-2xl rounded-3xl transition-all duration-300">
                             {/* Subtle inner glow effect */}
                             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5 rounded-3xl pointer-events-none"></div>
 
@@ -267,7 +434,7 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="relative z-10 p-6 text-gray-600 hover:text-indigo-600 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 rounded-2xl transition-all duration-300 flex-shrink-0 shadow-sm hover:shadow-md hover:scale-110 active:scale-95"
+                                className="relative z-10 p-6 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800 hover:from-indigo-50 hover:to-purple-50 rounded-2xl transition-all duration-300 flex-shrink-0 shadow-sm hover:shadow-md hover:scale-110 active:scale-95 border border-transparent dark:border-slate-700"
                                 title="Attach file"
                             >
                                 <Paperclip size={22} />
@@ -280,20 +447,21 @@ const MentorshipConversation = ({ isEmbedded = false, mentorshipId = null }) => 
                             />
 
                             {/* Message Input */}
-                            <div className="flex-1 relative z-10 bg-gradient-to-r from-gray-50/50 to-purple-50/50 rounded-2xl px-4 py-2">
-                                <textarea
-                                    className="w-full border-none focus:ring-0 text-base py-2 px-0 max-h-32 resize-none bg-transparent text-gray-900 placeholder-gray-500 outline-none font-medium"
-                                    rows="1"
-                                    placeholder="Type your message..."
+                            <div className="flex-1 relative z-10 bg-gradient-to-r from-gray-50/50 to-purple-50/50 dark:from-slate-900/50 dark:to-slate-900/50 rounded-2xl px-4 py-2">
+                                <input
+                                    type="text"
+                                    placeholder={sending ? "Sending..." : "Type a message..."}
+                                    className="w-full border-none focus:ring-0 text-base py-2 px-0 max-h-32 resize-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500 outline-none font-medium"
                                     value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onChange={handleInputChange}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault();
-                                            handleSendMessage(e);
+                                            handleSendMessage();
                                         }
                                     }}
-                                ></textarea>
+                                    disabled={sending}
+                                />
                             </div>
                             {/* Voice/Send Button */}
                             {!newMessage.trim() && !selectedFile ? (

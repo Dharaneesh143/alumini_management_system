@@ -34,4 +34,10 @@ router.post('/deactivate', auth, userController.deactivateMe);
 // @access  Private
 router.post('/resume-upload', auth, upload.single('resume'), userController.uploadResume);
 
+// @route   POST api/users/profile-image
+// @desc    Upload profile image to Cloudinary
+// @access  Private
+router.post('/profile-image', auth, upload.single('profileImage'), userController.uploadProfileImage);
+
 module.exports = router;
+

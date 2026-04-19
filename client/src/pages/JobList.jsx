@@ -207,23 +207,28 @@ const JobList = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20">
             {/* Enhanced Header with Gradient */}
-            <div className="bg-blue-300 mx-8 mt-8 px-8 py-16 mb-10 rounded-lg relative overflow-hidden">
+            <div className="mx-8 mt-8 px-8 py-20 mb-10 rounded-3xl relative overflow-hidden bg-cover bg-center group" 
+                style={{ backgroundImage: `url('https://img.freepik.com/premium-photo/career-business-virtial-screen-abstract-background-mixed-media_161452-6548.jpg')` }}>
+                
+                {/* Dark Overlay for better text readability */}
+                <div className="absolute inset-0 bg-blue-900/40 backdrop-blur-[2px] group-hover:bg-blue-900/30 transition-all duration-500" />
+                
                 {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl" />
+                <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl animate-pulse" />
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl" />
 
                 <div className="relative z-10">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-12">
-                        <div className="text-center lg:text-left">
+                        <div className="h-full p-5 rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-30 border border-gray-100 text-center lg:text-left">
                             <div className="flex items-center justify-center lg:justify-start gap-3 mb-3">
                                 <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
                                     <Sparkles className="w-6 h-6 text-white" />
                                 </div>
-                                <h1 className="text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+                                <h1 className="text-4xl lg:text-5xl font-extrabold text-white! tracking-tight">
                                     Career Opportunities
                                 </h1>
                             </div>
-                            <p className="text-blue-100 text-lg font-medium">
+                            <p className="text-white! text-lg font-medium">
                                 Discover exclusive jobs and internships from your alumni network
                             </p>
                         </div>
@@ -264,7 +269,7 @@ const JobList = () => {
             </div>
 
             {/* Content Container */}
-            <div className="max-w-7xl mx-auto px-8 pb-16">
+            <div className="max-w-7xl mx-auto px-8">
                 {/* Enhanced Tabs */}
                 <div className="flex items-center justify-between mb-10 bg-white rounded-2xl p-4 mt-6 mb-6 shadow-sm border border-gray-100">
                     <div className="flex gap-2">
